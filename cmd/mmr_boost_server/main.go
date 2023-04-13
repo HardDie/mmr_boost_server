@@ -4,8 +4,8 @@
 //
 // Terms Of Service:
 //
-//	Schemes: http
-//	Host: localhost:8080
+//	Schemes: https
+//	Host: event-tracker.online
 //	BasePath: /
 //	Version: 1.0.0
 //

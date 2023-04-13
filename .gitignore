@@ -3,3 +3,4 @@
 db_data/
 swagger.yaml
 /server
+caddy/

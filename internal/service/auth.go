@@ -191,7 +191,7 @@ func (s *auth) AuthValidateCookie(ctx context.Context, sessionKey string) (*enti
 	}
 
 	// Check if session is not expired
-	if time.Now().After(accessToken.ExpiredAt) {
+	if accessToken.ExpiredAt.After(time.Now()) {
 		return nil, errs.SessionInvalid.AddMessage("access token has expired")
 	}
 	return accessToken, nil
