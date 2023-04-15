@@ -89,6 +89,8 @@ func (s *auth) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	utils.SetSessionCookie(accessToken.TokenHash, w)
+
 	w.WriteHeader(http.StatusCreated)
 	err = utils.Response(w, accessToken)
 	if err != nil {
@@ -145,6 +147,8 @@ func (s *auth) Login(w http.ResponseWriter, r *http.Request) {
 		errs.HttpError(w, err)
 		return
 	}
+
+	utils.SetSessionCookie(accessToken.TokenHash, w)
 
 	err = utils.Response(w, accessToken)
 	if err != nil {
@@ -213,4 +217,6 @@ func (s *auth) Logout(w http.ResponseWriter, r *http.Request) {
 		errs.HttpError(w, err)
 		return
 	}
+
+	utils.DeleteSessionCookie(w)
 }

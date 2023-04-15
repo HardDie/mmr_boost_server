@@ -21,17 +21,17 @@ func NewAuthMiddleware(srvc *service.Service) *AuthMiddleware {
 }
 func (m *AuthMiddleware) RequestMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		bearer := utils.GetBearer(r)
+		cookie := utils.GetCookie(r)
 
-		// If we got no session
-		if bearer == "" {
-			http.Error(w, "Invalid session token", http.StatusBadRequest)
+		// If we got no cookie
+		if cookie == nil || cookie.Value == "" {
+			http.Error(w, "Session token is empty", http.StatusBadRequest)
 			return
 		}
 
 		// Validate if session is active
 		ctx := r.Context()
-		session, err := m.service.AuthValidateCookie(ctx, bearer)
+		session, err := m.service.AuthValidateCookie(ctx, cookie.Value)
 		if err != nil {
 			if errors.Is(err, errs.SessionInvalid) {
 				http.Error(w, err.Error(), http.StatusUnauthorized)

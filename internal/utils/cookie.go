@@ -5,12 +5,37 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
-	"strings"
+	"time"
+
+	"github.com/HardDie/mmr_boost_server/internal/logger"
 )
 
-func GetBearer(r *http.Request) string {
-	header := r.Header.Get("Authorization")
-	return strings.ReplaceAll(header, "Bearer ", "")
+func SetSessionCookie(session string, w http.ResponseWriter) {
+	cookie := http.Cookie{
+		Name:     "session",
+		Path:     "/",
+		Value:    session,
+		HttpOnly: true,
+	}
+	http.SetCookie(w, &cookie)
+}
+func DeleteSessionCookie(w http.ResponseWriter) {
+	cookie := http.Cookie{
+		Name:     "session",
+		Path:     "/",
+		Value:    "",
+		Expires:  time.Unix(0, 0),
+		HttpOnly: true,
+	}
+	http.SetCookie(w, &cookie)
+}
+func GetCookie(r *http.Request) *http.Cookie {
+	cookie, err := r.Cookie("session")
+	if err != nil {
+		logger.Error.Println("Can't read cookie from request:", err.Error())
+		return nil
+	}
+	return cookie
 }
 
 func GenerateSessionKey() (string, error) {
