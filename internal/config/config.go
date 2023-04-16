@@ -9,11 +9,12 @@ import (
 )
 
 type Config struct {
-	Postgres Postgres
-	Http     Http
-	Password Password
-	SMTP     SMTP
-	Session  Session
+	Postgres        Postgres
+	Http            Http
+	Password        Password
+	SMTP            SMTP
+	Session         Session
+	EmailValidation EmailValidation
 }
 
 func Get() Config {
@@ -24,10 +25,11 @@ func Get() Config {
 	}
 
 	return Config{
-		Postgres: postgresConfig(),
-		Http:     httpConfig(),
-		Password: passwordConfig(),
-		SMTP:     smtpConfig(),
-		Session:  sessionConfig(),
+		Postgres:        postgresConfig(),
+		Http:            httpConfig(),
+		Password:        passwordConfig(),
+		SMTP:            smtpConfig(),
+		Session:         sessionConfig(),
+		EmailValidation: emailValidationConfig(),
 	}
 }

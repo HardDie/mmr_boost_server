@@ -26,6 +26,8 @@ func (s *auth) RegisterPublicRouter(router *mux.Router, middleware ...mux.Middle
 	authRouter := router.PathPrefix("").Subrouter()
 	authRouter.HandleFunc("/register", s.Register).Methods(http.MethodPost)
 	authRouter.HandleFunc("/login", s.Login).Methods(http.MethodPost)
+	authRouter.HandleFunc("/validate_email", s.ValidateEmail).Methods(http.MethodGet)
+	authRouter.HandleFunc("/send_validation_email", s.SendValidationEmail).Methods(http.MethodPost)
 	authRouter.Use(middleware...)
 }
 func (s *auth) RegisterPrivateRouter(router *mux.Router, middleware ...mux.MiddlewareFunc) {
@@ -49,10 +51,6 @@ type AuthRegisterRequest struct {
 
 // swagger:response AuthRegisterResponse
 type AuthRegisterResponse struct {
-	// In: body
-	Body struct {
-		Data *entity.AccessToken `json:"data"`
-	}
 }
 
 // swagger:route POST /api/v1/auth/register Auth AuthRegisterRequest
@@ -60,7 +58,7 @@ type AuthRegisterResponse struct {
 // # Registration form
 //
 //	Responses:
-//	  200: AuthRegisterResponse
+//	  201: AuthRegisterResponse
 func (s *auth) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -77,25 +75,13 @@ func (s *auth) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := s.service.AuthRegister(ctx, req)
+	err = s.service.AuthRegister(ctx, req)
 	if err != nil {
 		errs.HttpError(w, err)
 		return
 	}
-
-	accessToken, err := s.service.AuthGenerateCookie(ctx, user.ID)
-	if err != nil {
-		errs.HttpError(w, err)
-		return
-	}
-
-	utils.SetSessionCookie(accessToken.TokenHash, w)
 
 	w.WriteHeader(http.StatusCreated)
-	err = utils.Response(w, accessToken)
-	if err != nil {
-		logger.Error.Println("error write to socket:", err.Error())
-	}
 }
 
 // swagger:parameters AuthLoginRequest
@@ -108,10 +94,6 @@ type AuthLoginRequest struct {
 
 // swagger:response AuthLoginResponse
 type AuthLoginResponse struct {
-	// In: body
-	Body struct {
-		Data *entity.AccessToken `json:"data"`
-	}
 }
 
 // swagger:route POST /api/v1/auth/login Auth AuthLoginRequest
@@ -149,10 +131,82 @@ func (s *auth) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.SetSessionCookie(accessToken.TokenHash, w)
+}
 
-	err = utils.Response(w, accessToken)
+// swagger:parameters AuthValidateEmailRequest
+type AuthValidateEmailRequest struct {
+	// In: query
+	dto.AuthValidateEmailRequest
+}
+
+// swagger:response AuthValidateEmailResponse
+type AuthValidateEmailResponse struct {
+}
+
+// swagger:route GET /api/v1/auth/validate_email Auth AuthValidateEmailRequest
+//
+// # Validate email
+//
+//	Responses:
+//	  200: AuthValidateEmailResponse
+func (s *auth) ValidateEmail(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	req := &dto.AuthValidateEmailRequest{
+		Code: r.URL.Query().Get("code"),
+	}
+
+	err := getValidator().Struct(req)
 	if err != nil {
-		logger.Error.Println("error write to socket:", err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = s.service.AuthValidateEmail(ctx, req.Code)
+	if err != nil {
+		errs.HttpError(w, err)
+		return
+	}
+}
+
+// swagger:parameters AuthSendValidationEmailRequest
+type AuthSendValidationEmailRequest struct {
+	// In: body
+	Body struct {
+		dto.AuthSendValidationEmailRequest
+	}
+}
+
+// swagger:response AuthSendValidationEmailResponse
+type AuthSendValidationEmailResponse struct {
+}
+
+// swagger:route POST /api/v1/auth/send_validation_email Auth AuthSendValidationEmailRequest
+//
+// # Send validation email again
+//
+//	Responses:
+//	  200: AuthSendValidationEmailResponse
+func (s *auth) SendValidationEmail(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	req := &dto.AuthSendValidationEmailRequest{}
+	err := utils.ParseJsonFromHTTPRequest(r.Body, req)
+	if err != nil {
+		http.Error(w, "Can't parse request", http.StatusBadRequest)
+		return
+	}
+
+	err = getValidator().Struct(req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = s.service.AuthSendValidationEmail(ctx, req.Username)
+	if err != nil {
+		errs.HttpError(w, err)
+		return
 	}
 }
 

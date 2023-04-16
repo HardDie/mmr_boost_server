@@ -12,6 +12,10 @@ var (
 	BadRequest     = NewError("bad request", http.StatusBadRequest)
 	UserBlocked    = NewError("user is blocked", http.StatusUnauthorized)
 	SessionInvalid = NewError("session invalid", http.StatusUnauthorized)
+
+	// EmailValidation
+	EmailValidationCodeExpired  = NewError("validation code expired", http.StatusBadRequest)
+	EmailValidationCodeNotExist = NewError("validation code not exist", http.StatusBadRequest)
 )
 
 type Err struct {

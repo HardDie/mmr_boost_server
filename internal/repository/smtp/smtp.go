@@ -15,14 +15,16 @@ const (
 type SMTP struct {
 	email    string
 	nickname string
+	baseURL  string
 	dialer   *mail.Dialer
 }
 
-func NewSMTP(cfg config.SMTP) *SMTP {
+func NewSMTP(cfg config.Config) *SMTP {
 	return &SMTP{
-		email:    cfg.Email,
-		nickname: cfg.Nickname,
-		dialer:   mail.NewDialer(cfg.Host, cfg.Port, cfg.Email, cfg.Password),
+		email:    cfg.SMTP.Email,
+		nickname: cfg.SMTP.Nickname,
+		baseURL:  cfg.EmailValidation.BaseURL,
+		dialer:   mail.NewDialer(cfg.SMTP.Host, cfg.SMTP.Port, cfg.SMTP.Email, cfg.SMTP.Password),
 	}
 }
 
@@ -31,7 +33,7 @@ func (r *SMTP) SendEmailVerification(email, code string) error {
 	msg.SetHeader("To", email)
 	msg.SetHeader("From", fmt.Sprintf("%s <%s>", r.nickname, r.email))
 	msg.SetHeader("Subject", Subject)
-	msg.SetBody("text/plain", fmt.Sprintf("Your code: %s", code))
+	msg.SetBody("text/plain", fmt.Sprintf("Your code: %s, or link %s/api/v1/auth/validate_email?code=%s", code, r.baseURL, code))
 
 	err := r.dialer.DialAndSend(msg)
 	if err != nil {

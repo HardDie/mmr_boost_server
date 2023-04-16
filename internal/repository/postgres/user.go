@@ -88,3 +88,28 @@ func (r *user) UserCreate(ctx context.Context, email, name string) (*entity.User
 	}
 	return u, nil
 }
+func (r *user) UserActivateRecord(ctx context.Context, userID int32) (*entity.User, error) {
+	tx := getTxOrConn(ctx, r.db)
+
+	u := &entity.User{
+		ID:          userID,
+		IsActivated: true,
+	}
+
+	q := gosql.NewUpdate().Table("users")
+	q.Set().Append("is_activated = true")
+	q.Set().Append("updated_at = now()")
+	q.Where().AddExpression("id = ?", userID)
+	q.Where().AddExpression("deleted_at IS NULL")
+	q.Returning().Add("email", "username", "role_id", "created_at", "updated_at")
+	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
+
+	err := row.Scan(&u.Email, &u.Username, &u.RoleID, &u.CreatedAt, &u.UpdatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return u, nil
+}

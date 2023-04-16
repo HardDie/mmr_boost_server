@@ -49,7 +49,7 @@ func Get() (*Application, error) {
 
 	// Init repositories
 	postgresRepository := postgres.NewPostgres(app.DB)
-	smtpRepository := smtp.NewSMTP(app.Cfg.SMTP)
+	smtpRepository := smtp.NewSMTP(app.Cfg)
 
 	// Init services
 	srvc := service.NewService(app.Cfg, postgresRepository, smtpRepository)

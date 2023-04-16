@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/HardDie/mmr_boost_server/internal/config"
@@ -29,7 +30,7 @@ func newAuth(config config.Config, repository *postgres.Postgres, smtp *smtp.SMT
 	}
 }
 
-func (s *auth) AuthRegister(ctx context.Context, req *dto.AuthRegisterRequest) (*entity.User, error) {
+func (s *auth) AuthRegister(ctx context.Context, req *dto.AuthRegisterRequest) error {
 	var res *entity.User
 
 	err := s.repository.TxManager().ReadWriteTx(ctx, func(ctx context.Context) error {
@@ -68,20 +69,40 @@ func (s *auth) AuthRegister(ctx context.Context, req *dto.AuthRegisterRequest) (
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
+	// Create record in history
 	err = s.repository.HistoryNewEvent(ctx, res.ID, "user was created")
 	if err != nil {
-		logger.Error.Printf("error writing history message")
+		logger.Error.Println("error writing history message: user was created")
 	}
 
-	err = s.smtpRepository.SendEmailVerification(res.Email, "123456")
+	// Generate new email validation code
+	emailCode, err := utils.UUIDGenerate()
+	if err != nil {
+		logger.Error.Println("error generating email code:", err.Error())
+		return errs.InternalError
+	}
+	emailCode = strings.ToLower(emailCode)
+
+	// Calculate expired at
+	expiredAt := time.Now().Add(time.Hour * time.Duration(s.config.EmailValidation.Expiration))
+
+	// Create record of email validation in DB
+	_, err = s.repository.EmailValidationCreateOrUpdate(ctx, res.ID, emailCode, expiredAt)
+	if err != nil {
+		logger.Error.Println("error writing email validation token to DB:", err.Error())
+		return errs.InternalError
+	}
+
+	// Send code to email
+	err = s.smtpRepository.SendEmailVerification(res.Email, emailCode)
 	if err != nil {
 		logger.Error.Println("error sending email with verification code:", err.Error())
 	}
 
-	return res, nil
+	return nil
 }
 func (s *auth) AuthLogin(ctx context.Context, req *dto.AuthLoginRequest) (*entity.User, error) {
 	var res *entity.User
@@ -95,6 +116,10 @@ func (s *auth) AuthLogin(ctx context.Context, req *dto.AuthLoginRequest) (*entit
 		}
 		if user == nil {
 			return errs.BadRequest.AddMessage("username or password is invalid")
+		}
+
+		if !user.IsActivated {
+			return errs.BadRequest.AddMessage("account is not activated")
 		}
 
 		// Get password from DB
@@ -191,7 +216,7 @@ func (s *auth) AuthValidateCookie(ctx context.Context, sessionKey string) (*enti
 	}
 
 	// Check if session is not expired
-	if accessToken.ExpiredAt.After(time.Now()) {
+	if time.Now().After(accessToken.ExpiredAt) {
 		return nil, errs.SessionInvalid.AddMessage("access token has expired")
 	}
 	return accessToken, nil
@@ -203,4 +228,83 @@ func (s *auth) AuthGetUserInfo(ctx context.Context, userID int32) (*entity.User,
 		return nil, errs.InternalError
 	}
 	return user, nil
+}
+func (s *auth) AuthValidateEmail(ctx context.Context, code string) error {
+	emailValidation, err := s.repository.EmailValidationGetByCode(ctx, code)
+	if err != nil {
+		logger.Error.Printf("error finding email validation record: %v", err.Error())
+		return errs.InternalError
+	}
+
+	// Check if validation code exist
+	if emailValidation == nil {
+		return errs.EmailValidationCodeNotExist
+	}
+
+	// Check if validation code expired
+	if time.Now().After(emailValidation.ExpiredAt) {
+		err = s.repository.EmailValidationDeleteByID(ctx, emailValidation.ID)
+		if err != nil {
+			logger.Error.Printf("error deleting email validation expired record: %v", err.Error())
+		}
+		return errs.EmailValidationCodeExpired
+	}
+
+	// Activate user
+	_, err = s.repository.UserActivateRecord(ctx, emailValidation.UserID)
+	if err != nil {
+		logger.Error.Printf("error activating user with email code: %v", err.Error())
+		return errs.InternalError
+	}
+
+	// Delete activation code from DB
+	err = s.repository.EmailValidationDeleteByID(ctx, emailValidation.ID)
+	if err != nil {
+		logger.Error.Printf("error deleting email validation record after validating: %v", err.Error())
+	}
+
+	// Write history record
+	err = s.repository.HistoryNewEvent(ctx, emailValidation.UserID, "account was activated")
+	if err != nil {
+		logger.Error.Println("error writing history message: account was activated")
+	}
+
+	return nil
+}
+func (s *auth) AuthSendValidationEmail(ctx context.Context, name string) error {
+	u, err := s.repository.UserGetByName(ctx, name)
+	if err != nil {
+		logger.Error.Println("error get user by name:", err.Error())
+		return errs.InternalError
+	}
+	if u == nil || u.IsActivated {
+		return nil
+	}
+
+	// Generate new email validation code
+	emailCode, err := utils.UUIDGenerate()
+	if err != nil {
+		logger.Error.Println("error generating email code:", err.Error())
+		return errs.InternalError
+	}
+	emailCode = strings.ToLower(emailCode)
+
+	// Calculate expired at
+	expiredAt := time.Now().Add(time.Hour * time.Duration(s.config.EmailValidation.Expiration))
+
+	// Create record of email validation in DB
+	_, err = s.repository.EmailValidationCreateOrUpdate(ctx, u.ID, emailCode, expiredAt)
+	if err != nil {
+		logger.Error.Println("error writing email validation token to DB:", err.Error())
+		return errs.InternalError
+	}
+
+	// Send code to email
+	err = s.smtpRepository.SendEmailVerification(u.Email, emailCode)
+	if err != nil {
+		logger.Error.Println("error sending email with verification code:", err.Error())
+		return errs.InternalError
+	}
+
+	return nil
 }

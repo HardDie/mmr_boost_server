@@ -8,6 +8,7 @@ type Postgres struct {
 	txManager *txManager
 
 	accessToken
+	emailValidation
 	history
 	password
 	user
@@ -17,10 +18,11 @@ func NewPostgres(db *db.DB) *Postgres {
 	return &Postgres{
 		txManager: newTxManager(db),
 
-		accessToken: newAccessToken(db),
-		history:     newHistory(db),
-		password:    newPassword(db),
-		user:        newUser(db),
+		accessToken:     newAccessToken(db),
+		emailValidation: newEmailValidation(db),
+		history:         newHistory(db),
+		password:        newPassword(db),
+		user:            newUser(db),
 	}
 }
 
