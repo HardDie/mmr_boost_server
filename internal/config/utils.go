@@ -1,15 +1,16 @@
 package config
 
 import (
-	"log"
 	"os"
 	"strconv"
+
+	"github.com/HardDie/mmr_boost_server/internal/logger"
 )
 
 func getEnv(key string) string {
 	value, exists := os.LookupEnv(key)
 	if !exists {
-		log.Fatalf("env %q value not found", key)
+		logger.Error.Fatalf("env %q value not found", key)
 	}
 	return value
 }
@@ -18,7 +19,7 @@ func getEnvAsInt(key string) int {
 	value := getEnv(key)
 	v, e := strconv.Atoi(value)
 	if e != nil {
-		log.Fatalf("env %q value invalid int", key)
+		logger.Error.Fatalf("env %q value invalid int", key)
 	}
 	return v
 }

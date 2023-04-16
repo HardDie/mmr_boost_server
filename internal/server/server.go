@@ -11,6 +11,7 @@ import (
 )
 
 type Server struct {
+	application
 	auth
 	system
 	user
@@ -21,9 +22,10 @@ type Server struct {
 
 func NewServer(config config.Config, srvc *service.Service) *Server {
 	return &Server{
-		auth:   newAuth(srvc),
-		system: newSystem(srvc),
-		user:   newUser(srvc),
+		application: newApplication(srvc),
+		auth:        newAuth(srvc),
+		system:      newSystem(srvc),
+		user:        newUser(srvc),
 
 		authMiddleware:    middleware.NewAuthMiddleware(srvc),
 		timeoutMiddleware: middleware.NewTimeoutRequestMiddleware(time.Duration(config.Http.RequestTimeout) * time.Second),
@@ -36,6 +38,9 @@ func (s *Server) Register(router *mux.Router) {
 		s.timeoutMiddleware.RequestMiddleware,
 		s.authMiddleware.RequestMiddleware,
 	}
+
+	applicationsRouter := router.PathPrefix("/applications").Subrouter()
+	s.application.RegisterPrivateRouter(applicationsRouter, privateMiddlewares...)
 
 	authRouter := router.PathPrefix("/auth").Subrouter()
 	s.auth.RegisterPublicRouter(authRouter, middleware.LoggerMiddleware)

@@ -1,7 +1,6 @@
 package application
 
 import (
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/HardDie/mmr_boost_server/internal/config"
 	"github.com/HardDie/mmr_boost_server/internal/db"
+	"github.com/HardDie/mmr_boost_server/internal/logger"
 	"github.com/HardDie/mmr_boost_server/internal/migration"
 	"github.com/HardDie/mmr_boost_server/internal/repository/postgres"
 	"github.com/HardDie/mmr_boost_server/internal/repository/smtp"
@@ -77,5 +77,5 @@ func (app *Application) Run() error {
 func (app *Application) Stop() {
 	app.DB.DB.Close()
 	app.DB = nil
-	log.Println("Done")
+	logger.Info.Println("Done")
 }

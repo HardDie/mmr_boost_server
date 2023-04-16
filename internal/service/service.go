@@ -7,6 +7,7 @@ import (
 )
 
 type Service struct {
+	application
 	auth
 	system
 	user
@@ -18,8 +19,9 @@ func NewService(
 	smtpRepository *smtp.SMTP,
 ) *Service {
 	return &Service{
-		auth:   newAuth(config, postgresRepository, smtpRepository),
-		system: newSystem(),
-		user:   newUser(postgresRepository),
+		application: newApplication(postgresRepository),
+		auth:        newAuth(config, postgresRepository, smtpRepository),
+		system:      newSystem(),
+		user:        newUser(postgresRepository),
 	}
 }
