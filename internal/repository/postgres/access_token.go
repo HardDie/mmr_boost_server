@@ -53,12 +53,12 @@ func (r *accessToken) AccessTokenGetByUserID(ctx context.Context, tokenHash stri
 	}
 
 	q := gosql.NewSelect().From("access_tokens")
-	q.Columns().Add("id", "user_id", "created_at", "updated_at")
+	q.Columns().Add("id", "user_id", "expired_at", "created_at", "updated_at")
 	q.Where().AddExpression("token_hash = ?", token.TokenHash)
 	q.Where().AddExpression("deleted_at IS NULL")
 	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
 
-	err := row.Scan(&token.ID, &token.UserID, &token.CreatedAt, &token.UpdatedAt)
+	err := row.Scan(&token.ID, &token.UserID, &token.ExpiredAt, &token.CreatedAt, &token.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil

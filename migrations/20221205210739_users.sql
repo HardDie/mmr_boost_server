@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     email        TEXT      NOT NULL UNIQUE,
     username     TEXT      NOT NULL UNIQUE,
     role_id      INT       NOT NULL DEFAULT 4,
+    steam_id     TEXT,
     is_activated BOOLEAN   NOT NULL DEFAULT false,
     created_at   TIMESTAMP NOT NULL DEFAULT (now()),
     updated_at   TIMESTAMP NOT NULL DEFAULT (now()),

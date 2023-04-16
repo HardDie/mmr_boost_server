@@ -113,3 +113,25 @@ func (r *user) UserActivateRecord(ctx context.Context, userID int32) (*entity.Us
 	}
 	return u, nil
 }
+func (r *user) UserUpdateSteamID(ctx context.Context, userID int32, steamID string) (*entity.User, error) {
+	tx := getTxOrConn(ctx, r.db)
+
+	u := &entity.User{
+		ID:      userID,
+		SteamID: steamID,
+	}
+
+	q := gosql.NewUpdate().Table("users")
+	q.Set().Append("steam_id = ?", u.SteamID)
+	q.Set().Append("updated_at = now()")
+	q.Where().AddExpression("id = ?", u.ID)
+	q.Where().AddExpression("deleted_at IS NULL")
+	q.Returning().Add("email", "username", "role_id", "is_activated", "created_at", "updated_at")
+	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
+
+	err := row.Scan(&u.Email, &u.Username, &u.RoleID, &u.IsActivated, &u.CreatedAt, &u.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
+}

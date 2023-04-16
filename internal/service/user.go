@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/HardDie/mmr_boost_server/internal/dto"
+	"github.com/HardDie/mmr_boost_server/internal/entity"
 	"github.com/HardDie/mmr_boost_server/internal/errs"
 	"github.com/HardDie/mmr_boost_server/internal/logger"
 	"github.com/HardDie/mmr_boost_server/internal/repository/postgres"
@@ -57,4 +58,11 @@ func (s *user) UserPassword(ctx context.Context, req *dto.UserUpdatePasswordRequ
 		return err
 	}
 	return nil
+}
+func (s *user) UserUpdateSteamID(ctx context.Context, req *dto.UserUpdateSteamIDRequest, userID int32) (*entity.User, error) {
+	u, err := s.repository.UserUpdateSteamID(ctx, userID, req.SteamID)
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
 }
