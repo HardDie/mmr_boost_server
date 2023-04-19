@@ -53,7 +53,7 @@ func (s *Server) Register(router *mux.Router) {
 	)
 
 	systemRouter := router.PathPrefix("/system").Subrouter()
-	s.system.RegisterPublicRouter(systemRouter, middleware.LoggerMiddleware, middleware.CorsMiddleware, s.timeoutMiddleware.RequestMiddleware)
+	s.system.RegisterPublicRouter(systemRouter, middleware.CorsMiddleware, s.timeoutMiddleware.RequestMiddleware)
 
 	err := s.application.RegisterHTTP(ctx, grpcMux)
 	if err != nil {

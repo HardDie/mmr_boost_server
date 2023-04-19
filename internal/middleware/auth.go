@@ -26,7 +26,8 @@ func (m *AuthMiddleware) RequestMiddleware(next http.Handler) http.Handler {
 		case r.URL.Path == "/api/v1/auth/login" ||
 			r.URL.Path == "/api/v1/auth/register" ||
 			r.URL.Path == "/api/v1/auth/validate_email" ||
-			r.URL.Path == "/api/v1/auth/send_validation_email":
+			r.URL.Path == "/api/v1/auth/send_validation_email" ||
+			r.URL.Path == "/api/v1/system/swagger":
 			next.ServeHTTP(w, r)
 			return
 		}
