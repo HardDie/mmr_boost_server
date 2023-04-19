@@ -17,6 +17,13 @@ swagger-install: ## install swagger for linux
 build: ## build binary file
 	CGO_ENABLED=0 go build -o server cmd/mmr_boost_server/main.go
 
+.PHONY: dependency
+dependency:
+	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest
+	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
 .PHONY: proto
 proto:
 	protoc -I./pkg/proto/server \
