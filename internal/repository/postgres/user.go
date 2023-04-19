@@ -29,12 +29,12 @@ func (r *user) UserGetByID(ctx context.Context, id int32) (*entity.User, error) 
 	}
 
 	q := gosql.NewSelect().From("users")
-	q.Columns().Add("email", "username", "role_id", "is_activated", "created_at", "updated_at", "deleted_at")
+	q.Columns().Add("email", "username", "role_id", "steam_id", "is_activated", "created_at", "updated_at", "deleted_at")
 	q.Where().AddExpression("id = ?", id)
 	q.Where().AddExpression("deleted_at IS NULL")
 	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
 
-	err := row.Scan(&u.Email, &u.Username, &u.RoleID, &u.IsActivated, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt)
+	err := row.Scan(&u.Email, &u.Username, &u.RoleID, &u.SteamID, &u.IsActivated, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -52,12 +52,12 @@ func (r *user) UserGetByName(ctx context.Context, name string) (*entity.User, er
 	}
 
 	q := gosql.NewSelect().From("users")
-	q.Columns().Add("id", "email", "role_id", "is_activated", "created_at", "updated_at", "deleted_at")
+	q.Columns().Add("id", "email", "role_id", "steam_id", "is_activated", "created_at", "updated_at", "deleted_at")
 	q.Where().AddExpression("username = ?", name)
 	q.Where().AddExpression("deleted_at IS NULL")
 	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
 
-	err := row.Scan(&u.ID, &u.Email, &u.RoleID, &u.IsActivated, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt)
+	err := row.Scan(&u.ID, &u.Email, &u.RoleID, &u.SteamID, &u.IsActivated, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil

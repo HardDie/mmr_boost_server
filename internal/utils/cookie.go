@@ -1,25 +1,32 @@
 package utils
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
 	"net/http"
 	"time"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
+
 	"github.com/HardDie/mmr_boost_server/internal/logger"
 )
 
-func SetSessionCookie(session string, w http.ResponseWriter) {
+func SetGRPCSessionCookie(ctx context.Context, session string) {
 	cookie := http.Cookie{
 		Name:     "session",
 		Path:     "/",
 		Value:    session,
 		HttpOnly: true,
 	}
-	http.SetCookie(w, &cookie)
+	err := grpc.SetHeader(ctx, metadata.Pairs("Set-Cookie", cookie.String()))
+	if err != nil {
+		logger.Error.Println("error set cookie:", err.Error())
+	}
 }
-func DeleteSessionCookie(w http.ResponseWriter) {
+func DeleteGRPCSessionCookie(ctx context.Context) {
 	cookie := http.Cookie{
 		Name:     "session",
 		Path:     "/",
@@ -27,12 +34,15 @@ func DeleteSessionCookie(w http.ResponseWriter) {
 		Expires:  time.Unix(0, 0),
 		HttpOnly: true,
 	}
-	http.SetCookie(w, &cookie)
+	err := grpc.SetHeader(ctx, metadata.Pairs("Set-Cookie", cookie.String()))
+	if err != nil {
+		logger.Error.Println("error delete cookie:", err.Error())
+	}
 }
+
 func GetCookie(r *http.Request) *http.Cookie {
 	cookie, err := r.Cookie("session")
 	if err != nil {
-		logger.Error.Println("Can't read cookie from request:", err.Error())
 		return nil
 	}
 	return cookie

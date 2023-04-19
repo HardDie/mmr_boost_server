@@ -1,20 +1,22 @@
 package server
 
 import (
-	"net/http"
+	"context"
 
-	"github.com/gorilla/mux"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/HardDie/mmr_boost_server/internal/dto"
-	"github.com/HardDie/mmr_boost_server/internal/entity"
-	"github.com/HardDie/mmr_boost_server/internal/errs"
-	"github.com/HardDie/mmr_boost_server/internal/logger"
 	"github.com/HardDie/mmr_boost_server/internal/service"
 	"github.com/HardDie/mmr_boost_server/internal/utils"
+	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
 )
 
 type auth struct {
 	service *service.Service
+	pb.UnimplementedAuthServer
 }
 
 func newAuth(service *service.Service) auth {
@@ -22,255 +24,103 @@ func newAuth(service *service.Service) auth {
 		service: service,
 	}
 }
-func (s *auth) RegisterPublicRouter(router *mux.Router, middleware ...mux.MiddlewareFunc) {
-	authRouter := router.PathPrefix("").Subrouter()
-	authRouter.HandleFunc("/register", s.Register).Methods(http.MethodPost)
-	authRouter.HandleFunc("/login", s.Login).Methods(http.MethodPost)
-	authRouter.HandleFunc("/validate_email", s.ValidateEmail).Methods(http.MethodGet)
-	authRouter.HandleFunc("/send_validation_email", s.SendValidationEmail).Methods(http.MethodPost)
-	authRouter.Use(middleware...)
-}
-func (s *auth) RegisterPrivateRouter(router *mux.Router, middleware ...mux.MiddlewareFunc) {
-	authRouter := router.PathPrefix("").Subrouter()
-	authRouter.HandleFunc("/user", s.User).Methods(http.MethodGet)
-	authRouter.HandleFunc("/logout", s.Logout).Methods(http.MethodPost)
-	authRouter.Use(middleware...)
+
+func (s *auth) RegisterHTTP(ctx context.Context, mux *runtime.ServeMux) error {
+	return pb.RegisterAuthHandlerServer(ctx, mux, s)
 }
 
-/*
- * Public
- */
-
-// swagger:parameters AuthRegisterRequest
-type AuthRegisterRequest struct {
-	// In: body
-	Body struct {
-		dto.AuthRegisterRequest
+func (s *auth) Register(ctx context.Context, req *pb.RegisterRequest) (*emptypb.Empty, error) {
+	r := &dto.AuthRegisterRequest{
+		Username: req.Username,
+		Password: req.Password,
+		Email:    req.Email,
 	}
-}
-
-// swagger:response AuthRegisterResponse
-type AuthRegisterResponse struct {
-}
-
-// swagger:route POST /api/v1/auth/register Auth AuthRegisterRequest
-//
-// # Registration form
-//
-//	Responses:
-//	  201: AuthRegisterResponse
-func (s *auth) Register(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	req := &dto.AuthRegisterRequest{}
-	err := utils.ParseJsonFromHTTPRequest(r.Body, req)
+	err := getValidator().Struct(r)
 	if err != nil {
-		http.Error(w, "Can't parse request", http.StatusBadRequest)
-		return
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	err = getValidator().Struct(req)
+	err = s.service.AuthRegister(ctx, r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return nil, err
 	}
 
-	err = s.service.AuthRegister(ctx, req)
-	if err != nil {
-		errs.HttpError(w, err)
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
+	return &emptypb.Empty{}, nil
 }
-
-// swagger:parameters AuthLoginRequest
-type AuthLoginRequest struct {
-	// In: body
-	Body struct {
-		dto.AuthLoginRequest
+func (s *auth) Login(ctx context.Context, req *pb.LoginRequest) (*emptypb.Empty, error) {
+	r := &dto.AuthLoginRequest{
+		Username: req.Username,
+		Password: req.Password,
 	}
-}
-
-// swagger:response AuthLoginResponse
-type AuthLoginResponse struct {
-}
-
-// swagger:route POST /api/v1/auth/login Auth AuthLoginRequest
-//
-// # Login form
-//
-//	Responses:
-//	  200: AuthLoginResponse
-func (s *auth) Login(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	req := &dto.AuthLoginRequest{}
-	err := utils.ParseJsonFromHTTPRequest(r.Body, req)
+	err := getValidator().Struct(r)
 	if err != nil {
-		http.Error(w, "Can't parse request", http.StatusBadRequest)
-		return
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	err = getValidator().Struct(req)
+	u, err := s.service.AuthLogin(ctx, r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return nil, err
 	}
 
-	user, err := s.service.AuthLogin(ctx, req)
+	accessToken, err := s.service.AuthGenerateCookie(ctx, u.ID)
 	if err != nil {
-		errs.HttpError(w, err)
-		return
+		return nil, err
 	}
 
-	accessToken, err := s.service.AuthGenerateCookie(ctx, user.ID)
-	if err != nil {
-		errs.HttpError(w, err)
-		return
-	}
-
-	utils.SetSessionCookie(accessToken.TokenHash, w)
+	utils.SetGRPCSessionCookie(ctx, accessToken.TokenHash)
+	return &emptypb.Empty{}, nil
 }
-
-// swagger:parameters AuthValidateEmailRequest
-type AuthValidateEmailRequest struct {
-	// In: query
-	dto.AuthValidateEmailRequest
-}
-
-// swagger:response AuthValidateEmailResponse
-type AuthValidateEmailResponse struct {
-}
-
-// swagger:route GET /api/v1/auth/validate_email Auth AuthValidateEmailRequest
-//
-// # Validate email
-//
-//	Responses:
-//	  200: AuthValidateEmailResponse
-func (s *auth) ValidateEmail(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	req := &dto.AuthValidateEmailRequest{
-		Code: r.URL.Query().Get("code"),
+func (s *auth) ValidateEmail(ctx context.Context, req *pb.ValidateEmailRequest) (*emptypb.Empty, error) {
+	r := &dto.AuthValidateEmailRequest{
+		Code: req.Code,
 	}
-
-	err := getValidator().Struct(req)
+	err := getValidator().Struct(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	err = s.service.AuthValidateEmail(ctx, req.Code)
 	if err != nil {
-		errs.HttpError(w, err)
-		return
+		return nil, err
 	}
+	return &emptypb.Empty{}, nil
 }
-
-// swagger:parameters AuthSendValidationEmailRequest
-type AuthSendValidationEmailRequest struct {
-	// In: body
-	Body struct {
-		dto.AuthSendValidationEmailRequest
+func (s *auth) SendValidationEmail(ctx context.Context, req *pb.SendValidationEmailRequest) (*emptypb.Empty, error) {
+	r := &dto.AuthSendValidationEmailRequest{
+		Username: req.Username,
 	}
-}
-
-// swagger:response AuthSendValidationEmailResponse
-type AuthSendValidationEmailResponse struct {
-}
-
-// swagger:route POST /api/v1/auth/send_validation_email Auth AuthSendValidationEmailRequest
-//
-// # Send validation email again
-//
-//	Responses:
-//	  200: AuthSendValidationEmailResponse
-func (s *auth) SendValidationEmail(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	req := &dto.AuthSendValidationEmailRequest{}
-	err := utils.ParseJsonFromHTTPRequest(r.Body, req)
+	err := getValidator().Struct(r)
 	if err != nil {
-		http.Error(w, "Can't parse request", http.StatusBadRequest)
-		return
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	err = getValidator().Struct(req)
+	err = s.service.AuthSendValidationEmail(ctx, r.Username)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return nil, err
 	}
-
-	err = s.service.AuthSendValidationEmail(ctx, req.Username)
-	if err != nil {
-		errs.HttpError(w, err)
-		return
-	}
+	return &emptypb.Empty{}, nil
 }
 
-/*
- * Private
- */
-
-// swagger:parameters AuthUserRequest
-type AuthUserRequest struct {
-}
-
-// swagger:response AuthUserResponse
-type AuthUserResponse struct {
-	// In: body
-	Body struct {
-		Data *entity.User `json:"data"`
-	}
-}
-
-// swagger:route GET /api/v1/auth/user Auth AuthUserRequest
-//
-// # Getting information about the current user
-//
-//	Responses:
-//	  200: AuthUserResponse
-func (s *auth) User(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+func (s *auth) User(ctx context.Context, _ *emptypb.Empty) (*pb.UserResponse, error) {
 	userID := utils.GetUserIDFromContext(ctx)
 
-	user, err := s.service.AuthGetUserInfo(ctx, userID)
+	u, err := s.service.AuthGetUserInfo(ctx, userID)
 	if err != nil {
-		errs.HttpError(w, err)
-		return
+		return nil, err
 	}
 
-	err = utils.Response(w, user)
-	if err != nil {
-		logger.Error.Println("error write to socket:", err.Error())
-	}
+	return &pb.UserResponse{
+		Data: UserToPb(u),
+	}, nil
 }
-
-// swagger:parameters AuthLogoutRequest
-type AuthLogoutRequest struct {
-}
-
-// swagger:response AuthLogoutResponse
-type AuthLogoutResponse struct {
-}
-
-// swagger:route POST /api/v1/auth/logout Auth AuthLogoutRequest
-//
-// # Close the current session
-//
-//	Responses:
-//	  200: AuthLogoutResponse
-func (s *auth) Logout(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+func (s *auth) Logout(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
 	session := utils.GetAccessTokenFromContext(ctx)
 
 	err := s.service.AuthLogout(ctx, session.ID)
 	if err != nil {
-		errs.HttpError(w, err)
-		return
+		return nil, err
 	}
 
-	utils.DeleteSessionCookie(w)
+	utils.DeleteGRPCSessionCookie(ctx)
+	return &emptypb.Empty{}, nil
 }

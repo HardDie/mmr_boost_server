@@ -1,6 +1,8 @@
 .env
-.idea/
+.idea/*
+!.idea/protoeditor.xml
 db_data/
 swagger.yaml
+api.swagger.yaml
 /server
 caddy/

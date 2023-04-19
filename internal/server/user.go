@@ -1,20 +1,22 @@
 package server
 
 import (
-	"net/http"
+	"context"
 
-	"github.com/gorilla/mux"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/HardDie/mmr_boost_server/internal/dto"
-	"github.com/HardDie/mmr_boost_server/internal/entity"
-	"github.com/HardDie/mmr_boost_server/internal/errs"
-	"github.com/HardDie/mmr_boost_server/internal/logger"
 	"github.com/HardDie/mmr_boost_server/internal/service"
 	"github.com/HardDie/mmr_boost_server/internal/utils"
+	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
 )
 
 type user struct {
 	service *service.Service
+	pb.UnimplementedUserServer
 }
 
 func newUser(service *service.Service) user {
@@ -22,106 +24,47 @@ func newUser(service *service.Service) user {
 		service: service,
 	}
 }
-func (s *user) RegisterPrivateRouter(router *mux.Router, middleware ...mux.MiddlewareFunc) {
-	userRouter := router.PathPrefix("").Subrouter()
-	userRouter.HandleFunc("/password", s.Password).Methods(http.MethodPatch)
-	userRouter.HandleFunc("/steam_id", s.UpdateSteamID).Methods(http.MethodPatch)
-	userRouter.Use(middleware...)
+
+func (s *user) RegisterHTTP(ctx context.Context, mux *runtime.ServeMux) error {
+	return pb.RegisterUserHandlerServer(ctx, mux, s)
 }
 
-/*
- * Private
- */
-
-// swagger:parameters UserPasswordRequest
-type UserPasswordRequest struct {
-	// In: body
-	Body struct {
-		dto.UserUpdatePasswordRequest
-	}
-}
-
-// swagger:response UserPasswordResponse
-type UserPasswordResponse struct {
-}
-
-// swagger:route PATCH /api/v1/user/password User UserPasswordRequest
-//
-// # Updating the password for a user
-//
-//	Responses:
-//	  200: UserPasswordResponse
-func (s *user) Password(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+func (s *user) Password(ctx context.Context, req *pb.PasswordRequest) (*emptypb.Empty, error) {
 	userID := utils.GetUserIDFromContext(ctx)
 
-	req := &dto.UserUpdatePasswordRequest{}
-	err := utils.ParseJsonFromHTTPRequest(r.Body, req)
+	r := &dto.UserUpdatePasswordRequest{
+		NewPassword: req.NewPassword,
+		OldPassword: req.OldPassword,
+	}
+	err := getValidator().Struct(r)
 	if err != nil {
-		http.Error(w, "Can't parse request", http.StatusBadRequest)
-		return
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	err = getValidator().Struct(req)
+	err = s.service.UserPassword(ctx, r, userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return nil, err
 	}
 
-	err = s.service.UserPassword(ctx, req, userID)
-	if err != nil {
-		errs.HttpError(w, err)
-		return
-	}
+	return &emptypb.Empty{}, nil
 }
-
-// swagger:parameters UserUpdateSteamIDRequest
-type UserUpdateSteamIDRequest struct {
-	// In: body
-	Body struct {
-		dto.UserUpdateSteamIDRequest
-	}
-}
-
-// swagger:response UserUpdateSteamIDResponse
-type UserUpdateSteamIDResponse struct {
-	// In: body
-	Body struct {
-		Data *entity.User `json:"data"`
-	}
-}
-
-// swagger:route PATCH /api/v1/user/steam_id User UserUpdateSteamIDRequest
-//
-// # Updating the steam id for a user
-//
-//	Responses:
-//	  200: UserUpdateSteamIDResponse
-func (s *user) UpdateSteamID(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+func (s *user) SteamID(ctx context.Context, req *pb.SteamIDRequest) (*pb.SteamIDResponse, error) {
 	userID := utils.GetUserIDFromContext(ctx)
 
-	req := &dto.UserUpdateSteamIDRequest{}
-	err := utils.ParseJsonFromHTTPRequest(r.Body, req)
+	r := &dto.UserUpdateSteamIDRequest{
+		SteamID: req.SteamId,
+	}
+	err := getValidator().Struct(r)
 	if err != nil {
-		http.Error(w, "Can't parse request", http.StatusBadRequest)
-		return
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	err = getValidator().Struct(req)
+	u, err := s.service.UserUpdateSteamID(ctx, r, userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return nil, err
 	}
 
-	u, err := s.service.UserUpdateSteamID(ctx, req, userID)
-	if err != nil {
-		errs.HttpError(w, err)
-		return
-	}
-
-	err = utils.Response(w, u)
-	if err != nil {
-		logger.Error.Println("error write to socket:", err.Error())
-	}
+	return &pb.SteamIDResponse{
+		Data: UserToPb(u),
+	}, nil
 }

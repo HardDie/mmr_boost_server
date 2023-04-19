@@ -1,20 +1,20 @@
 package server
 
 import (
-	"net/http"
+	"context"
 
-	"github.com/gorilla/mux"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/HardDie/mmr_boost_server/internal/dto"
-	"github.com/HardDie/mmr_boost_server/internal/entity"
-	"github.com/HardDie/mmr_boost_server/internal/errs"
-	"github.com/HardDie/mmr_boost_server/internal/logger"
 	"github.com/HardDie/mmr_boost_server/internal/service"
-	"github.com/HardDie/mmr_boost_server/internal/utils"
+	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
 )
 
 type application struct {
 	service *service.Service
+	pb.UnimplementedApplicationServer
 }
 
 func newApplication(service *service.Service) application {
@@ -23,59 +23,28 @@ func newApplication(service *service.Service) application {
 	}
 }
 
-func (s *application) RegisterPrivateRouter(router *mux.Router, middleware ...mux.MiddlewareFunc) {
-	applicationRouter := router.PathPrefix("").Subrouter()
-	applicationRouter.HandleFunc("", s.ApplicationCreate).Methods(http.MethodPost)
-	applicationRouter.Use(middleware...)
+func (s *application) RegisterHTTP(ctx context.Context, mux *runtime.ServeMux) error {
+	return pb.RegisterApplicationHandlerServer(ctx, mux, s)
 }
 
-// swagger:parameters ApplicationCreateRequest
-type ApplicationCreateRequest struct {
-	// In: body
-	Body struct {
-		dto.ApplicationCreateRequest
+func (s *application) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateResponse, error) {
+	r := &dto.ApplicationCreateRequest{
+		TypeID:     req.TypeId,
+		CurrentMMR: req.CurrentMmr,
+		TargetMMR:  req.TargetMmr,
+		TgContact:  req.TgContact,
 	}
-}
-
-// swagger:response ApplicationCreateResponse
-type ApplicationCreateResponse struct {
-	// In: body
-	Body struct {
-		Data *entity.ApplicationPublic `json:"data"`
-	}
-}
-
-// swagger:route POST /api/v1/applications Application ApplicationCreateRequest
-//
-// # Create application for boosting
-//
-//	Responses:
-//	  201: ApplicationCreateResponse
-func (s *application) ApplicationCreate(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	req := &dto.ApplicationCreateRequest{}
-	err := utils.ParseJsonFromHTTPRequest(r.Body, req)
+	err := getValidator().Struct(r)
 	if err != nil {
-		http.Error(w, "Can't parse request", http.StatusBadRequest)
-		return
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	err = getValidator().Struct(req)
+	resp, err := s.service.ApplicationCreate(ctx, r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		return nil, err
 	}
 
-	resp, err := s.service.ApplicationCreate(ctx, req)
-	if err != nil {
-		errs.HttpError(w, err)
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-	err = utils.Response(w, resp)
-	if err != nil {
-		logger.Error.Println("error write to socket:", err.Error())
-	}
+	return &pb.CreateResponse{
+		Data: ApplicationPublicToPb(resp),
+	}, nil
 }

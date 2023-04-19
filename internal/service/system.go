@@ -26,7 +26,7 @@ func (s *system) SystemGetSwagger() ([]byte, error) {
 	}
 
 	// Open file
-	file, err := os.Open("swagger.yaml")
+	file, err := os.Open("api.swagger.yaml")
 	if err != nil {
 		logger.Error.Println("error opening swagger.yaml file:", err.Error())
 		return nil, errors.New("can't find swagger.yaml file")

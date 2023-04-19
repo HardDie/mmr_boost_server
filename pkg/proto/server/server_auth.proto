@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package gateway;
+
+option go_package = "github.com/HardDie/mmr_boost_server/pkg/server";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service Auth
+{
+    // Registration by email
+    rpc Register(RegisterRequest) returns (google.protobuf.Empty)
+    {
+        option (google.api.http) = {
+            post : "/api/v1/auth/register"
+            body : "*"
+        };
+    }
+    // Login with username and password
+    rpc Login(LoginRequest) returns (google.protobuf.Empty)
+    {
+        option (google.api.http) = {
+            post : "/api/v1/auth/login"
+            body : "*"
+        };
+    }
+    // Validate email with recieved code
+    rpc ValidateEmail(ValidateEmailRequest) returns (google.protobuf.Empty)
+    {
+        option (google.api.http) = {
+            get : "/api/v1/auth/validate_email"
+        };
+    }
+    // Send validation email again
+    rpc SendValidationEmail(SendValidationEmailRequest) returns (google.protobuf.Empty)
+    {
+        option (google.api.http) = {
+            post : "/api/v1/auth/send_validation_email"
+            body : "*"
+        };
+    }
+    // Getting information about the current user
+    rpc User(google.protobuf.Empty) returns (UserResponse)
+    {
+        option (google.api.http) = {
+            get : "/api/v1/auth/user"
+        };
+    }
+    // Close the current session
+    rpc Logout(google.protobuf.Empty) returns (google.protobuf.Empty)
+    {
+        option (google.api.http) = {
+            post : "/api/v1/auth/logout"
+            body : "*"
+        };
+    }
+}
+
+// Structures
+
+message UserObject
+{
+    int32 id = 1;
+    string email = 2;
+    string username = 3;
+    int32 role_id = 4;
+    string steam_id = 5;
+    bool is_activated = 6;
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp updated_at = 8;
+    optional google.protobuf.Timestamp deleted_at = 9;
+}
+
+// Request/Response
+
+message RegisterRequest
+{
+    string username = 1;
+    string password = 2;
+    string email = 3;
+}
+
+message LoginRequest
+{
+    string username = 1;
+    string password = 2;
+}
+
+message ValidateEmailRequest
+{
+    string code = 1;
+}
+
+message SendValidationEmailRequest
+{
+    string username = 1;
+}
+
+message UserResponse
+{
+    UserObject data = 1;
+}

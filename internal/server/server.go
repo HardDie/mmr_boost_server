@@ -1,11 +1,14 @@
 package server
 
 import (
+	"context"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 
 	"github.com/HardDie/mmr_boost_server/internal/config"
+	"github.com/HardDie/mmr_boost_server/internal/logger"
 	"github.com/HardDie/mmr_boost_server/internal/middleware"
 	"github.com/HardDie/mmr_boost_server/internal/service"
 )
@@ -32,23 +35,40 @@ func NewServer(config config.Config, srvc *service.Service) *Server {
 	}
 }
 
+func customOutgoingHeaderMatcher(h string) (string, bool) {
+	return h, true
+}
+
 func (s *Server) Register(router *mux.Router) {
-	privateMiddlewares := []mux.MiddlewareFunc{
+	ctx := context.Background()
+	router.Use(
 		middleware.LoggerMiddleware,
-		s.timeoutMiddleware.RequestMiddleware,
 		s.authMiddleware.RequestMiddleware,
-	}
+	)
 
-	applicationsRouter := router.PathPrefix("/applications").Subrouter()
-	s.application.RegisterPrivateRouter(applicationsRouter, privateMiddlewares...)
-
-	authRouter := router.PathPrefix("/auth").Subrouter()
-	s.auth.RegisterPublicRouter(authRouter, middleware.LoggerMiddleware)
-	s.auth.RegisterPrivateRouter(authRouter, privateMiddlewares...)
+	// Create grpc mux
+	grpcMux := runtime.NewServeMux(
+		// Fix "Grpc-Metadata-" prefix for outgoing headers
+		runtime.WithOutgoingHeaderMatcher(customOutgoingHeaderMatcher),
+	)
 
 	systemRouter := router.PathPrefix("/system").Subrouter()
 	s.system.RegisterPublicRouter(systemRouter, middleware.LoggerMiddleware, middleware.CorsMiddleware, s.timeoutMiddleware.RequestMiddleware)
 
-	userRouter := router.PathPrefix("/user").Subrouter()
-	s.user.RegisterPrivateRouter(userRouter, privateMiddlewares...)
+	err := s.application.RegisterHTTP(ctx, grpcMux)
+	if err != nil {
+		logger.Error.Fatal("error register application", err.Error())
+	}
+
+	err = s.auth.RegisterHTTP(ctx, grpcMux)
+	if err != nil {
+		logger.Error.Fatal("error register auth", err.Error())
+	}
+
+	err = s.user.RegisterHTTP(ctx, grpcMux)
+	if err != nil {
+		logger.Error.Fatal("error register user", err.Error())
+	}
+
+	router.PathPrefix("/").Handler(grpcMux)
 }

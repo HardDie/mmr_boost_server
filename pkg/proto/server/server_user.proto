@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package gateway;
+
+option go_package = "github.com/HardDie/mmr_boost_server/pkg/server";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "server_auth.proto";
+
+service User
+{
+    // Updating the password for a user
+    rpc Password(PasswordRequest) returns (google.protobuf.Empty)
+    {
+        option (google.api.http) = {
+            patch : "/api/v1/user/password"
+            body : "*"
+        };
+    }
+    // Updating the steam id for a user
+    rpc SteamID(SteamIDRequest) returns (SteamIDResponse)
+    {
+        option (google.api.http) = {
+            patch : "/api/v1/user/steam_id"
+            body : "*"
+        };
+    }
+}
+
+message PasswordRequest
+{
+    string new_password = 1;
+    string old_password = 2;
+}
+
+message SteamIDRequest
+{
+    string steam_id = 1;
+}
+message SteamIDResponse
+{
+    UserObject data = 1;
+}
