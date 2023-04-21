@@ -1,16 +1,21 @@
 package server
 
 import (
-	"net/http"
+	"context"
 
-	"github.com/gorilla/mux"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"google.golang.org/genproto/googleapis/api/httpbody"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/HardDie/mmr_boost_server/internal/logger"
 	"github.com/HardDie/mmr_boost_server/internal/service"
+	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
 )
 
 type system struct {
 	service *service.Service
+	pb.UnimplementedSystemServer
 }
 
 func newSystem(service *service.Service) system {
@@ -19,40 +24,18 @@ func newSystem(service *service.Service) system {
 	}
 }
 
-func (s *system) RegisterPublicRouter(router *mux.Router, middleware ...mux.MiddlewareFunc) {
-	systemRouter := router.PathPrefix("").Subrouter()
-	systemRouter.HandleFunc("/swagger", s.Swagger).Methods(http.MethodGet)
-	systemRouter.Use(middleware...)
+func (s *system) RegisterHTTP(ctx context.Context, mux *runtime.ServeMux) error {
+	return pb.RegisterSystemHandlerServer(ctx, mux, s)
 }
 
-/*
- * Public
- */
-
-// swagger:parameters SwaggerRequest
-type SwaggerRequest struct {
-}
-
-// swagger:response SwaggerResponse
-type SwaggerResponse struct {
-	// In: body
-	Body []byte
-}
-
-// swagger:route GET /api/v1/system/swagger System SwaggerRequest
-//
-// # Get the yaml-file of the swagger description
-//
-//	Responses:
-//	  200: SwaggerResponse
-func (s *system) Swagger(w http.ResponseWriter, r *http.Request) {
+func (s *system) Swagger(ctx context.Context, _ *emptypb.Empty) (*httpbody.HttpBody, error) {
 	data, err := s.service.SystemGetSwagger()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	_, err = w.Write(data)
-	if err != nil {
-		logger.Error.Println(err.Error())
-	}
+	return &httpbody.HttpBody{
+		ContentType: "application/yaml",
+		Data:        data,
+	}, nil
 }

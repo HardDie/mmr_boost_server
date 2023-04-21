@@ -43,6 +43,7 @@ func (s *Server) Register(router *mux.Router) {
 	ctx := context.Background()
 	router.Use(
 		middleware.LoggerMiddleware,
+		middleware.CorsMiddleware,
 		s.authMiddleware.RequestMiddleware,
 	)
 
@@ -51,9 +52,6 @@ func (s *Server) Register(router *mux.Router) {
 		// Fix "Grpc-Metadata-" prefix for outgoing headers
 		runtime.WithOutgoingHeaderMatcher(customOutgoingHeaderMatcher),
 	)
-
-	systemRouter := router.PathPrefix("/system").Subrouter()
-	s.system.RegisterPublicRouter(systemRouter, middleware.CorsMiddleware, s.timeoutMiddleware.RequestMiddleware)
 
 	err := s.application.RegisterHTTP(ctx, grpcMux)
 	if err != nil {
@@ -68,6 +66,11 @@ func (s *Server) Register(router *mux.Router) {
 	err = s.user.RegisterHTTP(ctx, grpcMux)
 	if err != nil {
 		logger.Error.Fatal("error register user", err.Error())
+	}
+
+	err = s.system.RegisterHTTP(ctx, grpcMux)
+	if err != nil {
+		logger.Error.Fatal("error register system", err.Error())
 	}
 
 	router.PathPrefix("/").Handler(grpcMux)
