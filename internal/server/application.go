@@ -29,7 +29,10 @@ func (s *application) RegisterHTTP(ctx context.Context, mux *runtime.ServeMux) e
 }
 
 func (s *application) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateResponse, error) {
+	userID := utils.ContextGetUserID(ctx)
+
 	r := &dto.ApplicationCreateRequest{
+		UserID:     userID,
 		TypeID:     req.TypeId,
 		CurrentMMR: req.CurrentMmr,
 		TargetMMR:  req.TargetMmr,

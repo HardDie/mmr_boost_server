@@ -23,11 +23,11 @@ func newApplication(db *db.DB) application {
 	}
 }
 
-func (r *application) ApplicationCreate(ctx context.Context, req *dto.ApplicationCreateRequest, userID int32) (*entity.ApplicationPublic, error) {
+func (r *application) ApplicationCreate(ctx context.Context, req *dto.ApplicationCreateRequest) (*entity.ApplicationPublic, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	app := &entity.ApplicationPublic{
-		UserID:     userID,
+		UserID:     req.UserID,
 		StatusID:   1,
 		TypeID:     req.TypeID,
 		CurrentMMR: req.CurrentMMR,

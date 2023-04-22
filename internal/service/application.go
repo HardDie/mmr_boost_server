@@ -9,7 +9,6 @@ import (
 	"github.com/HardDie/mmr_boost_server/internal/errs"
 	"github.com/HardDie/mmr_boost_server/internal/logger"
 	"github.com/HardDie/mmr_boost_server/internal/repository/postgres"
-	"github.com/HardDie/mmr_boost_server/internal/utils"
 )
 
 type application struct {
@@ -23,16 +22,14 @@ func newApplication(repository *postgres.Postgres) application {
 }
 
 func (s *application) ApplicationCreate(ctx context.Context, req *dto.ApplicationCreateRequest) (*entity.ApplicationPublic, error) {
-	userID := utils.ContextGetUserID(ctx)
-
-	resp, err := s.repository.ApplicationCreate(ctx, req, userID)
+	resp, err := s.repository.ApplicationCreate(ctx, req)
 	if err != nil {
 		logger.Error.Println("error creating new application:", err.Error())
 		return nil, errs.InternalError
 	}
 
 	msg := fmt.Sprintf("application %d were created", resp.ID)
-	err = s.repository.HistoryNewEvent(ctx, userID, msg)
+	err = s.repository.HistoryNewEvent(ctx, req.UserID, msg)
 	if err != nil {
 		logger.Error.Println("error writing history message:", msg)
 	}
