@@ -9,6 +9,7 @@ import (
 
 	"github.com/HardDie/mmr_boost_server/internal/dto"
 	"github.com/HardDie/mmr_boost_server/internal/service"
+	"github.com/HardDie/mmr_boost_server/internal/utils"
 	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
 )
 
@@ -46,5 +47,31 @@ func (s *application) Create(ctx context.Context, req *pb.CreateRequest) (*pb.Cr
 
 	return &pb.CreateResponse{
 		Data: ApplicationPublicToPb(resp),
+	}, nil
+}
+
+func (s *application) GetList(ctx context.Context, req *pb.GetListRequest) (*pb.GetListResponse, error) {
+	userID := utils.GetUserIDFromContext(ctx)
+
+	r := &dto.ApplicationUserListRequest{
+		UserID:   userID,
+		StatusID: req.StatusId,
+	}
+	err := getValidator().Struct(r)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	resp, err := s.service.ApplicationUserList(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+
+	var data []*pb.PublicApplicationObject
+	for _, item := range resp {
+		data = append(data, ApplicationPublicToPb(item))
+	}
+	return &pb.GetListResponse{
+		Data: data,
 	}, nil
 }

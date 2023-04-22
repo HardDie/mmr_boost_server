@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Application_Create_FullMethodName = "/gateway.Application/Create"
+	Application_Create_FullMethodName  = "/gateway.Application/Create"
+	Application_GetList_FullMethodName = "/gateway.Application/GetList"
 )
 
 // ApplicationClient is the client API for Application service.
@@ -28,6 +29,8 @@ const (
 type ApplicationClient interface {
 	// Create application for boosting
 	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
+	// Getting a list of the applications you created
+	GetList(ctx context.Context, in *GetListRequest, opts ...grpc.CallOption) (*GetListResponse, error)
 }
 
 type applicationClient struct {
@@ -47,12 +50,23 @@ func (c *applicationClient) Create(ctx context.Context, in *CreateRequest, opts 
 	return out, nil
 }
 
+func (c *applicationClient) GetList(ctx context.Context, in *GetListRequest, opts ...grpc.CallOption) (*GetListResponse, error) {
+	out := new(GetListResponse)
+	err := c.cc.Invoke(ctx, Application_GetList_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ApplicationServer is the server API for Application service.
 // All implementations must embed UnimplementedApplicationServer
 // for forward compatibility
 type ApplicationServer interface {
 	// Create application for boosting
 	Create(context.Context, *CreateRequest) (*CreateResponse, error)
+	// Getting a list of the applications you created
+	GetList(context.Context, *GetListRequest) (*GetListResponse, error)
 	mustEmbedUnimplementedApplicationServer()
 }
 
@@ -62,6 +76,9 @@ type UnimplementedApplicationServer struct {
 
 func (UnimplementedApplicationServer) Create(context.Context, *CreateRequest) (*CreateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+}
+func (UnimplementedApplicationServer) GetList(context.Context, *GetListRequest) (*GetListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetList not implemented")
 }
 func (UnimplementedApplicationServer) mustEmbedUnimplementedApplicationServer() {}
 
@@ -94,6 +111,24 @@ func _Application_Create_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Application_GetList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServer).GetList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Application_GetList_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServer).GetList(ctx, req.(*GetListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Application_ServiceDesc is the grpc.ServiceDesc for Application service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -104,6 +139,10 @@ var Application_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Create",
 			Handler:    _Application_Create_Handler,
+		},
+		{
+			MethodName: "GetList",
+			Handler:    _Application_GetList_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

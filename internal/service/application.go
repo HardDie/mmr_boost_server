@@ -39,3 +39,7 @@ func (s *application) ApplicationCreate(ctx context.Context, req *dto.Applicatio
 
 	return resp, nil
 }
+
+func (s *application) ApplicationUserList(ctx context.Context, req *dto.ApplicationUserListRequest) ([]*entity.ApplicationPublic, error) {
+	return s.repository.ApplicationUserList(ctx, req)
+}

@@ -17,6 +17,13 @@ service Application
             body : "*"
         };
     }
+    // Getting a list of the applications you created
+    rpc GetList(GetListRequest) returns (GetListResponse)
+    {
+        option (google.api.http) = {
+            get : "/api/v1/applications"
+        };
+    }
 }
 
 // Structures
@@ -47,4 +54,13 @@ message CreateRequest
 message CreateResponse
 {
     PublicApplicationObject data = 1;
+}
+
+message GetListRequest
+{
+    optional int32 status_id = 1;
+}
+message GetListResponse
+{
+    repeated PublicApplicationObject data = 1;
 }
