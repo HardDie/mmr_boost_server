@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"errors"
 	"net/http"
 
@@ -57,8 +56,8 @@ func (m *AuthMiddleware) RequestMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx = context.WithValue(ctx, "userID", session.UserID)
-		ctx = context.WithValue(ctx, "session", session)
+		ctx = utils.ContextSetUserID(ctx, session.UserID)
+		ctx = utils.ContextSetSession(ctx, session)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

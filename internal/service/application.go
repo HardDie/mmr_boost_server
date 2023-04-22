@@ -23,7 +23,7 @@ func newApplication(repository *postgres.Postgres) application {
 }
 
 func (s *application) ApplicationCreate(ctx context.Context, req *dto.ApplicationCreateRequest) (*entity.ApplicationPublic, error) {
-	userID := utils.GetUserIDFromContext(ctx)
+	userID := utils.ContextGetUserID(ctx)
 
 	resp, err := s.repository.ApplicationCreate(ctx, req, userID)
 	if err != nil {

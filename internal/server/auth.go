@@ -102,7 +102,7 @@ func (s *auth) SendValidationEmail(ctx context.Context, req *pb.SendValidationEm
 }
 
 func (s *auth) User(ctx context.Context, _ *emptypb.Empty) (*pb.UserResponse, error) {
-	userID := utils.GetUserIDFromContext(ctx)
+	userID := utils.ContextGetUserID(ctx)
 
 	u, err := s.service.AuthGetUserInfo(ctx, userID)
 	if err != nil {
@@ -114,7 +114,7 @@ func (s *auth) User(ctx context.Context, _ *emptypb.Empty) (*pb.UserResponse, er
 	}, nil
 }
 func (s *auth) Logout(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
-	session := utils.GetAccessTokenFromContext(ctx)
+	session := utils.ContextGetSession(ctx)
 
 	err := s.service.AuthLogout(ctx, session.ID)
 	if err != nil {

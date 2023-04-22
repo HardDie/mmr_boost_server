@@ -30,7 +30,7 @@ func (s *user) RegisterHTTP(ctx context.Context, mux *runtime.ServeMux) error {
 }
 
 func (s *user) Password(ctx context.Context, req *pb.PasswordRequest) (*emptypb.Empty, error) {
-	userID := utils.GetUserIDFromContext(ctx)
+	userID := utils.ContextGetUserID(ctx)
 
 	r := &dto.UserUpdatePasswordRequest{
 		NewPassword: req.NewPassword,
@@ -49,7 +49,7 @@ func (s *user) Password(ctx context.Context, req *pb.PasswordRequest) (*emptypb.
 	return &emptypb.Empty{}, nil
 }
 func (s *user) SteamID(ctx context.Context, req *pb.SteamIDRequest) (*pb.SteamIDResponse, error) {
-	userID := utils.GetUserIDFromContext(ctx)
+	userID := utils.ContextGetUserID(ctx)
 
 	r := &dto.UserUpdateSteamIDRequest{
 		SteamID: req.SteamId,

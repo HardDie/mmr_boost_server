@@ -51,7 +51,7 @@ func (s *application) Create(ctx context.Context, req *pb.CreateRequest) (*pb.Cr
 }
 
 func (s *application) GetList(ctx context.Context, req *pb.GetListRequest) (*pb.GetListResponse, error) {
-	userID := utils.GetUserIDFromContext(ctx)
+	userID := utils.ContextGetUserID(ctx)
 
 	r := &dto.ApplicationUserListRequest{
 		UserID:   userID,
