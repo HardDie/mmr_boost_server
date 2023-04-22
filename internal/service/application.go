@@ -38,5 +38,15 @@ func (s *application) ApplicationCreate(ctx context.Context, req *dto.Applicatio
 }
 
 func (s *application) ApplicationUserList(ctx context.Context, req *dto.ApplicationUserListRequest) ([]*entity.ApplicationPublic, error) {
-	return s.repository.ApplicationUserList(ctx, req)
+	return s.repository.ApplicationUserList(ctx, &dto.ApplicationListRequest{
+		UserID:   &req.UserID,
+		StatusID: req.StatusID,
+	})
+}
+
+func (s *application) ApplicationManagementUserList(ctx context.Context, req *dto.ApplicationManagementUserListRequest) ([]*entity.ApplicationPublic, error) {
+	return s.repository.ApplicationUserList(ctx, &dto.ApplicationListRequest{
+		UserID:   req.UserID,
+		StatusID: req.StatusID,
+	})
 }

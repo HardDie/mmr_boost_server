@@ -204,23 +204,30 @@ func (s *auth) AuthGenerateCookie(ctx context.Context, userID int32) (*entity.Ac
 
 	return resp, nil
 }
-func (s *auth) AuthValidateCookie(ctx context.Context, sessionKey string) (*entity.AccessToken, error) {
+func (s *auth) AuthValidateCookie(ctx context.Context, sessionKey string) (*entity.User, *entity.AccessToken, error) {
 	// Check if access token exist
 	tokenHash := utils.HashSha256(sessionKey)
 	accessToken, err := s.repository.AccessTokenGetByUserID(ctx, tokenHash)
 	if err != nil {
 		logger.Error.Printf("error read access token from db: %v", err.Error())
-		return nil, errs.InternalError
+		return nil, nil, errs.InternalError
 	}
 	if accessToken == nil {
-		return nil, errs.SessionInvalid.AddMessage("access token not exist")
+		return nil, nil, errs.SessionInvalid.AddMessage("access token not exist")
 	}
 
 	// Check if session is not expired
 	if time.Now().After(accessToken.ExpiredAt) {
-		return nil, errs.SessionInvalid.AddMessage("access token has expired")
+		return nil, nil, errs.SessionInvalid.AddMessage("access token has expired")
 	}
-	return accessToken, nil
+
+	user, err := s.repository.UserGetByID(ctx, accessToken.UserID)
+	if err != nil {
+		logger.Error.Println("can't found user from access token")
+		return nil, nil, errs.InternalError
+	}
+
+	return user, accessToken, nil
 }
 func (s *auth) AuthGetUserInfo(ctx context.Context, userID int32) (*entity.User, error) {
 	user, err := s.repository.UserGetByID(ctx, userID)

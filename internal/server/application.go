@@ -78,3 +78,34 @@ func (s *application) GetList(ctx context.Context, req *pb.GetListRequest) (*pb.
 		Data: data,
 	}, nil
 }
+
+func (s *application) GetManagementList(ctx context.Context, req *pb.GetManagementListRequest) (*pb.GetManagementListResponse, error) {
+	roleID := utils.ContextGetRoleID(ctx)
+
+	if roleID != int32(pb.UserRoleID_admin) &&
+		roleID != int32(pb.UserRoleID_manager) {
+		return nil, status.Error(codes.Unauthenticated, "forbidden request")
+	}
+
+	r := &dto.ApplicationManagementUserListRequest{
+		UserID:   req.UserId,
+		StatusID: req.StatusId,
+	}
+	err := getValidator().Struct(r)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	resp, err := s.service.ApplicationManagementUserList(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+
+	var data []*pb.PublicApplicationObject
+	for _, item := range resp {
+		data = append(data, ApplicationPublicToPb(item))
+	}
+	return &pb.GetManagementListResponse{
+		Data: data,
+	}, nil
+}

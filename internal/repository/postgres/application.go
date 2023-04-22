@@ -48,16 +48,19 @@ func (r *application) ApplicationCreate(ctx context.Context, req *dto.Applicatio
 	return app, nil
 }
 
-func (r *application) ApplicationUserList(ctx context.Context, req *dto.ApplicationUserListRequest) ([]*entity.ApplicationPublic, error) {
+func (r *application) ApplicationUserList(ctx context.Context, req *dto.ApplicationListRequest) ([]*entity.ApplicationPublic, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	q := gosql.NewSelect().From("applications")
-	q.Columns().Add("id", "status_id", "type_id", "current_mmr", "target_mmr", "tg_contact", "created_at", "updated_at")
-	q.Where().AddExpression("user_id = ?", req.UserID)
+	q.Columns().Add("id", "user_id", "status_id", "type_id", "current_mmr", "target_mmr", "tg_contact", "created_at", "updated_at")
+	if req.UserID != nil {
+		q.Where().AddExpression("user_id = ?", req.UserID)
+	}
 	if req.StatusID != nil {
 		q.Where().AddExpression("status_id = ?", req.StatusID)
 	}
 	q.Where().AddExpression("deleted_at IS NULL")
+	q.AddOrder("id DESC")
 	rows, err := tx.QueryContext(ctx, q.String(), q.GetArguments()...)
 	if err != nil {
 		logger.Error.Println("error select applications from DB:", err.Error())
@@ -66,10 +69,8 @@ func (r *application) ApplicationUserList(ctx context.Context, req *dto.Applicat
 
 	var res []*entity.ApplicationPublic
 	for rows.Next() {
-		app := &entity.ApplicationPublic{
-			UserID: req.UserID,
-		}
-		err = rows.Scan(&app.ID, &app.StatusID, &app.TypeID, &app.CurrentMMR, &app.TargetMMR, &app.TgContact,
+		app := &entity.ApplicationPublic{}
+		err = rows.Scan(&app.ID, &app.UserID, &app.StatusID, &app.TypeID, &app.CurrentMMR, &app.TargetMMR, &app.TgContact,
 			&app.CreatedAt, &app.UpdatedAt)
 		if err != nil {
 			logger.Error.Println("error scan applications row from DB:", err.Error())

@@ -8,7 +8,17 @@ type ApplicationCreateRequest struct {
 	TgContact  string `json:"tgContact" validate:"required,gte=5"`
 }
 
+type ApplicationListRequest struct {
+	UserID   *int32
+	StatusID *int32
+}
+
 type ApplicationUserListRequest struct {
-	UserID   int32  `json:"userId" validate:"required"`
+	UserID   int32  `json:"userId" validate:"required,gt=0"`
+	StatusID *int32 `json:"statusId" validate:"omitempty,gte=1,lte=7"`
+}
+
+type ApplicationManagementUserListRequest struct {
+	UserID   *int32 `json:"userId" validate:"omitempty,gt=0"`
 	StatusID *int32 `json:"statusId" validate:"omitempty,gte=1,lte=7"`
 }

@@ -46,7 +46,7 @@ func (m *AuthMiddleware) RequestMiddleware(next http.Handler) http.Handler {
 
 		// Validate if session is active
 		ctx := r.Context()
-		session, err := m.service.AuthValidateCookie(ctx, token)
+		user, session, err := m.service.AuthValidateCookie(ctx, token)
 		if err != nil {
 			if errors.Is(err, errs.SessionInvalid) {
 				http.Error(w, err.Error(), http.StatusUnauthorized)
@@ -57,6 +57,7 @@ func (m *AuthMiddleware) RequestMiddleware(next http.Handler) http.Handler {
 		}
 
 		ctx = utils.ContextSetUserID(ctx, session.UserID)
+		ctx = utils.ContextSetRoleID(ctx, user.RoleID)
 		ctx = utils.ContextSetSession(ctx, session)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

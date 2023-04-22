@@ -24,6 +24,13 @@ service Application
             get : "/api/v1/applications"
         };
     }
+    // Getting a list of all applications. Access: admin, manager
+    rpc GetManagementList(GetManagementListRequest) returns (GetManagementListResponse)
+    {
+        option (google.api.http) = {
+            get : "/api/v1/applications/management"
+        };
+    }
 }
 
 // Structures
@@ -61,6 +68,16 @@ message GetListRequest
     optional int32 status_id = 1;
 }
 message GetListResponse
+{
+    repeated PublicApplicationObject data = 1;
+}
+
+message GetManagementListRequest
+{
+    optional int32 status_id = 1;
+    optional int32 user_id = 2;
+}
+message GetManagementListResponse
 {
     repeated PublicApplicationObject data = 1;
 }
