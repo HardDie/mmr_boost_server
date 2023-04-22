@@ -9,6 +9,7 @@ import (
 
 	"github.com/HardDie/mmr_boost_server/internal/db"
 	"github.com/HardDie/mmr_boost_server/internal/entity"
+	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
 )
 
 type user struct {
@@ -72,7 +73,7 @@ func (r *user) UserCreate(ctx context.Context, email, name string) (*entity.User
 	u := &entity.User{
 		Email:       email,
 		Username:    name,
-		RoleID:      4,
+		RoleID:      int32(pb.UserRoleID_user),
 		IsActivated: false,
 	}
 

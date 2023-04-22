@@ -58,6 +58,16 @@ service Auth
     }
 }
 
+// Enums
+
+enum UserRoleID {
+    default_role_id = 0;
+    admin = 1;
+    manager = 2;
+    booster = 3;
+    user = 4;
+}
+
 // Structures
 
 message UserObject
