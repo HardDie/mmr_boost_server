@@ -32,17 +32,22 @@ func (m *AuthMiddleware) RequestMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		cookie := utils.GetCookie(r)
+		// Extract token from cookie
+		token := utils.GetCookie(r)
 
 		// If we got no cookie
-		if cookie == nil || cookie.Value == "" {
-			http.Error(w, "Session token is empty", http.StatusUnauthorized)
-			return
+		if token == "" {
+			// Extract token from Authorization
+			token = utils.GetBearer(r)
+			if token == "" {
+				http.Error(w, "Session token is empty", http.StatusUnauthorized)
+				return
+			}
 		}
 
 		// Validate if session is active
 		ctx := r.Context()
-		session, err := m.service.AuthValidateCookie(ctx, cookie.Value)
+		session, err := m.service.AuthValidateCookie(ctx, token)
 		if err != nil {
 			if errors.Is(err, errs.SessionInvalid) {
 				http.Error(w, err.Error(), http.StatusUnauthorized)

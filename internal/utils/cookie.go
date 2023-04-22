@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"google.golang.org/grpc"
@@ -40,12 +41,17 @@ func DeleteGRPCSessionCookie(ctx context.Context) {
 	}
 }
 
-func GetCookie(r *http.Request) *http.Cookie {
+func GetCookie(r *http.Request) string {
 	cookie, err := r.Cookie("session")
 	if err != nil {
-		return nil
+		return ""
 	}
-	return cookie
+	return cookie.Value
+}
+
+func GetBearer(r *http.Request) string {
+	header := r.Header.Get("Authorization")
+	return strings.ReplaceAll(header, "Bearer ", "")
 }
 
 func GenerateSessionKey() (string, error) {
