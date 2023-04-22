@@ -118,7 +118,7 @@ func (r *user) UserUpdateSteamID(ctx context.Context, userID int32, steamID stri
 
 	u := &entity.User{
 		ID:      userID,
-		SteamID: steamID,
+		SteamID: &steamID,
 	}
 
 	q := gosql.NewUpdate().Table("users")

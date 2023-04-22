@@ -7,7 +7,7 @@ type User struct {
 	Email       string     `json:"email"`
 	Username    string     `json:"username"`
 	RoleID      int32      `json:"roleId"`
-	SteamID     string     `json:"steamId"`
+	SteamID     *string    `json:"steamId"`
 	IsActivated bool       `json:"isActivated"`
 	CreatedAt   time.Time  `json:"createdAt"`
 	UpdatedAt   time.Time  `json:"updatedAt"`
