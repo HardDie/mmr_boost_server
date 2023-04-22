@@ -85,12 +85,13 @@ func (s *auth) AuthRegister(ctx context.Context, req *dto.AuthRegisterRequest) e
 		return errs.InternalError
 	}
 	emailCode = strings.ToLower(emailCode)
+	codeHash := utils.HashSha256(emailCode)
 
 	// Calculate expired at
 	expiredAt := time.Now().Add(time.Hour * time.Duration(s.config.EmailValidation.Expiration))
 
 	// Create record of email validation in DB
-	_, err = s.repository.EmailValidationCreateOrUpdate(ctx, res.ID, emailCode, expiredAt)
+	_, err = s.repository.EmailValidationCreateOrUpdate(ctx, res.ID, codeHash, expiredAt)
 	if err != nil {
 		logger.Error.Println("error writing email validation token to DB:", err.Error())
 		return errs.InternalError
@@ -230,7 +231,8 @@ func (s *auth) AuthGetUserInfo(ctx context.Context, userID int32) (*entity.User,
 	return user, nil
 }
 func (s *auth) AuthValidateEmail(ctx context.Context, code string) error {
-	emailValidation, err := s.repository.EmailValidationGetByCode(ctx, code)
+	codeHash := utils.HashSha256(code)
+	emailValidation, err := s.repository.EmailValidationGetByCode(ctx, codeHash)
 	if err != nil {
 		logger.Error.Printf("error finding email validation record: %v", err.Error())
 		return errs.InternalError
@@ -288,12 +290,13 @@ func (s *auth) AuthSendValidationEmail(ctx context.Context, name string) error {
 		return errs.InternalError
 	}
 	emailCode = strings.ToLower(emailCode)
+	codeHash := utils.HashSha256(emailCode)
 
 	// Calculate expired at
 	expiredAt := time.Now().Add(time.Hour * time.Duration(s.config.EmailValidation.Expiration))
 
 	// Create record of email validation in DB
-	_, err = s.repository.EmailValidationCreateOrUpdate(ctx, u.ID, emailCode, expiredAt)
+	_, err = s.repository.EmailValidationCreateOrUpdate(ctx, u.ID, codeHash, expiredAt)
 	if err != nil {
 		logger.Error.Println("error writing email validation token to DB:", err.Error())
 		return errs.InternalError
