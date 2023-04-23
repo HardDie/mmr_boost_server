@@ -24,11 +24,25 @@ service Application
             get : "/api/v1/applications"
         };
     }
+    // Get the application you created
+    rpc GetItem(GetItemRequest) returns (GetItemResponse)
+    {
+        option (google.api.http) = {
+            get : "/api/v1/applications/{id}"
+        };
+    }
     // Getting a list of all applications. Access: admin, manager
     rpc GetManagementList(GetManagementListRequest) returns (GetManagementListResponse)
     {
         option (google.api.http) = {
             get : "/api/v1/applications/management"
+        };
+    }
+    // Get the application by id
+    rpc GetManagementItem(GetManagementItemRequest) returns (GetManagementItemResponse)
+    {
+        option (google.api.http) = {
+            get : "/api/v1/applications/management/{id}"
         };
     }
 }
@@ -72,6 +86,15 @@ message GetListResponse
     repeated PublicApplicationObject data = 1;
 }
 
+message GetItemRequest
+{
+    int32 id = 1;
+}
+message GetItemResponse
+{
+    PublicApplicationObject data = 1;
+}
+
 message GetManagementListRequest
 {
     optional int32 status_id = 1;
@@ -80,4 +103,13 @@ message GetManagementListRequest
 message GetManagementListResponse
 {
     repeated PublicApplicationObject data = 1;
+}
+
+message GetManagementItemRequest
+{
+    int32 id = 1;
+}
+message GetManagementItemResponse
+{
+    PublicApplicationObject data = 1;
 }

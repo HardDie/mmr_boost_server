@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/HardDie/mmr_boost_server/internal/dto"
 	"github.com/HardDie/mmr_boost_server/internal/entity"
 	"github.com/HardDie/mmr_boost_server/internal/errs"
@@ -36,17 +39,40 @@ func (s *application) ApplicationCreate(ctx context.Context, req *dto.Applicatio
 
 	return resp, nil
 }
-
 func (s *application) ApplicationUserList(ctx context.Context, req *dto.ApplicationUserListRequest) ([]*entity.ApplicationPublic, error) {
-	return s.repository.ApplicationUserList(ctx, &dto.ApplicationListRequest{
+	return s.repository.ApplicationList(ctx, &dto.ApplicationListRequest{
 		UserID:   &req.UserID,
 		StatusID: req.StatusID,
 	})
 }
-
 func (s *application) ApplicationManagementUserList(ctx context.Context, req *dto.ApplicationManagementUserListRequest) ([]*entity.ApplicationPublic, error) {
-	return s.repository.ApplicationUserList(ctx, &dto.ApplicationListRequest{
+	return s.repository.ApplicationList(ctx, &dto.ApplicationListRequest{
 		UserID:   req.UserID,
 		StatusID: req.StatusID,
 	})
+}
+func (s *application) ApplicationUserItem(ctx context.Context, req *dto.ApplicationUserItemRequest) (*entity.ApplicationPublic, error) {
+	res, err := s.repository.ApplicationItem(ctx, &dto.ApplicationItemRequest{
+		UserID:        &req.UserID,
+		ApplicationID: req.ApplicationID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if res == nil {
+		return nil, status.Error(codes.NotFound, "application not exist")
+	}
+	return res, nil
+}
+func (s *application) ApplicationManagementUserItem(ctx context.Context, req *dto.ApplicationManagementUserItemRequest) (*entity.ApplicationPublic, error) {
+	res, err := s.repository.ApplicationItem(ctx, &dto.ApplicationItemRequest{
+		ApplicationID: req.ApplicationID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if res == nil {
+		return nil, status.Error(codes.NotFound, "application not exist")
+	}
+	return res, nil
 }

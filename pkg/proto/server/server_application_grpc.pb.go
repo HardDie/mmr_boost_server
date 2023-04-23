@@ -21,7 +21,9 @@ const _ = grpc.SupportPackageIsVersion7
 const (
 	Application_Create_FullMethodName            = "/gateway.Application/Create"
 	Application_GetList_FullMethodName           = "/gateway.Application/GetList"
+	Application_GetItem_FullMethodName           = "/gateway.Application/GetItem"
 	Application_GetManagementList_FullMethodName = "/gateway.Application/GetManagementList"
+	Application_GetManagementItem_FullMethodName = "/gateway.Application/GetManagementItem"
 )
 
 // ApplicationClient is the client API for Application service.
@@ -32,8 +34,12 @@ type ApplicationClient interface {
 	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
 	// Getting a list of the applications you created
 	GetList(ctx context.Context, in *GetListRequest, opts ...grpc.CallOption) (*GetListResponse, error)
+	// Get the application you created
+	GetItem(ctx context.Context, in *GetItemRequest, opts ...grpc.CallOption) (*GetItemResponse, error)
 	// Getting a list of all applications. Access: admin, manager
 	GetManagementList(ctx context.Context, in *GetManagementListRequest, opts ...grpc.CallOption) (*GetManagementListResponse, error)
+	// Get the application by id
+	GetManagementItem(ctx context.Context, in *GetManagementItemRequest, opts ...grpc.CallOption) (*GetManagementItemResponse, error)
 }
 
 type applicationClient struct {
@@ -62,9 +68,27 @@ func (c *applicationClient) GetList(ctx context.Context, in *GetListRequest, opt
 	return out, nil
 }
 
+func (c *applicationClient) GetItem(ctx context.Context, in *GetItemRequest, opts ...grpc.CallOption) (*GetItemResponse, error) {
+	out := new(GetItemResponse)
+	err := c.cc.Invoke(ctx, Application_GetItem_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *applicationClient) GetManagementList(ctx context.Context, in *GetManagementListRequest, opts ...grpc.CallOption) (*GetManagementListResponse, error) {
 	out := new(GetManagementListResponse)
 	err := c.cc.Invoke(ctx, Application_GetManagementList_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *applicationClient) GetManagementItem(ctx context.Context, in *GetManagementItemRequest, opts ...grpc.CallOption) (*GetManagementItemResponse, error) {
+	out := new(GetManagementItemResponse)
+	err := c.cc.Invoke(ctx, Application_GetManagementItem_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -79,8 +103,12 @@ type ApplicationServer interface {
 	Create(context.Context, *CreateRequest) (*CreateResponse, error)
 	// Getting a list of the applications you created
 	GetList(context.Context, *GetListRequest) (*GetListResponse, error)
+	// Get the application you created
+	GetItem(context.Context, *GetItemRequest) (*GetItemResponse, error)
 	// Getting a list of all applications. Access: admin, manager
 	GetManagementList(context.Context, *GetManagementListRequest) (*GetManagementListResponse, error)
+	// Get the application by id
+	GetManagementItem(context.Context, *GetManagementItemRequest) (*GetManagementItemResponse, error)
 	mustEmbedUnimplementedApplicationServer()
 }
 
@@ -94,8 +122,14 @@ func (UnimplementedApplicationServer) Create(context.Context, *CreateRequest) (*
 func (UnimplementedApplicationServer) GetList(context.Context, *GetListRequest) (*GetListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetList not implemented")
 }
+func (UnimplementedApplicationServer) GetItem(context.Context, *GetItemRequest) (*GetItemResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetItem not implemented")
+}
 func (UnimplementedApplicationServer) GetManagementList(context.Context, *GetManagementListRequest) (*GetManagementListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetManagementList not implemented")
+}
+func (UnimplementedApplicationServer) GetManagementItem(context.Context, *GetManagementItemRequest) (*GetManagementItemResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetManagementItem not implemented")
 }
 func (UnimplementedApplicationServer) mustEmbedUnimplementedApplicationServer() {}
 
@@ -146,6 +180,24 @@ func _Application_GetList_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Application_GetItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetItemRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServer).GetItem(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Application_GetItem_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServer).GetItem(ctx, req.(*GetItemRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Application_GetManagementList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetManagementListRequest)
 	if err := dec(in); err != nil {
@@ -160,6 +212,24 @@ func _Application_GetManagementList_Handler(srv interface{}, ctx context.Context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ApplicationServer).GetManagementList(ctx, req.(*GetManagementListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Application_GetManagementItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetManagementItemRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServer).GetManagementItem(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Application_GetManagementItem_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServer).GetManagementItem(ctx, req.(*GetManagementItemRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -180,8 +250,16 @@ var Application_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Application_GetList_Handler,
 		},
 		{
+			MethodName: "GetItem",
+			Handler:    _Application_GetItem_Handler,
+		},
+		{
 			MethodName: "GetManagementList",
 			Handler:    _Application_GetManagementList_Handler,
+		},
+		{
+			MethodName: "GetManagementItem",
+			Handler:    _Application_GetManagementItem_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

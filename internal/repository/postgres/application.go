@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	"github.com/dimonrus/gosql"
 	"google.golang.org/grpc/codes"
@@ -48,7 +50,7 @@ func (r *application) ApplicationCreate(ctx context.Context, req *dto.Applicatio
 	return app, nil
 }
 
-func (r *application) ApplicationUserList(ctx context.Context, req *dto.ApplicationListRequest) ([]*entity.ApplicationPublic, error) {
+func (r *application) ApplicationList(ctx context.Context, req *dto.ApplicationListRequest) ([]*entity.ApplicationPublic, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	q := gosql.NewSelect().From("applications")
@@ -80,4 +82,31 @@ func (r *application) ApplicationUserList(ctx context.Context, req *dto.Applicat
 	}
 
 	return res, nil
+}
+
+func (r *application) ApplicationItem(ctx context.Context, req *dto.ApplicationItemRequest) (*entity.ApplicationPublic, error) {
+	tx := getTxOrConn(ctx, r.db)
+
+	app := &entity.ApplicationPublic{
+		ID: req.ApplicationID,
+	}
+
+	q := gosql.NewSelect().From("applications")
+	q.Columns().Add("user_id", "status_id", "type_id", "current_mmr", "target_mmr", "tg_contact", "created_at", "updated_at")
+	q.Where().AddExpression("id = ?", req.ApplicationID)
+	if req.UserID != nil {
+		q.Where().AddExpression("user_id = ?", req.UserID)
+	}
+	q.Where().AddExpression("deleted_at IS NULL")
+	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
+
+	err := row.Scan(&app.UserID, &app.StatusID, &app.TypeID, &app.CurrentMMR, &app.TargetMMR, &app.TgContact,
+		&app.CreatedAt, &app.UpdatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return app, nil
 }

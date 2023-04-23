@@ -22,3 +22,17 @@ type ApplicationManagementUserListRequest struct {
 	UserID   *int32 `json:"userId" validate:"omitempty,gt=0"`
 	StatusID *int32 `json:"statusId" validate:"omitempty,gte=1,lte=7"`
 }
+
+type ApplicationItemRequest struct {
+	UserID        *int32
+	ApplicationID int32
+}
+
+type ApplicationUserItemRequest struct {
+	UserID        int32 `json:"userId" validate:"required,gt=0"`
+	ApplicationID int32 `json:"applicationId" validate:"required,gt=0"`
+}
+
+type ApplicationManagementUserItemRequest struct {
+	ApplicationID int32 `json:"applicationId" validate:"required,gt=0"`
+}

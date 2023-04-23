@@ -52,7 +52,6 @@ func (s *application) Create(ctx context.Context, req *pb.CreateRequest) (*pb.Cr
 		Data: ApplicationPublicToPb(resp),
 	}, nil
 }
-
 func (s *application) GetList(ctx context.Context, req *pb.GetListRequest) (*pb.GetListResponse, error) {
 	userID := utils.ContextGetUserID(ctx)
 
@@ -78,7 +77,27 @@ func (s *application) GetList(ctx context.Context, req *pb.GetListRequest) (*pb.
 		Data: data,
 	}, nil
 }
+func (s *application) GetItem(ctx context.Context, req *pb.GetItemRequest) (*pb.GetItemResponse, error) {
+	userID := utils.ContextGetUserID(ctx)
 
+	r := &dto.ApplicationUserItemRequest{
+		UserID:        userID,
+		ApplicationID: req.Id,
+	}
+	err := getValidator().Struct(r)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	resp, err := s.service.ApplicationUserItem(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.GetItemResponse{
+		Data: ApplicationPublicToPb(resp),
+	}, nil
+}
 func (s *application) GetManagementList(ctx context.Context, req *pb.GetManagementListRequest) (*pb.GetManagementListResponse, error) {
 	roleID := utils.ContextGetRoleID(ctx)
 
@@ -107,5 +126,30 @@ func (s *application) GetManagementList(ctx context.Context, req *pb.GetManageme
 	}
 	return &pb.GetManagementListResponse{
 		Data: data,
+	}, nil
+}
+func (s *application) GetManagementItem(ctx context.Context, req *pb.GetManagementItemRequest) (*pb.GetManagementItemResponse, error) {
+	roleID := utils.ContextGetRoleID(ctx)
+
+	if roleID != int32(pb.UserRoleID_admin) &&
+		roleID != int32(pb.UserRoleID_manager) {
+		return nil, status.Error(codes.Unauthenticated, "forbidden request")
+	}
+
+	r := &dto.ApplicationManagementUserItemRequest{
+		ApplicationID: req.Id,
+	}
+	err := getValidator().Struct(r)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	resp, err := s.service.ApplicationManagementUserItem(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.GetManagementItemResponse{
+		Data: ApplicationPublicToPb(resp),
 	}, nil
 }
