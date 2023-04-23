@@ -36,3 +36,14 @@ func ApplicationPublicToPb(a *entity.ApplicationPublic) *pb.PublicApplicationObj
 		DeletedAt:  utils.TimetamppbFromTime(a.DeletedAt),
 	}
 }
+
+func ApplicationPrivateToPb(a *entity.ApplicationPrivate) *pb.PrivateApplicationObject {
+	return &pb.PrivateApplicationObject{
+		Id:            a.ID,
+		SteamLogin:    a.SteamLogin,
+		SteamPassword: a.SteamPassword,
+		CreatedAt:     timestamppb.New(a.CreatedAt),
+		UpdatedAt:     timestamppb.New(a.UpdatedAt),
+		DeletedAt:     utils.TimetamppbFromTime(a.DeletedAt),
+	}
+}

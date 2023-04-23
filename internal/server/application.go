@@ -106,7 +106,7 @@ func (s *application) GetManagementList(ctx context.Context, req *pb.GetManageme
 		return nil, status.Error(codes.Unauthenticated, "forbidden request")
 	}
 
-	r := &dto.ApplicationManagementUserListRequest{
+	r := &dto.ApplicationManagementListRequest{
 		UserID:   req.UserId,
 		StatusID: req.StatusId,
 	}
@@ -136,7 +136,7 @@ func (s *application) GetManagementItem(ctx context.Context, req *pb.GetManageme
 		return nil, status.Error(codes.Unauthenticated, "forbidden request")
 	}
 
-	r := &dto.ApplicationManagementUserItemRequest{
+	r := &dto.ApplicationManagementItemRequest{
 		ApplicationID: req.Id,
 	}
 	err := getValidator().Struct(r)
@@ -144,12 +144,37 @@ func (s *application) GetManagementItem(ctx context.Context, req *pb.GetManageme
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	resp, err := s.service.ApplicationManagementUserItem(ctx, r)
+	resp, err := s.service.ApplicationManagementItem(ctx, r)
 	if err != nil {
 		return nil, err
 	}
 
 	return &pb.GetManagementItemResponse{
 		Data: ApplicationPublicToPb(resp),
+	}, nil
+}
+func (s *application) GetManagementPrivateItem(ctx context.Context, req *pb.GetManagementItemRequest) (*pb.GetManagementPrivateItemResponse, error) {
+	roleID := utils.ContextGetRoleID(ctx)
+
+	if roleID != int32(pb.UserRoleID_admin) &&
+		roleID != int32(pb.UserRoleID_manager) {
+		return nil, status.Error(codes.Unauthenticated, "forbidden request")
+	}
+
+	r := &dto.ApplicationManagementItemRequest{
+		ApplicationID: req.Id,
+	}
+	err := getValidator().Struct(r)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	resp, err := s.service.ApplicationManagementPrivateItem(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.GetManagementPrivateItemResponse{
+		Data: ApplicationPrivateToPb(resp),
 	}, nil
 }

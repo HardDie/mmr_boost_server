@@ -19,11 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Application_Create_FullMethodName            = "/gateway.Application/Create"
-	Application_GetList_FullMethodName           = "/gateway.Application/GetList"
-	Application_GetItem_FullMethodName           = "/gateway.Application/GetItem"
-	Application_GetManagementList_FullMethodName = "/gateway.Application/GetManagementList"
-	Application_GetManagementItem_FullMethodName = "/gateway.Application/GetManagementItem"
+	Application_Create_FullMethodName                   = "/gateway.Application/Create"
+	Application_GetList_FullMethodName                  = "/gateway.Application/GetList"
+	Application_GetItem_FullMethodName                  = "/gateway.Application/GetItem"
+	Application_GetManagementList_FullMethodName        = "/gateway.Application/GetManagementList"
+	Application_GetManagementItem_FullMethodName        = "/gateway.Application/GetManagementItem"
+	Application_GetManagementPrivateItem_FullMethodName = "/gateway.Application/GetManagementPrivateItem"
 )
 
 // ApplicationClient is the client API for Application service.
@@ -40,6 +41,8 @@ type ApplicationClient interface {
 	GetManagementList(ctx context.Context, in *GetManagementListRequest, opts ...grpc.CallOption) (*GetManagementListResponse, error)
 	// Get the application by id
 	GetManagementItem(ctx context.Context, in *GetManagementItemRequest, opts ...grpc.CallOption) (*GetManagementItemResponse, error)
+	// Getting private information from an application by id
+	GetManagementPrivateItem(ctx context.Context, in *GetManagementItemRequest, opts ...grpc.CallOption) (*GetManagementPrivateItemResponse, error)
 }
 
 type applicationClient struct {
@@ -95,6 +98,15 @@ func (c *applicationClient) GetManagementItem(ctx context.Context, in *GetManage
 	return out, nil
 }
 
+func (c *applicationClient) GetManagementPrivateItem(ctx context.Context, in *GetManagementItemRequest, opts ...grpc.CallOption) (*GetManagementPrivateItemResponse, error) {
+	out := new(GetManagementPrivateItemResponse)
+	err := c.cc.Invoke(ctx, Application_GetManagementPrivateItem_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ApplicationServer is the server API for Application service.
 // All implementations must embed UnimplementedApplicationServer
 // for forward compatibility
@@ -109,6 +121,8 @@ type ApplicationServer interface {
 	GetManagementList(context.Context, *GetManagementListRequest) (*GetManagementListResponse, error)
 	// Get the application by id
 	GetManagementItem(context.Context, *GetManagementItemRequest) (*GetManagementItemResponse, error)
+	// Getting private information from an application by id
+	GetManagementPrivateItem(context.Context, *GetManagementItemRequest) (*GetManagementPrivateItemResponse, error)
 	mustEmbedUnimplementedApplicationServer()
 }
 
@@ -130,6 +144,9 @@ func (UnimplementedApplicationServer) GetManagementList(context.Context, *GetMan
 }
 func (UnimplementedApplicationServer) GetManagementItem(context.Context, *GetManagementItemRequest) (*GetManagementItemResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetManagementItem not implemented")
+}
+func (UnimplementedApplicationServer) GetManagementPrivateItem(context.Context, *GetManagementItemRequest) (*GetManagementPrivateItemResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetManagementPrivateItem not implemented")
 }
 func (UnimplementedApplicationServer) mustEmbedUnimplementedApplicationServer() {}
 
@@ -234,6 +251,24 @@ func _Application_GetManagementItem_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Application_GetManagementPrivateItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetManagementItemRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServer).GetManagementPrivateItem(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Application_GetManagementPrivateItem_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServer).GetManagementPrivateItem(ctx, req.(*GetManagementItemRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Application_ServiceDesc is the grpc.ServiceDesc for Application service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -260,6 +295,10 @@ var Application_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetManagementItem",
 			Handler:    _Application_GetManagementItem_Handler,
+		},
+		{
+			MethodName: "GetManagementPrivateItem",
+			Handler:    _Application_GetManagementPrivateItem_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

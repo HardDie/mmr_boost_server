@@ -17,8 +17,8 @@ type ApplicationPublic struct {
 
 type ApplicationPrivate struct {
 	ID            int32      `json:"id"`
-	SteamLogin    string     `json:"steamLogin"`
-	SteamPassword string     `json:"steamPassword"`
+	SteamLogin    *string    `json:"steamLogin"`
+	SteamPassword *string    `json:"steamPassword"`
 	CreatedAt     time.Time  `json:"createdAt"`
 	UpdatedAt     time.Time  `json:"updatedAt"`
 	DeletedAt     *time.Time `json:"deletedAt"`

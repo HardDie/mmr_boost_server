@@ -110,3 +110,25 @@ func (r *application) ApplicationItem(ctx context.Context, req *dto.ApplicationI
 	}
 	return app, nil
 }
+func (r *application) ApplicationPrivateItem(ctx context.Context, req *dto.ApplicationItemRequest) (*entity.ApplicationPrivate, error) {
+	tx := getTxOrConn(ctx, r.db)
+
+	app := &entity.ApplicationPrivate{
+		ID: req.ApplicationID,
+	}
+
+	q := gosql.NewSelect().From("applications")
+	q.Columns().Add("steam_login", "steam_password", "created_at", "updated_at")
+	q.Where().AddExpression("id = ?", req.ApplicationID)
+	q.Where().AddExpression("deleted_at IS NULL")
+	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
+
+	err := row.Scan(&app.SteamLogin, &app.SteamPassword, &app.CreatedAt, &app.UpdatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return app, nil
+}

@@ -45,6 +45,13 @@ service Application
             get : "/api/v1/applications/management/{id}"
         };
     }
+    // Getting private information from an application by id
+    rpc GetManagementPrivateItem(GetManagementItemRequest) returns (GetManagementPrivateItemResponse)
+    {
+        option (google.api.http) = {
+            get : "/api/v1/applications/management/{id}/private"
+        };
+    }
 }
 
 // Structures
@@ -61,6 +68,15 @@ message PublicApplicationObject
     google.protobuf.Timestamp created_at = 8;
     google.protobuf.Timestamp updated_at = 9;
     optional google.protobuf.Timestamp deleted_at = 10;
+}
+message PrivateApplicationObject
+{
+    int32 id = 1;
+    optional string steam_login = 2;
+    optional string steam_password = 3;
+    google.protobuf.Timestamp created_at = 4;
+    google.protobuf.Timestamp updated_at = 5;
+    optional google.protobuf.Timestamp deleted_at = 6;
 }
 
 // Request/Response
@@ -112,4 +128,9 @@ message GetManagementItemRequest
 message GetManagementItemResponse
 {
     PublicApplicationObject data = 1;
+}
+
+message GetManagementPrivateItemResponse
+{
+    PrivateApplicationObject data = 1;
 }
