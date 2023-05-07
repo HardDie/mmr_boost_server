@@ -11,17 +11,17 @@ import (
 	"github.com/HardDie/mmr_boost_server/internal/entity"
 )
 
-type password struct {
+type Password struct {
 	db *db.DB
 }
 
-func NewPassword(db *db.DB) *password {
-	return &password{
+func NewPassword(db *db.DB) *Password {
+	return &Password{
 		db: db,
 	}
 }
 
-func (r *password) Create(ctx context.Context, userID int32, passwordHash string) (*entity.Password, error) {
+func (r *Password) Create(ctx context.Context, userID int32, passwordHash string) (*entity.Password, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	password := &entity.Password{
@@ -41,7 +41,7 @@ func (r *password) Create(ctx context.Context, userID int32, passwordHash string
 	}
 	return password, nil
 }
-func (r *password) GetByUserID(ctx context.Context, userID int32) (*entity.Password, error) {
+func (r *Password) GetByUserID(ctx context.Context, userID int32) (*entity.Password, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	password := &entity.Password{
@@ -54,7 +54,8 @@ func (r *password) GetByUserID(ctx context.Context, userID int32) (*entity.Passw
 	q.Where().AddExpression("deleted_at IS NULL")
 	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
 
-	err := row.Scan(&password.ID, &password.PasswordHash, &password.FailedAttempts, &password.CreatedAt, &password.UpdatedAt)
+	err := row.Scan(&password.ID, &password.PasswordHash, &password.FailedAttempts,
+		&password.CreatedAt, &password.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -63,7 +64,7 @@ func (r *password) GetByUserID(ctx context.Context, userID int32) (*entity.Passw
 	}
 	return password, nil
 }
-func (r *password) Update(ctx context.Context, id int32, passwordHash string) (*entity.Password, error) {
+func (r *Password) Update(ctx context.Context, id int32, passwordHash string) (*entity.Password, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	password := &entity.Password{
@@ -85,7 +86,7 @@ func (r *password) Update(ctx context.Context, id int32, passwordHash string) (*
 	}
 	return password, nil
 }
-func (r *password) IncreaseFailedAttempts(ctx context.Context, id int32) (*entity.Password, error) {
+func (r *Password) IncreaseFailedAttempts(ctx context.Context, id int32) (*entity.Password, error) { //nolint:dupl
 	tx := getTxOrConn(ctx, r.db)
 
 	password := &entity.Password{
@@ -100,13 +101,14 @@ func (r *password) IncreaseFailedAttempts(ctx context.Context, id int32) (*entit
 	q.Returning().Add("user_id", "password_hash", "failed_attempts", "created_at", "updated_at")
 	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
 
-	err := row.Scan(&password.UserID, &password.PasswordHash, &password.FailedAttempts, &password.CreatedAt, &password.UpdatedAt)
+	err := row.Scan(&password.UserID, &password.PasswordHash, &password.FailedAttempts,
+		&password.CreatedAt, &password.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
 	return password, nil
 }
-func (r *password) ResetFailedAttempts(ctx context.Context, id int32) (*entity.Password, error) {
+func (r *Password) ResetFailedAttempts(ctx context.Context, id int32) (*entity.Password, error) { //nolint:dupl
 	tx := getTxOrConn(ctx, r.db)
 
 	password := &entity.Password{
@@ -121,7 +123,8 @@ func (r *password) ResetFailedAttempts(ctx context.Context, id int32) (*entity.P
 	q.Returning().Add("user_id", "password_hash", "failed_attempts", "created_at", "updated_at")
 	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
 
-	err := row.Scan(&password.UserID, &password.PasswordHash, &password.FailedAttempts, &password.CreatedAt, &password.UpdatedAt)
+	err := row.Scan(&password.UserID, &password.PasswordHash, &password.FailedAttempts,
+		&password.CreatedAt, &password.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}

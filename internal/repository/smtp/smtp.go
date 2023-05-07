@@ -33,8 +33,15 @@ func (r *SMTP) SendEmailVerification(email, code string) error {
 	msg.SetHeader("To", email)
 	msg.SetHeader("From", fmt.Sprintf("%s <%s>", r.nickname, r.email))
 	msg.SetHeader("Subject", Subject)
-	msg.SetBody("text/plain", fmt.Sprintf("Your code: %s, or link %s/api/v1/auth/validate_email?code=%s", code, r.baseURL, code))
-	msg.AddAlternative("text/html", fmt.Sprintf("<p>Your code: <b>%s</b>, or link <a href=%s/api/v1/auth/validate_email?code=%s>validate email</a></p>", code, r.baseURL, code))
+	msg.SetBody("text/plain",
+		fmt.Sprintf("Your code: %s, or link %s/api/v1/auth/validate_email?code=%s", code, r.baseURL, code),
+	)
+	msg.AddAlternative("text/html",
+		fmt.Sprintf(
+			"<p>Your code: <b>%s</b>, or link <a href=%s/api/v1/auth/validate_email?code=%s>validate email</a></p>",
+			code, r.baseURL, code,
+		),
+	)
 
 	err := r.dialer.DialAndSend(msg)
 	if err != nil {

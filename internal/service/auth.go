@@ -15,22 +15,22 @@ import (
 	"github.com/HardDie/mmr_boost_server/internal/utils"
 )
 
-type auth struct {
+type Auth struct {
 	repository     *postgres.Postgres
 	smtpRepository *smtp.SMTP
 
 	config config.Config
 }
 
-func NewAuth(config config.Config, repository *postgres.Postgres, smtp *smtp.SMTP) *auth {
-	return &auth{
+func NewAuth(config config.Config, repository *postgres.Postgres, smtp *smtp.SMTP) *Auth {
+	return &Auth{
 		config:         config,
 		repository:     repository,
 		smtpRepository: smtp,
 	}
 }
 
-func (s *auth) Register(ctx context.Context, req *dto.AuthRegisterRequest) error {
+func (s *Auth) Register(ctx context.Context, req *dto.AuthRegisterRequest) error {
 	var res *entity.User
 
 	err := s.repository.TxManager().ReadWriteTx(ctx, func(ctx context.Context) error {
@@ -38,31 +38,31 @@ func (s *auth) Register(ctx context.Context, req *dto.AuthRegisterRequest) error
 		user, err := s.repository.User.GetByName(ctx, req.Username)
 		if err != nil {
 			logger.Error.Printf("error while trying get user: %v", err.Error())
-			return errs.InternalError
+			return errs.ErrInternalError
 		}
 		if user != nil {
-			return errs.BadRequest.AddMessage("username already exist")
+			return errs.ErrBadRequest.AddMessage("username already exist")
 		}
 
 		// Hashing password
 		hashPassword, err := utils.HashBcrypt(req.Password)
 		if err != nil {
 			logger.Error.Printf("error hash bcrypt: %v", err.Error())
-			return errs.InternalError
+			return errs.ErrInternalError
 		}
 
 		// Create a user
 		user, err = s.repository.User.Create(ctx, req.Email, req.Username)
 		if err != nil {
 			logger.Error.Printf("error writing user into DB: %v", err.Error())
-			return errs.InternalError
+			return errs.ErrInternalError
 		}
 
 		// Create a password
 		_, err = s.repository.Password.Create(ctx, user.ID, hashPassword)
 		if err != nil {
 			logger.Error.Printf("error writing password into DB: %v", err.Error())
-			return errs.InternalError
+			return errs.ErrInternalError
 		}
 
 		res = user
@@ -82,7 +82,7 @@ func (s *auth) Register(ctx context.Context, req *dto.AuthRegisterRequest) error
 	emailCode, err := utils.UUIDGenerate()
 	if err != nil {
 		logger.Error.Println("error generating email code:", err.Error())
-		return errs.InternalError
+		return errs.ErrInternalError
 	}
 	emailCode = strings.ToLower(emailCode)
 	codeHash := utils.HashSha256(emailCode)
@@ -94,7 +94,7 @@ func (s *auth) Register(ctx context.Context, req *dto.AuthRegisterRequest) error
 	_, err = s.repository.EmailValidation.CreateOrUpdate(ctx, res.ID, codeHash, expiredAt)
 	if err != nil {
 		logger.Error.Println("error writing email validation token to DB:", err.Error())
-		return errs.InternalError
+		return errs.ErrInternalError
 	}
 
 	// Send code to email
@@ -105,7 +105,7 @@ func (s *auth) Register(ctx context.Context, req *dto.AuthRegisterRequest) error
 
 	return nil
 }
-func (s *auth) Login(ctx context.Context, req *dto.AuthLoginRequest) (*entity.User, error) {
+func (s *Auth) Login(ctx context.Context, req *dto.AuthLoginRequest) (*entity.User, error) {
 	var res *entity.User
 
 	err := s.repository.TxManager().ReadWriteTx(ctx, func(ctx context.Context) error {
@@ -113,38 +113,38 @@ func (s *auth) Login(ctx context.Context, req *dto.AuthLoginRequest) (*entity.Us
 		user, err := s.repository.User.GetByName(ctx, req.Username)
 		if err != nil {
 			logger.Error.Printf("error while trying get user: %v", err.Error())
-			return errs.InternalError
+			return errs.ErrInternalError
 		}
 		if user == nil {
-			return errs.BadRequest.AddMessage("username or password is invalid")
+			return errs.ErrBadRequest.AddMessage("username or password is invalid")
 		}
 
 		if !user.IsActivated {
-			return errs.BadRequest.AddMessage("account is not activated")
+			return errs.ErrBadRequest.AddMessage("account is not activated")
 		}
 
 		// Get password from DB
 		password, err := s.repository.Password.GetByUserID(ctx, user.ID)
 		if err != nil {
 			logger.Error.Printf("error while trying get password: %v", err.Error())
-			return errs.InternalError
+			return errs.ErrInternalError
 		}
 		if password == nil {
 			logger.Error.Printf("password for user %d not found", user.ID)
-			return errs.InternalError
+			return errs.ErrInternalError
 		}
 
 		// Check if the password is locked after failed attempts
 		if password.FailedAttempts >= int32(s.config.Password.MaxAttempts) {
 			// Check if the password block time has expired
-			if time.Now().Sub(password.UpdatedAt) <= time.Hour*time.Duration(s.config.Password.BlockTime) {
-				return errs.UserBlocked.AddMessage("too many invalid requests")
+			if time.Since(password.UpdatedAt) <= time.Hour*time.Duration(s.config.Password.BlockTime) {
+				return errs.ErrUserBlocked.AddMessage("too many invalid requests")
 			}
 			// If the blocking time has expired, reset the counter of failed attempts
 			password, err = s.repository.Password.ResetFailedAttempts(ctx, password.ID)
 			if err != nil {
 				logger.Error.Printf("error resetting the counter of failed attempts: %v", err)
-				return errs.InternalError
+				return errs.ErrInternalError
 			}
 		}
 
@@ -155,7 +155,7 @@ func (s *auth) Login(ctx context.Context, req *dto.AuthLoginRequest) (*entity.Us
 			if err != nil {
 				logger.Error.Printf("Error increasing failed attempts: %v", err.Error())
 			}
-			return errs.BadRequest.AddMessage("username or password is invalid")
+			return errs.ErrBadRequest.AddMessage("username or password is invalid")
 		}
 
 		// Reset the failed attempts counter after the first successful attempt
@@ -175,20 +175,20 @@ func (s *auth) Login(ctx context.Context, req *dto.AuthLoginRequest) (*entity.Us
 
 	return res, nil
 }
-func (s *auth) Logout(ctx context.Context, sessionID int32) error {
+func (s *Auth) Logout(ctx context.Context, sessionID int32) error {
 	err := s.repository.AccessToken.DeleteByID(ctx, sessionID)
 	if err != nil {
 		logger.Error.Printf("error deleting session: %v", err.Error())
-		return errs.InternalError
+		return errs.ErrInternalError
 	}
 	return nil
 }
-func (s *auth) GenerateCookie(ctx context.Context, userID int32) (*entity.AccessToken, error) {
+func (s *Auth) GenerateCookie(ctx context.Context, userID int32) (*entity.AccessToken, error) {
 	// Generate session key
 	sessionKey, err := utils.GenerateSessionKey()
 	if err != nil {
 		logger.Error.Printf("error generate session key: %v", err)
-		return nil, errs.InternalError
+		return nil, errs.ErrInternalError
 	}
 
 	// Calculate expired at
@@ -198,56 +198,56 @@ func (s *auth) GenerateCookie(ctx context.Context, userID int32) (*entity.Access
 	resp, err := s.repository.AccessToken.CreateOrUpdate(ctx, userID, utils.HashSha256(sessionKey), expiredAt)
 	if err != nil {
 		logger.Error.Printf("write access token to DB: %v", err)
-		return nil, errs.InternalError
+		return nil, errs.ErrInternalError
 	}
 	resp.TokenHash = sessionKey
 
 	return resp, nil
 }
-func (s *auth) ValidateCookie(ctx context.Context, sessionKey string) (*entity.User, *entity.AccessToken, error) {
+func (s *Auth) ValidateCookie(ctx context.Context, sessionKey string) (*entity.User, *entity.AccessToken, error) {
 	// Check if access token exist
 	tokenHash := utils.HashSha256(sessionKey)
 	accessToken, err := s.repository.AccessToken.GetByUserID(ctx, tokenHash)
 	if err != nil {
 		logger.Error.Printf("error read access token from db: %v", err.Error())
-		return nil, nil, errs.InternalError
+		return nil, nil, errs.ErrInternalError
 	}
 	if accessToken == nil {
-		return nil, nil, errs.SessionInvalid.AddMessage("access token not exist")
+		return nil, nil, errs.ErrSessionInvalid.AddMessage("access token not exist")
 	}
 
 	// Check if session is not expired
 	if time.Now().After(accessToken.ExpiredAt) {
-		return nil, nil, errs.SessionInvalid.AddMessage("access token has expired")
+		return nil, nil, errs.ErrSessionInvalid.AddMessage("access token has expired")
 	}
 
 	user, err := s.repository.User.GetByID(ctx, accessToken.UserID)
 	if err != nil {
 		logger.Error.Println("can't found user from access token")
-		return nil, nil, errs.InternalError
+		return nil, nil, errs.ErrInternalError
 	}
 
 	return user, accessToken, nil
 }
-func (s *auth) GetUserInfo(ctx context.Context, userID int32) (*entity.User, error) {
+func (s *Auth) GetUserInfo(ctx context.Context, userID int32) (*entity.User, error) {
 	user, err := s.repository.User.GetByID(ctx, userID)
 	if err != nil {
 		logger.Error.Printf("error get user info: %v", err.Error())
-		return nil, errs.InternalError
+		return nil, errs.ErrInternalError
 	}
 	return user, nil
 }
-func (s *auth) ValidateEmail(ctx context.Context, code string) error {
+func (s *Auth) ValidateEmail(ctx context.Context, code string) error {
 	codeHash := utils.HashSha256(code)
 	emailValidation, err := s.repository.EmailValidation.GetByCode(ctx, codeHash)
 	if err != nil {
 		logger.Error.Printf("error finding email validation record: %v", err.Error())
-		return errs.InternalError
+		return errs.ErrInternalError
 	}
 
 	// Check if validation code exist
 	if emailValidation == nil {
-		return errs.EmailValidationCodeNotExist
+		return errs.ErrEmailValidationCodeNotExist
 	}
 
 	// Check if validation code expired
@@ -256,14 +256,14 @@ func (s *auth) ValidateEmail(ctx context.Context, code string) error {
 		if err != nil {
 			logger.Error.Printf("error deleting email validation expired record: %v", err.Error())
 		}
-		return errs.EmailValidationCodeExpired
+		return errs.ErrEmailValidationCodeExpired
 	}
 
 	// Activate user
 	_, err = s.repository.User.ActivateRecord(ctx, emailValidation.UserID)
 	if err != nil {
 		logger.Error.Printf("error activating user with email code: %v", err.Error())
-		return errs.InternalError
+		return errs.ErrInternalError
 	}
 
 	// Delete activation code from DB
@@ -280,11 +280,11 @@ func (s *auth) ValidateEmail(ctx context.Context, code string) error {
 
 	return nil
 }
-func (s *auth) SendValidationEmail(ctx context.Context, name string) error {
+func (s *Auth) SendValidationEmail(ctx context.Context, name string) error {
 	u, err := s.repository.User.GetByName(ctx, name)
 	if err != nil {
 		logger.Error.Println("error get user by name:", err.Error())
-		return errs.InternalError
+		return errs.ErrInternalError
 	}
 	if u == nil || u.IsActivated {
 		return nil
@@ -294,7 +294,7 @@ func (s *auth) SendValidationEmail(ctx context.Context, name string) error {
 	emailCode, err := utils.UUIDGenerate()
 	if err != nil {
 		logger.Error.Println("error generating email code:", err.Error())
-		return errs.InternalError
+		return errs.ErrInternalError
 	}
 	emailCode = strings.ToLower(emailCode)
 	codeHash := utils.HashSha256(emailCode)
@@ -306,14 +306,14 @@ func (s *auth) SendValidationEmail(ctx context.Context, name string) error {
 	_, err = s.repository.EmailValidation.CreateOrUpdate(ctx, u.ID, codeHash, expiredAt)
 	if err != nil {
 		logger.Error.Println("error writing email validation token to DB:", err.Error())
-		return errs.InternalError
+		return errs.ErrInternalError
 	}
 
 	// Send code to email
 	err = s.smtpRepository.SendEmailVerification(u.Email, emailCode)
 	if err != nil {
 		logger.Error.Println("error sending email with verification code:", err.Error())
-		return errs.InternalError
+		return errs.ErrInternalError
 	}
 
 	return nil

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/HardDie/godb/v2"
+	// import db driver.
 	_ "github.com/lib/pq"
 
 	"github.com/HardDie/mmr_boost_server/internal/config"

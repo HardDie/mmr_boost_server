@@ -3,29 +3,26 @@ package errs
 import (
 	"fmt"
 	"net/http"
-
-	"github.com/HardDie/mmr_boost_server/internal/logger"
 )
 
 var (
-	InternalError  = NewError("internal error")
-	BadRequest     = NewError("bad request", http.StatusBadRequest)
-	UserBlocked    = NewError("user is blocked", http.StatusUnauthorized)
-	SessionInvalid = NewError("session invalid", http.StatusUnauthorized)
+	ErrInternalError  = NewError("internal error")
+	ErrBadRequest     = NewError("bad request", http.StatusBadRequest)
+	ErrUserBlocked    = NewError("user is blocked", http.StatusUnauthorized)
+	ErrSessionInvalid = NewError("session invalid", http.StatusUnauthorized)
 
-	// EmailValidation
-	EmailValidationCodeExpired  = NewError("validation code expired", http.StatusBadRequest)
-	EmailValidationCodeNotExist = NewError("validation code not exist", http.StatusBadRequest)
+	ErrEmailValidationCodeExpired  = NewError("validation code expired", http.StatusBadRequest)
+	ErrEmailValidationCodeNotExist = NewError("validation code not exist", http.StatusBadRequest)
 )
 
-type Err struct {
+type MmrError struct {
 	Message string `json:"message"`
 	Code    int    `json:"code"`
 	Err     error  `json:"err"`
 }
 
-func NewError(message string, code ...int) *Err {
-	err := &Err{
+func NewError(message string, code ...int) *MmrError {
+	err := &MmrError{
 		Message: message,
 		Code:    http.StatusInternalServerError,
 	}
@@ -35,40 +32,27 @@ func NewError(message string, code ...int) *Err {
 	return err
 }
 
-func (e Err) Error() string {
+func (e MmrError) Error() string {
 	return fmt.Sprintf("HTTP[%d] %s", e.GetCode(), e.GetMessage())
 }
-func (e Err) Unwrap() error {
+func (e MmrError) Unwrap() error {
 	return e.Err
 }
 
-func (e *Err) HTTP(code int) *Err {
-	return &Err{
+func (e *MmrError) HTTP(code int) *MmrError {
+	return &MmrError{
 		Message: e.Message,
 		Code:    code,
 		Err:     e,
 	}
 }
-func (e *Err) AddMessage(message string) *Err {
-	return &Err{
+func (e *MmrError) AddMessage(message string) *MmrError {
+	return &MmrError{
 		Message: message,
 		Code:    e.Code,
 		Err:     e,
 	}
 }
 
-func (e *Err) GetCode() int       { return e.Code }
-func (e *Err) GetMessage() string { return e.Message }
-
-func HttpError(w http.ResponseWriter, err error) {
-	if err == nil {
-		return
-	}
-	val, ok := err.(*Err)
-	if !ok || val == nil {
-		logger.Error.Println("Unknown error:", err.Error())
-		http.Error(w, "Unknown error", http.StatusInternalServerError)
-		return
-	}
-	http.Error(w, val.Message, val.Code)
-}
+func (e *MmrError) GetCode() int       { return e.Code }
+func (e *MmrError) GetMessage() string { return e.Message }

@@ -12,14 +12,14 @@ var (
 	swaggerCache []byte
 )
 
-type system struct {
+type System struct {
 }
 
-func NewSystem() *system {
-	return &system{}
+func NewSystem() *System {
+	return &System{}
 }
 
-func (s *system) GetSwagger() ([]byte, error) {
+func (s *System) GetSwagger() ([]byte, error) {
 	// Check cache
 	if swaggerCache != nil {
 		return swaggerCache, nil

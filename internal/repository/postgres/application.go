@@ -15,17 +15,20 @@ import (
 	"github.com/HardDie/mmr_boost_server/internal/logger"
 )
 
-type application struct {
+type Application struct {
 	db *db.DB
 }
 
-func NewApplication(db *db.DB) *application {
-	return &application{
+func NewApplication(db *db.DB) *Application {
+	return &Application{
 		db: db,
 	}
 }
 
-func (r *application) Create(ctx context.Context, req *dto.ApplicationCreateRequest) (*entity.ApplicationPublic, error) {
+func (r *Application) Create(
+	ctx context.Context,
+	req *dto.ApplicationCreateRequest,
+) (*entity.ApplicationPublic, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	app := &entity.ApplicationPublic{
@@ -50,11 +53,12 @@ func (r *application) Create(ctx context.Context, req *dto.ApplicationCreateRequ
 	return app, nil
 }
 
-func (r *application) List(ctx context.Context, req *dto.ApplicationListRequest) ([]*entity.ApplicationPublic, error) {
+func (r *Application) List(ctx context.Context, req *dto.ApplicationListRequest) ([]*entity.ApplicationPublic, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	q := gosql.NewSelect().From("applications")
-	q.Columns().Add("id", "user_id", "status_id", "type_id", "current_mmr", "target_mmr", "tg_contact", "created_at", "updated_at")
+	q.Columns().Add("id", "user_id", "status_id", "type_id", "current_mmr", "target_mmr", "tg_contact",
+		"created_at", "updated_at")
 	if req.UserID != nil {
 		q.Where().AddExpression("user_id = ?", req.UserID)
 	}
@@ -68,6 +72,7 @@ func (r *application) List(ctx context.Context, req *dto.ApplicationListRequest)
 		logger.Error.Println("error select applications from DB:", err.Error())
 		return nil, status.Error(codes.Internal, "internal error")
 	}
+	defer rows.Close()
 
 	var res []*entity.ApplicationPublic
 	for rows.Next() {
@@ -80,11 +85,15 @@ func (r *application) List(ctx context.Context, req *dto.ApplicationListRequest)
 		}
 		res = append(res, app)
 	}
+	if err = rows.Err(); err != nil {
+		logger.Error.Println("rows error:", err.Error())
+		return nil, status.Error(codes.Internal, "internal error")
+	}
 
 	return res, nil
 }
 
-func (r *application) Item(ctx context.Context, req *dto.ApplicationItemRequest) (*entity.ApplicationPublic, error) {
+func (r *Application) Item(ctx context.Context, req *dto.ApplicationItemRequest) (*entity.ApplicationPublic, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	app := &entity.ApplicationPublic{
@@ -92,7 +101,8 @@ func (r *application) Item(ctx context.Context, req *dto.ApplicationItemRequest)
 	}
 
 	q := gosql.NewSelect().From("applications")
-	q.Columns().Add("user_id", "status_id", "type_id", "current_mmr", "target_mmr", "tg_contact", "created_at", "updated_at")
+	q.Columns().Add("user_id", "status_id", "type_id", "current_mmr", "target_mmr", "tg_contact",
+		"created_at", "updated_at")
 	q.Where().AddExpression("id = ?", req.ApplicationID)
 	if req.UserID != nil {
 		q.Where().AddExpression("user_id = ?", req.UserID)
@@ -110,7 +120,10 @@ func (r *application) Item(ctx context.Context, req *dto.ApplicationItemRequest)
 	}
 	return app, nil
 }
-func (r *application) PrivateItem(ctx context.Context, req *dto.ApplicationItemRequest) (*entity.ApplicationPrivate, error) {
+func (r *Application) PrivateItem(
+	ctx context.Context,
+	req *dto.ApplicationItemRequest,
+) (*entity.ApplicationPrivate, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	app := &entity.ApplicationPrivate{

@@ -37,7 +37,7 @@ func main() {
 	if err != nil {
 		logger.Error.Fatal(err)
 	}
-	logger.Info.Println("Server listen on", app.Cfg.Http.Port)
+	logger.Info.Println("Server listen on", app.Cfg.HTTP.Port)
 	err = app.Run()
 	if err != nil {
 		logger.Error.Fatal(err)

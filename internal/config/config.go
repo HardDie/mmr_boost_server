@@ -10,7 +10,7 @@ import (
 
 type Config struct {
 	Postgres        Postgres
-	Http            Http
+	HTTP            HTTP
 	Password        Password
 	SMTP            SMTP
 	Session         Session
@@ -26,7 +26,7 @@ func Get() Config {
 
 	return Config{
 		Postgres:        postgresConfig(),
-		Http:            httpConfig(),
+		HTTP:            httpConfig(),
 		Password:        passwordConfig(),
 		SMTP:            smtpConfig(),
 		Session:         sessionConfig(),

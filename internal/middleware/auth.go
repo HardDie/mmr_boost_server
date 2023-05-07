@@ -21,12 +21,11 @@ func NewAuthMiddleware(srvc *service.Service) *AuthMiddleware {
 func (m *AuthMiddleware) RequestMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// List of public routes
-		switch {
-		case r.URL.Path == "/api/v1/auth/login" ||
+		if r.URL.Path == "/api/v1/auth/login" ||
 			r.URL.Path == "/api/v1/auth/register" ||
 			r.URL.Path == "/api/v1/auth/validate_email" ||
 			r.URL.Path == "/api/v1/auth/send_validation_email" ||
-			r.URL.Path == "/api/v1/system/swagger":
+			r.URL.Path == "/api/v1/system/swagger" {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -48,7 +47,7 @@ func (m *AuthMiddleware) RequestMiddleware(next http.Handler) http.Handler {
 		ctx := r.Context()
 		user, session, err := m.service.Auth.ValidateCookie(ctx, token)
 		if err != nil {
-			if errors.Is(err, errs.SessionInvalid) {
+			if errors.Is(err, errs.ErrSessionInvalid) {
 				http.Error(w, err.Error(), http.StatusUnauthorized)
 			} else {
 				http.Error(w, "Internal error", http.StatusInternalServerError)

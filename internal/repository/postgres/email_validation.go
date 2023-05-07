@@ -13,17 +13,22 @@ import (
 	"github.com/HardDie/mmr_boost_server/internal/entity"
 )
 
-type emailValidation struct {
+type EmailValidation struct {
 	db *db.DB
 }
 
-func NewEmailValidation(db *db.DB) *emailValidation {
-	return &emailValidation{
+func NewEmailValidation(db *db.DB) *EmailValidation {
+	return &EmailValidation{
 		db: db,
 	}
 }
 
-func (r *emailValidation) CreateOrUpdate(ctx context.Context, userID int32, code string, expiredAt time.Time) (*entity.EmailValidation, error) {
+func (r *EmailValidation) CreateOrUpdate(
+	ctx context.Context,
+	userID int32,
+	code string,
+	expiredAt time.Time,
+) (*entity.EmailValidation, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	ent := &entity.EmailValidation{
@@ -46,7 +51,7 @@ func (r *emailValidation) CreateOrUpdate(ctx context.Context, userID int32, code
 	}
 	return ent, nil
 }
-func (r *emailValidation) GetByCode(ctx context.Context, code string) (*entity.EmailValidation, error) {
+func (r *EmailValidation) GetByCode(ctx context.Context, code string) (*entity.EmailValidation, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	ent := &entity.EmailValidation{
@@ -67,7 +72,7 @@ func (r *emailValidation) GetByCode(ctx context.Context, code string) (*entity.E
 	}
 	return ent, nil
 }
-func (r *emailValidation) DeleteByID(ctx context.Context, id int32) error {
+func (r *EmailValidation) DeleteByID(ctx context.Context, id int32) error {
 	tx := getTxOrConn(ctx, r.db)
 
 	q := gosql.NewDelete().From("email_validations")

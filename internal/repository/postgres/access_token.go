@@ -12,17 +12,22 @@ import (
 	"github.com/HardDie/mmr_boost_server/internal/entity"
 )
 
-type accessToken struct {
+type AccessToken struct {
 	db *db.DB
 }
 
-func NewAccessToken(db *db.DB) *accessToken {
-	return &accessToken{
+func NewAccessToken(db *db.DB) *AccessToken {
+	return &AccessToken{
 		db: db,
 	}
 }
 
-func (r *accessToken) CreateOrUpdate(ctx context.Context, userID int32, tokenHash string, expiredAt time.Time) (*entity.AccessToken, error) {
+func (r *AccessToken) CreateOrUpdate(
+	ctx context.Context,
+	userID int32,
+	tokenHash string,
+	expiredAt time.Time,
+) (*entity.AccessToken, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	token := &entity.AccessToken{
@@ -45,7 +50,7 @@ func (r *accessToken) CreateOrUpdate(ctx context.Context, userID int32, tokenHas
 	}
 	return token, nil
 }
-func (r *accessToken) GetByUserID(ctx context.Context, tokenHash string) (*entity.AccessToken, error) {
+func (r *AccessToken) GetByUserID(ctx context.Context, tokenHash string) (*entity.AccessToken, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	token := &entity.AccessToken{
@@ -67,7 +72,7 @@ func (r *accessToken) GetByUserID(ctx context.Context, tokenHash string) (*entit
 	}
 	return token, nil
 }
-func (r *accessToken) DeleteByID(ctx context.Context, id int32) error {
+func (r *AccessToken) DeleteByID(ctx context.Context, id int32) error {
 	tx := getTxOrConn(ctx, r.db)
 
 	q := gosql.NewUpdate().Table("access_tokens")

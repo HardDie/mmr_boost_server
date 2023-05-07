@@ -98,7 +98,10 @@ func (s *application) GetItem(ctx context.Context, req *pb.GetItemRequest) (*pb.
 		Data: ApplicationPublicToPb(resp),
 	}, nil
 }
-func (s *application) GetManagementList(ctx context.Context, req *pb.GetManagementListRequest) (*pb.GetManagementListResponse, error) {
+func (s *application) GetManagementList(
+	ctx context.Context,
+	req *pb.GetManagementListRequest,
+) (*pb.GetManagementListResponse, error) {
 	roleID := utils.ContextGetRoleID(ctx)
 
 	if roleID != int32(pb.UserRoleID_admin) &&
@@ -128,7 +131,10 @@ func (s *application) GetManagementList(ctx context.Context, req *pb.GetManageme
 		Data: data,
 	}, nil
 }
-func (s *application) GetManagementItem(ctx context.Context, req *pb.GetManagementItemRequest) (*pb.GetManagementItemResponse, error) {
+func (s *application) GetManagementItem(
+	ctx context.Context,
+	req *pb.GetManagementItemRequest,
+) (*pb.GetManagementItemResponse, error) {
 	roleID := utils.ContextGetRoleID(ctx)
 
 	if roleID != int32(pb.UserRoleID_admin) &&
@@ -153,7 +159,10 @@ func (s *application) GetManagementItem(ctx context.Context, req *pb.GetManageme
 		Data: ApplicationPublicToPb(resp),
 	}, nil
 }
-func (s *application) GetManagementPrivateItem(ctx context.Context, req *pb.GetManagementItemRequest) (*pb.GetManagementPrivateItemResponse, error) {
+func (s *application) GetManagementPrivateItem(
+	ctx context.Context,
+	req *pb.GetManagementItemRequest,
+) (*pb.GetManagementPrivateItemResponse, error) {
 	roleID := utils.ContextGetRoleID(ctx)
 
 	if roleID != int32(pb.UserRoleID_admin) &&

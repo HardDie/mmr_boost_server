@@ -1,12 +1,12 @@
 package config
 
-type Http struct {
+type HTTP struct {
 	Port           string `json:"port"`
 	RequestTimeout int    `json:"requestTimeout"`
 }
 
-func httpConfig() Http {
-	return Http{
+func httpConfig() HTTP {
+	return HTTP{
 		Port:           getEnv("HTTP_PORT"),
 		RequestTimeout: getEnvAsInt("HTTP_REQUEST_TIMEOUT"),
 	}

@@ -80,6 +80,6 @@ func NewPostgres(db *db.DB,
 	}
 }
 
-func (r *Postgres) TxManager() *txManager {
+func (r *Postgres) TxManager() *txManager { //nolint:revive
 	return r.txManager
 }

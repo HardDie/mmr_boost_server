@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/gorilla/mux"
 
@@ -94,7 +95,14 @@ func (app *Application) Run() error {
 	}()
 
 	defer app.Stop()
-	return http.ListenAndServe(app.Cfg.Http.Port, app.Router)
+
+	srv := &http.Server{
+		Addr:         app.Cfg.HTTP.Port,
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		Handler:      app.Router,
+	}
+	return srv.ListenAndServe()
 }
 
 func (app *Application) Stop() {

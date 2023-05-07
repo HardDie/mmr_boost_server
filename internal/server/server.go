@@ -31,7 +31,7 @@ func NewServer(config config.Config, srvc *service.Service) *Server {
 		user:        newUser(srvc),
 
 		authMiddleware:    middleware.NewAuthMiddleware(srvc),
-		timeoutMiddleware: middleware.NewTimeoutRequestMiddleware(time.Duration(config.Http.RequestTimeout) * time.Second),
+		timeoutMiddleware: middleware.NewTimeoutRequestMiddleware(time.Duration(config.HTTP.RequestTimeout) * time.Second),
 	}
 }
 

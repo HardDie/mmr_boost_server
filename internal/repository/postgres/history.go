@@ -8,17 +8,17 @@ import (
 	"github.com/HardDie/mmr_boost_server/internal/db"
 )
 
-type history struct {
+type History struct {
 	db *db.DB
 }
 
-func NewHistory(db *db.DB) *history {
-	return &history{
+func NewHistory(db *db.DB) *History {
+	return &History{
 		db: db,
 	}
 }
 
-func (r *history) NewEvent(ctx context.Context, userID int32, message string) error {
+func (r *History) NewEvent(ctx context.Context, userID int32, message string) error {
 	tx := getTxOrConn(ctx, r.db)
 
 	q := gosql.NewInsert().Into("history")
@@ -35,7 +35,7 @@ func (r *history) NewEvent(ctx context.Context, userID int32, message string) er
 
 	return nil
 }
-func (r *history) NewEventWithAffected(ctx context.Context, userID, affectedUserID int32, message string) error {
+func (r *History) NewEventWithAffected(ctx context.Context, userID, affectedUserID int32, message string) error {
 	tx := getTxOrConn(ctx, r.db)
 
 	q := gosql.NewInsert().Into("history")

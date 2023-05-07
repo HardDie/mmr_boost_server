@@ -13,7 +13,10 @@ type IApplication interface {
 	ManagementUserList(ctx context.Context, req *dto.ApplicationManagementListRequest) ([]*entity.ApplicationPublic, error)
 	UserItem(ctx context.Context, req *dto.ApplicationUserItemRequest) (*entity.ApplicationPublic, error)
 	ManagementItem(ctx context.Context, req *dto.ApplicationManagementItemRequest) (*entity.ApplicationPublic, error)
-	ManagementPrivateItem(ctx context.Context, req *dto.ApplicationManagementItemRequest) (*entity.ApplicationPrivate, error)
+	ManagementPrivateItem(
+		ctx context.Context,
+		req *dto.ApplicationManagementItemRequest,
+	) (*entity.ApplicationPrivate, error)
 }
 
 type IAuth interface {

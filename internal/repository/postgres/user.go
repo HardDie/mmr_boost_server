@@ -12,17 +12,17 @@ import (
 	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
 )
 
-type user struct {
+type User struct {
 	db *db.DB
 }
 
-func NewUser(db *db.DB) *user {
-	return &user{
+func NewUser(db *db.DB) *User {
+	return &User{
 		db: db,
 	}
 }
 
-func (r *user) GetByID(ctx context.Context, id int32) (*entity.User, error) {
+func (r *User) GetByID(ctx context.Context, id int32) (*entity.User, error) { //nolint:dupl
 	tx := getTxOrConn(ctx, r.db)
 
 	u := &entity.User{
@@ -43,9 +43,8 @@ func (r *user) GetByID(ctx context.Context, id int32) (*entity.User, error) {
 		return nil, err
 	}
 	return u, nil
-
 }
-func (r *user) GetByName(ctx context.Context, name string) (*entity.User, error) {
+func (r *User) GetByName(ctx context.Context, name string) (*entity.User, error) { //nolint:dupl
 	tx := getTxOrConn(ctx, r.db)
 
 	u := &entity.User{
@@ -67,7 +66,7 @@ func (r *user) GetByName(ctx context.Context, name string) (*entity.User, error)
 	}
 	return u, nil
 }
-func (r *user) Create(ctx context.Context, email, name string) (*entity.User, error) {
+func (r *User) Create(ctx context.Context, email, name string) (*entity.User, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	u := &entity.User{
@@ -89,7 +88,7 @@ func (r *user) Create(ctx context.Context, email, name string) (*entity.User, er
 	}
 	return u, nil
 }
-func (r *user) ActivateRecord(ctx context.Context, userID int32) (*entity.User, error) {
+func (r *User) ActivateRecord(ctx context.Context, userID int32) (*entity.User, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	u := &entity.User{
@@ -114,7 +113,7 @@ func (r *user) ActivateRecord(ctx context.Context, userID int32) (*entity.User, 
 	}
 	return u, nil
 }
-func (r *user) UpdateSteamID(ctx context.Context, userID int32, steamID string) (*entity.User, error) {
+func (r *User) UpdateSteamID(ctx context.Context, userID int32, steamID string) (*entity.User, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	u := &entity.User{
