@@ -15,13 +15,13 @@ type user struct {
 	repository *postgres.Postgres
 }
 
-func newUser(repository *postgres.Postgres) user {
-	return user{
+func NewUser(repository *postgres.Postgres) *user {
+	return &user{
 		repository: repository,
 	}
 }
 
-func (s *user) UserPassword(ctx context.Context, req *dto.UserUpdatePasswordRequest, userID int32) error {
+func (s *user) UpdatePassword(ctx context.Context, req *dto.UserUpdatePasswordRequest, userID int32) error {
 	err := s.repository.TxManager().ReadWriteTx(ctx, func(ctx context.Context) error {
 		// Get password from DB
 		password, err := s.repository.Password.GetByUserID(ctx, userID)
@@ -59,7 +59,7 @@ func (s *user) UserPassword(ctx context.Context, req *dto.UserUpdatePasswordRequ
 	}
 	return nil
 }
-func (s *user) UserUpdateSteamID(ctx context.Context, req *dto.UserUpdateSteamIDRequest, userID int32) (*entity.User, error) {
+func (s *user) UpdateSteamID(ctx context.Context, req *dto.UserUpdateSteamIDRequest, userID int32) (*entity.User, error) {
 	u, err := s.repository.User.UpdateSteamID(ctx, userID, req.SteamID)
 	if err != nil {
 		return nil, err

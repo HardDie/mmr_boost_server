@@ -41,7 +41,7 @@ func (s *user) Password(ctx context.Context, req *pb.PasswordRequest) (*emptypb.
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	err = s.service.UserPassword(ctx, r, userID)
+	err = s.service.User.UpdatePassword(ctx, r, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (s *user) SteamID(ctx context.Context, req *pb.SteamIDRequest) (*pb.SteamID
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	u, err := s.service.UserUpdateSteamID(ctx, r, userID)
+	u, err := s.service.User.UpdateSteamID(ctx, r, userID)
 	if err != nil {
 		return nil, err
 	}

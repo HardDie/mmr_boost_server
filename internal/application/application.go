@@ -66,7 +66,16 @@ func Get() (*Application, error) {
 	smtpRepository := smtp.NewSMTP(app.Cfg)
 
 	// Init services
-	srvc := service.NewService(app.Cfg, postgresRepository, smtpRepository)
+	serviceApplication := service.NewApplication(postgresRepository)
+	serviceAuth := service.NewAuth(app.Cfg, postgresRepository, smtpRepository)
+	serviceSystem := service.NewSystem()
+	serviceUser := service.NewUser(postgresRepository)
+	srvc := service.NewService(
+		serviceApplication,
+		serviceAuth,
+		serviceSystem,
+		serviceUser,
+	)
 
 	// Init severs
 	srv := server.NewServer(app.Cfg, srvc)

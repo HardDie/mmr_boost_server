@@ -46,7 +46,7 @@ func (m *AuthMiddleware) RequestMiddleware(next http.Handler) http.Handler {
 
 		// Validate if session is active
 		ctx := r.Context()
-		user, session, err := m.service.AuthValidateCookie(ctx, token)
+		user, session, err := m.service.Auth.ValidateCookie(ctx, token)
 		if err != nil {
 			if errors.Is(err, errs.SessionInvalid) {
 				http.Error(w, err.Error(), http.StatusUnauthorized)

@@ -29,7 +29,7 @@ func (s *system) RegisterHTTP(ctx context.Context, mux *runtime.ServeMux) error 
 }
 
 func (s *system) Swagger(ctx context.Context, _ *emptypb.Empty) (*httpbody.HttpBody, error) {
-	data, err := s.service.SystemGetSwagger()
+	data, err := s.service.System.GetSwagger()
 	if err != nil {
 		return nil, status.Error(codes.Internal, "internal error")
 	}

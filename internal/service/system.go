@@ -15,11 +15,11 @@ var (
 type system struct {
 }
 
-func newSystem() system {
-	return system{}
+func NewSystem() *system {
+	return &system{}
 }
 
-func (s *system) SystemGetSwagger() ([]byte, error) {
+func (s *system) GetSwagger() ([]byte, error) {
 	// Check cache
 	if swaggerCache != nil {
 		return swaggerCache, nil

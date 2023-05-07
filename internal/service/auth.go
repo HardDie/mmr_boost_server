@@ -22,15 +22,15 @@ type auth struct {
 	config config.Config
 }
 
-func newAuth(config config.Config, repository *postgres.Postgres, smtp *smtp.SMTP) auth {
-	return auth{
+func NewAuth(config config.Config, repository *postgres.Postgres, smtp *smtp.SMTP) *auth {
+	return &auth{
 		config:         config,
 		repository:     repository,
 		smtpRepository: smtp,
 	}
 }
 
-func (s *auth) AuthRegister(ctx context.Context, req *dto.AuthRegisterRequest) error {
+func (s *auth) Register(ctx context.Context, req *dto.AuthRegisterRequest) error {
 	var res *entity.User
 
 	err := s.repository.TxManager().ReadWriteTx(ctx, func(ctx context.Context) error {
@@ -105,7 +105,7 @@ func (s *auth) AuthRegister(ctx context.Context, req *dto.AuthRegisterRequest) e
 
 	return nil
 }
-func (s *auth) AuthLogin(ctx context.Context, req *dto.AuthLoginRequest) (*entity.User, error) {
+func (s *auth) Login(ctx context.Context, req *dto.AuthLoginRequest) (*entity.User, error) {
 	var res *entity.User
 
 	err := s.repository.TxManager().ReadWriteTx(ctx, func(ctx context.Context) error {
@@ -175,7 +175,7 @@ func (s *auth) AuthLogin(ctx context.Context, req *dto.AuthLoginRequest) (*entit
 
 	return res, nil
 }
-func (s *auth) AuthLogout(ctx context.Context, sessionID int32) error {
+func (s *auth) Logout(ctx context.Context, sessionID int32) error {
 	err := s.repository.AccessToken.DeleteByID(ctx, sessionID)
 	if err != nil {
 		logger.Error.Printf("error deleting session: %v", err.Error())
@@ -183,7 +183,7 @@ func (s *auth) AuthLogout(ctx context.Context, sessionID int32) error {
 	}
 	return nil
 }
-func (s *auth) AuthGenerateCookie(ctx context.Context, userID int32) (*entity.AccessToken, error) {
+func (s *auth) GenerateCookie(ctx context.Context, userID int32) (*entity.AccessToken, error) {
 	// Generate session key
 	sessionKey, err := utils.GenerateSessionKey()
 	if err != nil {
@@ -204,7 +204,7 @@ func (s *auth) AuthGenerateCookie(ctx context.Context, userID int32) (*entity.Ac
 
 	return resp, nil
 }
-func (s *auth) AuthValidateCookie(ctx context.Context, sessionKey string) (*entity.User, *entity.AccessToken, error) {
+func (s *auth) ValidateCookie(ctx context.Context, sessionKey string) (*entity.User, *entity.AccessToken, error) {
 	// Check if access token exist
 	tokenHash := utils.HashSha256(sessionKey)
 	accessToken, err := s.repository.AccessToken.GetByUserID(ctx, tokenHash)
@@ -229,7 +229,7 @@ func (s *auth) AuthValidateCookie(ctx context.Context, sessionKey string) (*enti
 
 	return user, accessToken, nil
 }
-func (s *auth) AuthGetUserInfo(ctx context.Context, userID int32) (*entity.User, error) {
+func (s *auth) GetUserInfo(ctx context.Context, userID int32) (*entity.User, error) {
 	user, err := s.repository.User.GetByID(ctx, userID)
 	if err != nil {
 		logger.Error.Printf("error get user info: %v", err.Error())
@@ -237,7 +237,7 @@ func (s *auth) AuthGetUserInfo(ctx context.Context, userID int32) (*entity.User,
 	}
 	return user, nil
 }
-func (s *auth) AuthValidateEmail(ctx context.Context, code string) error {
+func (s *auth) ValidateEmail(ctx context.Context, code string) error {
 	codeHash := utils.HashSha256(code)
 	emailValidation, err := s.repository.EmailValidation.GetByCode(ctx, codeHash)
 	if err != nil {
@@ -280,7 +280,7 @@ func (s *auth) AuthValidateEmail(ctx context.Context, code string) error {
 
 	return nil
 }
-func (s *auth) AuthSendValidationEmail(ctx context.Context, name string) error {
+func (s *auth) SendValidationEmail(ctx context.Context, name string) error {
 	u, err := s.repository.User.GetByName(ctx, name)
 	if err != nil {
 		logger.Error.Println("error get user by name:", err.Error())

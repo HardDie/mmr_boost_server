@@ -19,13 +19,13 @@ type application struct {
 	repository *postgres.Postgres
 }
 
-func newApplication(repository *postgres.Postgres) application {
-	return application{
+func NewApplication(repository *postgres.Postgres) *application {
+	return &application{
 		repository: repository,
 	}
 }
 
-func (s *application) ApplicationCreate(ctx context.Context, req *dto.ApplicationCreateRequest) (*entity.ApplicationPublic, error) {
+func (s *application) Create(ctx context.Context, req *dto.ApplicationCreateRequest) (*entity.ApplicationPublic, error) {
 	resp, err := s.repository.Application.Create(ctx, req)
 	if err != nil {
 		logger.Error.Println("error creating new application:", err.Error())
@@ -40,19 +40,19 @@ func (s *application) ApplicationCreate(ctx context.Context, req *dto.Applicatio
 
 	return resp, nil
 }
-func (s *application) ApplicationUserList(ctx context.Context, req *dto.ApplicationUserListRequest) ([]*entity.ApplicationPublic, error) {
+func (s *application) UserList(ctx context.Context, req *dto.ApplicationUserListRequest) ([]*entity.ApplicationPublic, error) {
 	return s.repository.Application.List(ctx, &dto.ApplicationListRequest{
 		UserID:   &req.UserID,
 		StatusID: req.StatusID,
 	})
 }
-func (s *application) ApplicationManagementUserList(ctx context.Context, req *dto.ApplicationManagementListRequest) ([]*entity.ApplicationPublic, error) {
+func (s *application) ManagementUserList(ctx context.Context, req *dto.ApplicationManagementListRequest) ([]*entity.ApplicationPublic, error) {
 	return s.repository.Application.List(ctx, &dto.ApplicationListRequest{
 		UserID:   req.UserID,
 		StatusID: req.StatusID,
 	})
 }
-func (s *application) ApplicationUserItem(ctx context.Context, req *dto.ApplicationUserItemRequest) (*entity.ApplicationPublic, error) {
+func (s *application) UserItem(ctx context.Context, req *dto.ApplicationUserItemRequest) (*entity.ApplicationPublic, error) {
 	res, err := s.repository.Application.Item(ctx, &dto.ApplicationItemRequest{
 		UserID:        &req.UserID,
 		ApplicationID: req.ApplicationID,
@@ -65,7 +65,7 @@ func (s *application) ApplicationUserItem(ctx context.Context, req *dto.Applicat
 	}
 	return res, nil
 }
-func (s *application) ApplicationManagementItem(ctx context.Context, req *dto.ApplicationManagementItemRequest) (*entity.ApplicationPublic, error) {
+func (s *application) ManagementItem(ctx context.Context, req *dto.ApplicationManagementItemRequest) (*entity.ApplicationPublic, error) {
 	res, err := s.repository.Application.Item(ctx, &dto.ApplicationItemRequest{
 		ApplicationID: req.ApplicationID,
 	})
@@ -77,7 +77,7 @@ func (s *application) ApplicationManagementItem(ctx context.Context, req *dto.Ap
 	}
 	return res, nil
 }
-func (s *application) ApplicationManagementPrivateItem(ctx context.Context, req *dto.ApplicationManagementItemRequest) (*entity.ApplicationPrivate, error) {
+func (s *application) ManagementPrivateItem(ctx context.Context, req *dto.ApplicationManagementItemRequest) (*entity.ApplicationPrivate, error) {
 	userID := utils.ContextGetUserID(ctx)
 
 	res, err := s.repository.Application.PrivateItem(ctx, &dto.ApplicationItemRequest{

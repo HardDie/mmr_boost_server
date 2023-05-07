@@ -43,7 +43,7 @@ func (s *application) Create(ctx context.Context, req *pb.CreateRequest) (*pb.Cr
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	resp, err := s.service.ApplicationCreate(ctx, r)
+	resp, err := s.service.Application.Create(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (s *application) GetList(ctx context.Context, req *pb.GetListRequest) (*pb.
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	resp, err := s.service.ApplicationUserList(ctx, r)
+	resp, err := s.service.Application.UserList(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (s *application) GetItem(ctx context.Context, req *pb.GetItemRequest) (*pb.
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	resp, err := s.service.ApplicationUserItem(ctx, r)
+	resp, err := s.service.Application.UserItem(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func (s *application) GetManagementList(ctx context.Context, req *pb.GetManageme
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	resp, err := s.service.ApplicationManagementUserList(ctx, r)
+	resp, err := s.service.Application.ManagementUserList(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +144,7 @@ func (s *application) GetManagementItem(ctx context.Context, req *pb.GetManageme
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	resp, err := s.service.ApplicationManagementItem(ctx, r)
+	resp, err := s.service.Application.ManagementItem(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +169,7 @@ func (s *application) GetManagementPrivateItem(ctx context.Context, req *pb.GetM
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	resp, err := s.service.ApplicationManagementPrivateItem(ctx, r)
+	resp, err := s.service.Application.ManagementPrivateItem(ctx, r)
 	if err != nil {
 		return nil, err
 	}

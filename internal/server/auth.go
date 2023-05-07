@@ -40,7 +40,7 @@ func (s *auth) Register(ctx context.Context, req *pb.RegisterRequest) (*emptypb.
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	err = s.service.AuthRegister(ctx, r)
+	err = s.service.Auth.Register(ctx, r)
 	if err != nil {
 		return nil, err
 	}
@@ -57,12 +57,12 @@ func (s *auth) Login(ctx context.Context, req *pb.LoginRequest) (*emptypb.Empty,
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	u, err := s.service.AuthLogin(ctx, r)
+	u, err := s.service.Auth.Login(ctx, r)
 	if err != nil {
 		return nil, err
 	}
 
-	accessToken, err := s.service.AuthGenerateCookie(ctx, u.ID)
+	accessToken, err := s.service.Auth.GenerateCookie(ctx, u.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (s *auth) ValidateEmail(ctx context.Context, req *pb.ValidateEmailRequest) 
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	err = s.service.AuthValidateEmail(ctx, req.Code)
+	err = s.service.Auth.ValidateEmail(ctx, req.Code)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (s *auth) SendValidationEmail(ctx context.Context, req *pb.SendValidationEm
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	err = s.service.AuthSendValidationEmail(ctx, r.Username)
+	err = s.service.Auth.SendValidationEmail(ctx, r.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (s *auth) SendValidationEmail(ctx context.Context, req *pb.SendValidationEm
 func (s *auth) User(ctx context.Context, _ *emptypb.Empty) (*pb.UserResponse, error) {
 	userID := utils.ContextGetUserID(ctx)
 
-	u, err := s.service.AuthGetUserInfo(ctx, userID)
+	u, err := s.service.Auth.GetUserInfo(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (s *auth) User(ctx context.Context, _ *emptypb.Empty) (*pb.UserResponse, er
 func (s *auth) Logout(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
 	session := utils.ContextGetSession(ctx)
 
-	err := s.service.AuthLogout(ctx, session.ID)
+	err := s.service.Auth.Logout(ctx, session.ID)
 	if err != nil {
 		return nil, err
 	}
