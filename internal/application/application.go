@@ -48,7 +48,21 @@ func Get() (*Application, error) {
 	v1Router := apiRouter.PathPrefix("/v1").Subrouter()
 
 	// Init repositories
-	postgresRepository := postgres.NewPostgres(app.DB)
+	repositoryAccessToken := postgres.NewAccessToken(app.DB)
+	repositoryApplication := postgres.NewApplication(app.DB)
+	repositoryEmailValidation := postgres.NewEmailValidation(app.DB)
+	repositoryHistory := postgres.NewHistory(app.DB)
+	repositoryPassword := postgres.NewPassword(app.DB)
+	repositoryUser := postgres.NewUser(app.DB)
+	postgresRepository := postgres.NewPostgres(
+		app.DB,
+		repositoryAccessToken,
+		repositoryApplication,
+		repositoryEmailValidation,
+		repositoryHistory,
+		repositoryPassword,
+		repositoryUser,
+	)
 	smtpRepository := smtp.NewSMTP(app.Cfg)
 
 	// Init services

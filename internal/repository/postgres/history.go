@@ -12,13 +12,13 @@ type history struct {
 	db *db.DB
 }
 
-func newHistory(db *db.DB) history {
-	return history{
+func NewHistory(db *db.DB) *history {
+	return &history{
 		db: db,
 	}
 }
 
-func (r *history) HistoryNewEvent(ctx context.Context, userID int32, message string) error {
+func (r *history) NewEvent(ctx context.Context, userID int32, message string) error {
 	tx := getTxOrConn(ctx, r.db)
 
 	q := gosql.NewInsert().Into("history")
@@ -35,7 +35,7 @@ func (r *history) HistoryNewEvent(ctx context.Context, userID int32, message str
 
 	return nil
 }
-func (r *history) HistoryNewEventWithAffected(ctx context.Context, userID, affectedUserID int32, message string) error {
+func (r *history) NewEventWithAffected(ctx context.Context, userID, affectedUserID int32, message string) error {
 	tx := getTxOrConn(ctx, r.db)
 
 	q := gosql.NewInsert().Into("history")

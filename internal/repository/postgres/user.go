@@ -16,13 +16,13 @@ type user struct {
 	db *db.DB
 }
 
-func newUser(db *db.DB) user {
-	return user{
+func NewUser(db *db.DB) *user {
+	return &user{
 		db: db,
 	}
 }
 
-func (r *user) UserGetByID(ctx context.Context, id int32) (*entity.User, error) {
+func (r *user) GetByID(ctx context.Context, id int32) (*entity.User, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	u := &entity.User{
@@ -45,7 +45,7 @@ func (r *user) UserGetByID(ctx context.Context, id int32) (*entity.User, error) 
 	return u, nil
 
 }
-func (r *user) UserGetByName(ctx context.Context, name string) (*entity.User, error) {
+func (r *user) GetByName(ctx context.Context, name string) (*entity.User, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	u := &entity.User{
@@ -67,7 +67,7 @@ func (r *user) UserGetByName(ctx context.Context, name string) (*entity.User, er
 	}
 	return u, nil
 }
-func (r *user) UserCreate(ctx context.Context, email, name string) (*entity.User, error) {
+func (r *user) Create(ctx context.Context, email, name string) (*entity.User, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	u := &entity.User{
@@ -89,7 +89,7 @@ func (r *user) UserCreate(ctx context.Context, email, name string) (*entity.User
 	}
 	return u, nil
 }
-func (r *user) UserActivateRecord(ctx context.Context, userID int32) (*entity.User, error) {
+func (r *user) ActivateRecord(ctx context.Context, userID int32) (*entity.User, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	u := &entity.User{
@@ -114,7 +114,7 @@ func (r *user) UserActivateRecord(ctx context.Context, userID int32) (*entity.Us
 	}
 	return u, nil
 }
-func (r *user) UserUpdateSteamID(ctx context.Context, userID int32, steamID string) (*entity.User, error) {
+func (r *user) UpdateSteamID(ctx context.Context, userID int32, steamID string) (*entity.User, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	u := &entity.User{

@@ -24,7 +24,7 @@ func newUser(repository *postgres.Postgres) user {
 func (s *user) UserPassword(ctx context.Context, req *dto.UserUpdatePasswordRequest, userID int32) error {
 	err := s.repository.TxManager().ReadWriteTx(ctx, func(ctx context.Context) error {
 		// Get password from DB
-		password, err := s.repository.PasswordGetByUserID(ctx, userID)
+		password, err := s.repository.Password.GetByUserID(ctx, userID)
 		if err != nil {
 			logger.Error.Printf("error read password from DB: %v", err.Error())
 			return errs.InternalError
@@ -47,7 +47,7 @@ func (s *user) UserPassword(ctx context.Context, req *dto.UserUpdatePasswordRequ
 		}
 
 		// Update password
-		password, err = s.repository.PasswordUpdate(ctx, userID, hashPassword)
+		password, err = s.repository.Password.Update(ctx, userID, hashPassword)
 		if err != nil {
 			logger.Error.Printf("error updating password in DB: %v", err.Error())
 			return errs.InternalError
@@ -60,7 +60,7 @@ func (s *user) UserPassword(ctx context.Context, req *dto.UserUpdatePasswordRequ
 	return nil
 }
 func (s *user) UserUpdateSteamID(ctx context.Context, req *dto.UserUpdateSteamIDRequest, userID int32) (*entity.User, error) {
-	u, err := s.repository.UserUpdateSteamID(ctx, userID, req.SteamID)
+	u, err := s.repository.User.UpdateSteamID(ctx, userID, req.SteamID)
 	if err != nil {
 		return nil, err
 	}

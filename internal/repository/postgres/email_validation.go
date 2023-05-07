@@ -17,13 +17,13 @@ type emailValidation struct {
 	db *db.DB
 }
 
-func newEmailValidation(db *db.DB) emailValidation {
-	return emailValidation{
+func NewEmailValidation(db *db.DB) *emailValidation {
+	return &emailValidation{
 		db: db,
 	}
 }
 
-func (r *emailValidation) EmailValidationCreateOrUpdate(ctx context.Context, userID int32, code string, expiredAt time.Time) (*entity.EmailValidation, error) {
+func (r *emailValidation) CreateOrUpdate(ctx context.Context, userID int32, code string, expiredAt time.Time) (*entity.EmailValidation, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	ent := &entity.EmailValidation{
@@ -46,7 +46,7 @@ func (r *emailValidation) EmailValidationCreateOrUpdate(ctx context.Context, use
 	}
 	return ent, nil
 }
-func (r *emailValidation) EmailValidationGetByCode(ctx context.Context, code string) (*entity.EmailValidation, error) {
+func (r *emailValidation) GetByCode(ctx context.Context, code string) (*entity.EmailValidation, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	ent := &entity.EmailValidation{
@@ -67,7 +67,7 @@ func (r *emailValidation) EmailValidationGetByCode(ctx context.Context, code str
 	}
 	return ent, nil
 }
-func (r *emailValidation) EmailValidationDeleteByID(ctx context.Context, id int32) error {
+func (r *emailValidation) DeleteByID(ctx context.Context, id int32) error {
 	tx := getTxOrConn(ctx, r.db)
 
 	q := gosql.NewDelete().From("email_validations")

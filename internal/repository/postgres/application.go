@@ -19,13 +19,13 @@ type application struct {
 	db *db.DB
 }
 
-func newApplication(db *db.DB) application {
-	return application{
+func NewApplication(db *db.DB) *application {
+	return &application{
 		db: db,
 	}
 }
 
-func (r *application) ApplicationCreate(ctx context.Context, req *dto.ApplicationCreateRequest) (*entity.ApplicationPublic, error) {
+func (r *application) Create(ctx context.Context, req *dto.ApplicationCreateRequest) (*entity.ApplicationPublic, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	app := &entity.ApplicationPublic{
@@ -50,7 +50,7 @@ func (r *application) ApplicationCreate(ctx context.Context, req *dto.Applicatio
 	return app, nil
 }
 
-func (r *application) ApplicationList(ctx context.Context, req *dto.ApplicationListRequest) ([]*entity.ApplicationPublic, error) {
+func (r *application) List(ctx context.Context, req *dto.ApplicationListRequest) ([]*entity.ApplicationPublic, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	q := gosql.NewSelect().From("applications")
@@ -84,7 +84,7 @@ func (r *application) ApplicationList(ctx context.Context, req *dto.ApplicationL
 	return res, nil
 }
 
-func (r *application) ApplicationItem(ctx context.Context, req *dto.ApplicationItemRequest) (*entity.ApplicationPublic, error) {
+func (r *application) Item(ctx context.Context, req *dto.ApplicationItemRequest) (*entity.ApplicationPublic, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	app := &entity.ApplicationPublic{
@@ -110,7 +110,7 @@ func (r *application) ApplicationItem(ctx context.Context, req *dto.ApplicationI
 	}
 	return app, nil
 }
-func (r *application) ApplicationPrivateItem(ctx context.Context, req *dto.ApplicationItemRequest) (*entity.ApplicationPrivate, error) {
+func (r *application) PrivateItem(ctx context.Context, req *dto.ApplicationItemRequest) (*entity.ApplicationPrivate, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	app := &entity.ApplicationPrivate{

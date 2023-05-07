@@ -16,13 +16,13 @@ type accessToken struct {
 	db *db.DB
 }
 
-func newAccessToken(db *db.DB) accessToken {
-	return accessToken{
+func NewAccessToken(db *db.DB) *accessToken {
+	return &accessToken{
 		db: db,
 	}
 }
 
-func (r *accessToken) AccessTokenCreateOrUpdate(ctx context.Context, userID int32, tokenHash string, expiredAt time.Time) (*entity.AccessToken, error) {
+func (r *accessToken) CreateOrUpdate(ctx context.Context, userID int32, tokenHash string, expiredAt time.Time) (*entity.AccessToken, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	token := &entity.AccessToken{
@@ -45,7 +45,7 @@ func (r *accessToken) AccessTokenCreateOrUpdate(ctx context.Context, userID int3
 	}
 	return token, nil
 }
-func (r *accessToken) AccessTokenGetByUserID(ctx context.Context, tokenHash string) (*entity.AccessToken, error) {
+func (r *accessToken) GetByUserID(ctx context.Context, tokenHash string) (*entity.AccessToken, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	token := &entity.AccessToken{
@@ -67,7 +67,7 @@ func (r *accessToken) AccessTokenGetByUserID(ctx context.Context, tokenHash stri
 	}
 	return token, nil
 }
-func (r *accessToken) AccessTokenDeleteByID(ctx context.Context, id int32) error {
+func (r *accessToken) DeleteByID(ctx context.Context, id int32) error {
 	tx := getTxOrConn(ctx, r.db)
 
 	q := gosql.NewUpdate().Table("access_tokens")

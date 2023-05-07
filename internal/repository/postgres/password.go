@@ -15,13 +15,13 @@ type password struct {
 	db *db.DB
 }
 
-func newPassword(db *db.DB) password {
-	return password{
+func NewPassword(db *db.DB) *password {
+	return &password{
 		db: db,
 	}
 }
 
-func (r *password) PasswordCreate(ctx context.Context, userID int32, passwordHash string) (*entity.Password, error) {
+func (r *password) Create(ctx context.Context, userID int32, passwordHash string) (*entity.Password, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	password := &entity.Password{
@@ -41,7 +41,7 @@ func (r *password) PasswordCreate(ctx context.Context, userID int32, passwordHas
 	}
 	return password, nil
 }
-func (r *password) PasswordGetByUserID(ctx context.Context, userID int32) (*entity.Password, error) {
+func (r *password) GetByUserID(ctx context.Context, userID int32) (*entity.Password, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	password := &entity.Password{
@@ -63,7 +63,7 @@ func (r *password) PasswordGetByUserID(ctx context.Context, userID int32) (*enti
 	}
 	return password, nil
 }
-func (r *password) PasswordUpdate(ctx context.Context, id int32, passwordHash string) (*entity.Password, error) {
+func (r *password) Update(ctx context.Context, id int32, passwordHash string) (*entity.Password, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	password := &entity.Password{
@@ -85,7 +85,7 @@ func (r *password) PasswordUpdate(ctx context.Context, id int32, passwordHash st
 	}
 	return password, nil
 }
-func (r *password) PasswordIncreaseFailedAttempts(ctx context.Context, id int32) (*entity.Password, error) {
+func (r *password) IncreaseFailedAttempts(ctx context.Context, id int32) (*entity.Password, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	password := &entity.Password{
@@ -106,7 +106,7 @@ func (r *password) PasswordIncreaseFailedAttempts(ctx context.Context, id int32)
 	}
 	return password, nil
 }
-func (r *password) PasswordResetFailedAttempts(ctx context.Context, id int32) (*entity.Password, error) {
+func (r *password) ResetFailedAttempts(ctx context.Context, id int32) (*entity.Password, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	password := &entity.Password{
