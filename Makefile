@@ -17,6 +17,10 @@ swagger-install: ## install swagger for linux
 build: ## build binary file
 	CGO_ENABLED=0 go build -o server cmd/mmr_boost_server/main.go
 
+.PHONY: linter
+linter:
+	golangci-lint run --timeout 3m
+
 .PHONY: dependency
 dependency:
 	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest
