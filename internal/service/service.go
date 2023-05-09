@@ -7,10 +7,10 @@ import (
 	"github.com/HardDie/mmr_boost_server/internal/entity"
 )
 
-type IApplication interface {
+type IServiceApplication interface {
 	Create(ctx context.Context, req *dto.ApplicationCreateRequest) (*entity.ApplicationPublic, error)
 	UserList(ctx context.Context, req *dto.ApplicationUserListRequest) ([]*entity.ApplicationPublic, error)
-	ManagementUserList(ctx context.Context, req *dto.ApplicationManagementListRequest) ([]*entity.ApplicationPublic, error)
+	ManagementList(ctx context.Context, req *dto.ApplicationManagementListRequest) ([]*entity.ApplicationPublic, error)
 	UserItem(ctx context.Context, req *dto.ApplicationUserItemRequest) (*entity.ApplicationPublic, error)
 	ManagementItem(ctx context.Context, req *dto.ApplicationManagementItemRequest) (*entity.ApplicationPublic, error)
 	ManagementPrivateItem(
@@ -19,7 +19,7 @@ type IApplication interface {
 	) (*entity.ApplicationPrivate, error)
 }
 
-type IAuth interface {
+type IServiceAuth interface {
 	Register(ctx context.Context, req *dto.AuthRegisterRequest) error
 	Login(ctx context.Context, req *dto.AuthLoginRequest) (*entity.User, error)
 	Logout(ctx context.Context, sessionID int32) error
@@ -30,27 +30,27 @@ type IAuth interface {
 	SendValidationEmail(ctx context.Context, name string) error
 }
 
-type ISystem interface {
+type IServiceSystem interface {
 	GetSwagger() ([]byte, error)
 }
 
-type IUser interface {
+type IServiceUser interface {
 	UpdatePassword(ctx context.Context, req *dto.UserUpdatePasswordRequest, userID int32) error
 	UpdateSteamID(ctx context.Context, req *dto.UserUpdateSteamIDRequest, userID int32) (*entity.User, error)
 }
 
 type Service struct {
-	Application IApplication
-	Auth        IAuth
-	System      ISystem
-	User        IUser
+	Application IServiceApplication
+	Auth        IServiceAuth
+	System      IServiceSystem
+	User        IServiceUser
 }
 
 func NewService(
-	application IApplication,
-	auth IAuth,
-	system ISystem,
-	user IUser,
+	application IServiceApplication,
+	auth IServiceAuth,
+	system IServiceSystem,
+	user IServiceUser,
 ) *Service {
 	return &Service{
 		Application: application,

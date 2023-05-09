@@ -6,3 +6,4 @@ swagger.yaml
 api.swagger.yaml
 /server
 caddy/
+cover.out

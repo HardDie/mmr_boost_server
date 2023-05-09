@@ -9,31 +9,31 @@ import (
 	"github.com/HardDie/mmr_boost_server/internal/entity"
 )
 
-type IAccessToken interface {
+type IPostgresAccessToken interface {
 	CreateOrUpdate(ctx context.Context, userID int32, tokenHash string, expiredAt time.Time) (*entity.AccessToken, error)
 	GetByUserID(ctx context.Context, tokenHash string) (*entity.AccessToken, error)
 	DeleteByID(ctx context.Context, id int32) error
 }
 
-type IApplication interface {
+type IPostgresApplication interface {
 	Create(ctx context.Context, req *dto.ApplicationCreateRequest) (*entity.ApplicationPublic, error)
 	List(ctx context.Context, req *dto.ApplicationListRequest) ([]*entity.ApplicationPublic, error)
 	Item(ctx context.Context, req *dto.ApplicationItemRequest) (*entity.ApplicationPublic, error)
 	PrivateItem(ctx context.Context, req *dto.ApplicationItemRequest) (*entity.ApplicationPrivate, error)
 }
 
-type IEmailValidation interface {
+type IPostgresEmailValidation interface {
 	CreateOrUpdate(ctx context.Context, userID int32, code string, expiredAt time.Time) (*entity.EmailValidation, error)
 	GetByCode(ctx context.Context, code string) (*entity.EmailValidation, error)
 	DeleteByID(ctx context.Context, id int32) error
 }
 
-type IHistory interface {
+type IPostgresHistory interface {
 	NewEvent(ctx context.Context, userID int32, message string) error
 	NewEventWithAffected(ctx context.Context, userID, affectedUserID int32, message string) error
 }
 
-type IPassword interface {
+type IPostgresPassword interface {
 	Create(ctx context.Context, userID int32, passwordHash string) (*entity.Password, error)
 	GetByUserID(ctx context.Context, userID int32) (*entity.Password, error)
 	Update(ctx context.Context, id int32, passwordHash string) (*entity.Password, error)
@@ -41,7 +41,7 @@ type IPassword interface {
 	ResetFailedAttempts(ctx context.Context, id int32) (*entity.Password, error)
 }
 
-type IUser interface {
+type IPostgresUser interface {
 	GetByID(ctx context.Context, id int32) (*entity.User, error)
 	GetByName(ctx context.Context, name string) (*entity.User, error)
 	Create(ctx context.Context, email, name string) (*entity.User, error)
@@ -52,21 +52,21 @@ type IUser interface {
 type Postgres struct {
 	txManager *txManager
 
-	AccessToken     IAccessToken
-	Application     IApplication
-	EmailValidation IEmailValidation
-	History         IHistory
-	Password        IPassword
-	User            IUser
+	AccessToken     IPostgresAccessToken
+	Application     IPostgresApplication
+	EmailValidation IPostgresEmailValidation
+	History         IPostgresHistory
+	Password        IPostgresPassword
+	User            IPostgresUser
 }
 
 func NewPostgres(db *db.DB,
-	accessToken IAccessToken,
-	application IApplication,
-	emailValidation IEmailValidation,
-	history IHistory,
-	password IPassword,
-	user IUser,
+	accessToken IPostgresAccessToken,
+	application IPostgresApplication,
+	emailValidation IPostgresEmailValidation,
+	history IPostgresHistory,
+	password IPostgresPassword,
+	user IPostgresUser,
 ) *Postgres {
 	return &Postgres{
 		txManager: newTxManager(db),

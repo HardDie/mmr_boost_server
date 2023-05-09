@@ -118,7 +118,7 @@ func (s *application) GetManagementList(
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	resp, err := s.service.Application.ManagementUserList(ctx, r)
+	resp, err := s.service.Application.ManagementList(ctx, r)
 	if err != nil {
 		return nil, err
 	}

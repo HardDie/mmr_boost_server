@@ -52,7 +52,7 @@ func (s *Application) UserList(
 		StatusID: req.StatusID,
 	})
 }
-func (s *Application) ManagementUserList(
+func (s *Application) ManagementList(
 	ctx context.Context,
 	req *dto.ApplicationManagementListRequest,
 ) ([]*entity.ApplicationPublic, error) {
