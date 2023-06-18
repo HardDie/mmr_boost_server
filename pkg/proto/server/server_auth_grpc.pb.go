@@ -36,7 +36,7 @@ type AuthClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Login with username and password
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Validate email with recieved code
+	// Validate email with received code
 	ValidateEmail(ctx context.Context, in *ValidateEmailRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Send validation email again
 	SendValidationEmail(ctx context.Context, in *SendValidationEmailRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -116,7 +116,7 @@ type AuthServer interface {
 	Register(context.Context, *RegisterRequest) (*emptypb.Empty, error)
 	// Login with username and password
 	Login(context.Context, *LoginRequest) (*emptypb.Empty, error)
-	// Validate email with recieved code
+	// Validate email with received code
 	ValidateEmail(context.Context, *ValidateEmailRequest) (*emptypb.Empty, error)
 	// Send validation email again
 	SendValidationEmail(context.Context, *SendValidationEmailRequest) (*emptypb.Empty, error)

@@ -35,21 +35,21 @@ service Application
     rpc GetManagementList(GetManagementListRequest) returns (GetManagementListResponse)
     {
         option (google.api.http) = {
-            get : "/api/v1/applications/management"
+            get : "/api/v1/management/applications"
         };
     }
     // Get the application by id
     rpc GetManagementItem(GetManagementItemRequest) returns (GetManagementItemResponse)
     {
         option (google.api.http) = {
-            get : "/api/v1/applications/management/{id}"
+            get : "/api/v1/management/applications/{id}"
         };
     }
     // Getting private information from an application by id
     rpc GetManagementPrivateItem(GetManagementItemRequest) returns (GetManagementPrivateItemResponse)
     {
         option (google.api.http) = {
-            get : "/api/v1/applications/management/{id}/private"
+            get : "/api/v1/management/applications/{id}/private"
         };
     }
 }

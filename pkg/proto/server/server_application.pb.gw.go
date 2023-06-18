@@ -382,7 +382,7 @@ func RegisterApplicationHandlerServer(ctx context.Context, mux *runtime.ServeMux
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/gateway.Application/GetManagementList", runtime.WithHTTPPathPattern("/api/v1/applications/management"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/gateway.Application/GetManagementList", runtime.WithHTTPPathPattern("/api/v1/management/applications"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -407,7 +407,7 @@ func RegisterApplicationHandlerServer(ctx context.Context, mux *runtime.ServeMux
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/gateway.Application/GetManagementItem", runtime.WithHTTPPathPattern("/api/v1/applications/management/{id}"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/gateway.Application/GetManagementItem", runtime.WithHTTPPathPattern("/api/v1/management/applications/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -432,7 +432,7 @@ func RegisterApplicationHandlerServer(ctx context.Context, mux *runtime.ServeMux
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/gateway.Application/GetManagementPrivateItem", runtime.WithHTTPPathPattern("/api/v1/applications/management/{id}/private"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/gateway.Application/GetManagementPrivateItem", runtime.WithHTTPPathPattern("/api/v1/management/applications/{id}/private"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -562,7 +562,7 @@ func RegisterApplicationHandlerClient(ctx context.Context, mux *runtime.ServeMux
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/gateway.Application/GetManagementList", runtime.WithHTTPPathPattern("/api/v1/applications/management"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/gateway.Application/GetManagementList", runtime.WithHTTPPathPattern("/api/v1/management/applications"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -584,7 +584,7 @@ func RegisterApplicationHandlerClient(ctx context.Context, mux *runtime.ServeMux
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/gateway.Application/GetManagementItem", runtime.WithHTTPPathPattern("/api/v1/applications/management/{id}"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/gateway.Application/GetManagementItem", runtime.WithHTTPPathPattern("/api/v1/management/applications/{id}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -606,7 +606,7 @@ func RegisterApplicationHandlerClient(ctx context.Context, mux *runtime.ServeMux
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/gateway.Application/GetManagementPrivateItem", runtime.WithHTTPPathPattern("/api/v1/applications/management/{id}/private"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/gateway.Application/GetManagementPrivateItem", runtime.WithHTTPPathPattern("/api/v1/management/applications/{id}/private"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -632,11 +632,11 @@ var (
 
 	pattern_Application_GetItem_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "applications", "id"}, ""))
 
-	pattern_Application_GetManagementList_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "applications", "management"}, ""))
+	pattern_Application_GetManagementList_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "management", "applications"}, ""))
 
-	pattern_Application_GetManagementItem_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "applications", "management", "id"}, ""))
+	pattern_Application_GetManagementItem_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "v1", "management", "applications", "id"}, ""))
 
-	pattern_Application_GetManagementPrivateItem_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"api", "v1", "applications", "management", "id", "private"}, ""))
+	pattern_Application_GetManagementPrivateItem_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"api", "v1", "management", "applications", "id", "private"}, ""))
 )
 
 var (
