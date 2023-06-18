@@ -35,13 +35,13 @@ func (s *Auth) Register(ctx context.Context, req *dto.AuthRegisterRequest) error
 
 	err := s.repository.TxManager().ReadWriteTx(ctx, func(ctx context.Context) error {
 		// Check if username is not busy
-		user, err := s.repository.User.GetByName(ctx, req.Username)
+		user, err := s.repository.User.GetByNameOrEmail(ctx, req.Username, req.Email)
 		if err != nil {
 			logger.Error.Printf("error while trying get user: %v", err.Error())
 			return errs.ErrInternalError
 		}
 		if user != nil {
-			return errs.ErrBadRequest.AddMessage("username already exist")
+			return errs.ErrBadRequest.AddMessage("username already exist or email is busy")
 		}
 
 		// Hashing password

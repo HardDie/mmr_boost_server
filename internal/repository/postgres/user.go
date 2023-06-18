@@ -66,6 +66,34 @@ func (r *User) GetByName(ctx context.Context, name string) (*entity.User, error)
 	}
 	return u, nil
 }
+func (r *User) GetByNameOrEmail(ctx context.Context, name string, email string) (*entity.User, error) {
+	tx := getTxOrConn(ctx, r.db)
+
+	u := &entity.User{
+		Username: name,
+	}
+
+	q := gosql.NewSelect().From("users")
+	q.Columns().Add("id", "email", "role_id", "steam_id", "is_activated", "created_at", "updated_at", "deleted_at")
+	q.Where().Merge(gosql.ConditionOperatorAnd,
+		gosql.NewSqlCondition(gosql.ConditionOperatorOr).
+			AddExpression("username = ?", name).
+			AddExpression("email = ?", email),
+	)
+	q.Where().AddExpression("deleted_at IS NULL")
+	q.SetPagination(1, 0)
+
+	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
+
+	err := row.Scan(&u.ID, &u.Email, &u.RoleID, &u.SteamID, &u.IsActivated, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return u, nil
+}
 func (r *User) Create(ctx context.Context, email, name string) (*entity.User, error) {
 	tx := getTxOrConn(ctx, r.db)
 

@@ -44,6 +44,7 @@ type IPostgresPassword interface {
 type IPostgresUser interface {
 	GetByID(ctx context.Context, id int32) (*entity.User, error)
 	GetByName(ctx context.Context, name string) (*entity.User, error)
+	GetByNameOrEmail(ctx context.Context, name string, email string) (*entity.User, error)
 	Create(ctx context.Context, email, name string) (*entity.User, error)
 	ActivateRecord(ctx context.Context, userID int32) (*entity.User, error)
 	UpdateSteamID(ctx context.Context, userID int32, steamID string) (*entity.User, error)
