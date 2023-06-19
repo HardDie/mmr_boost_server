@@ -7,9 +7,12 @@ import (
 	"time"
 
 	"github.com/dimonrus/gosql"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/HardDie/mmr_boost_server/internal/db"
 	"github.com/HardDie/mmr_boost_server/internal/entity"
+	"github.com/HardDie/mmr_boost_server/internal/logger"
 )
 
 type AccessToken struct {
@@ -46,7 +49,8 @@ func (r *AccessToken) CreateOrUpdate(
 
 	err := row.Scan(&token.ID, &token.CreatedAt, &token.UpdatedAt)
 	if err != nil {
-		return nil, err
+		logger.Error.Println("CreateOrUpdate:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return token, nil
 }
@@ -68,7 +72,8 @@ func (r *AccessToken) GetByUserID(ctx context.Context, tokenHash string) (*entit
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
+		logger.Error.Println("GetByUserID:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return token, nil
 }
@@ -84,7 +89,8 @@ func (r *AccessToken) DeleteByID(ctx context.Context, id int32) error {
 
 	err := row.Scan(&id)
 	if err != nil {
-		return err
+		logger.Error.Println("DeleteByID:", err.Error())
+		return status.Error(codes.Internal, "internal")
 	}
 	return nil
 }

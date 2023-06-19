@@ -6,9 +6,12 @@ import (
 	"errors"
 
 	"github.com/dimonrus/gosql"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/HardDie/mmr_boost_server/internal/db"
 	"github.com/HardDie/mmr_boost_server/internal/entity"
+	"github.com/HardDie/mmr_boost_server/internal/logger"
 )
 
 type Password struct {
@@ -37,7 +40,8 @@ func (r *Password) Create(ctx context.Context, userID int32, passwordHash string
 
 	err := row.Scan(&password.ID, &password.CreatedAt, &password.UpdatedAt)
 	if err != nil {
-		return nil, err
+		logger.Error.Println("Create:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return password, nil
 }
@@ -60,7 +64,8 @@ func (r *Password) GetByUserID(ctx context.Context, userID int32) (*entity.Passw
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
+		logger.Error.Println("GetUserByID:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return password, nil
 }
@@ -82,7 +87,8 @@ func (r *Password) Update(ctx context.Context, id int32, passwordHash string) (*
 
 	err := row.Scan(&password.UserID, &password.FailedAttempts, &password.CreatedAt, &password.UpdatedAt)
 	if err != nil {
-		return nil, err
+		logger.Error.Println("Update:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return password, nil
 }
@@ -104,7 +110,8 @@ func (r *Password) IncreaseFailedAttempts(ctx context.Context, id int32) (*entit
 	err := row.Scan(&password.UserID, &password.PasswordHash, &password.FailedAttempts,
 		&password.CreatedAt, &password.UpdatedAt)
 	if err != nil {
-		return nil, err
+		logger.Error.Println("IncreaseFailedAttempts:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return password, nil
 }
@@ -126,7 +133,8 @@ func (r *Password) ResetFailedAttempts(ctx context.Context, id int32) (*entity.P
 	err := row.Scan(&password.UserID, &password.PasswordHash, &password.FailedAttempts,
 		&password.CreatedAt, &password.UpdatedAt)
 	if err != nil {
-		return nil, err
+		logger.Error.Println("ResetFailedAttempts:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return password, nil
 }

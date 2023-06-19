@@ -6,9 +6,12 @@ import (
 	"errors"
 
 	"github.com/dimonrus/gosql"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/HardDie/mmr_boost_server/internal/db"
 	"github.com/HardDie/mmr_boost_server/internal/entity"
+	"github.com/HardDie/mmr_boost_server/internal/logger"
 	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
 )
 
@@ -40,7 +43,8 @@ func (r *User) GetByID(ctx context.Context, id int32) (*entity.User, error) { //
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
+		logger.Error.Println("GetByID:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return u, nil
 }
@@ -62,7 +66,8 @@ func (r *User) GetByName(ctx context.Context, name string) (*entity.User, error)
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
+		logger.Error.Println("GetByName:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return u, nil
 }
@@ -90,7 +95,8 @@ func (r *User) GetByNameOrEmail(ctx context.Context, name string, email string) 
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
+		logger.Error.Println("GetByNameOrEmail:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return u, nil
 }
@@ -112,7 +118,8 @@ func (r *User) Create(ctx context.Context, email, name string) (*entity.User, er
 
 	err := row.Scan(&u.ID, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
-		return nil, err
+		logger.Error.Println("Create:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return u, nil
 }
@@ -137,7 +144,8 @@ func (r *User) ActivateRecord(ctx context.Context, userID int32) (*entity.User, 
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
+		logger.Error.Println("ActivateRecord:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return u, nil
 }
@@ -159,7 +167,8 @@ func (r *User) UpdateSteamID(ctx context.Context, userID int32, steamID string) 
 
 	err := row.Scan(&u.Email, &u.Username, &u.RoleID, &u.IsActivated, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
-		return nil, err
+		logger.Error.Println("UpdateSteamID:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return u, nil
 }

@@ -3,6 +3,9 @@ package postgres
 import (
 	"context"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/HardDie/mmr_boost_server/internal/db"
 	"github.com/HardDie/mmr_boost_server/internal/logger"
 )
@@ -25,7 +28,8 @@ func (t *txManager) ReadWriteTx(ctx context.Context, call func(ctx context.Conte
 	// Start transaction
 	tx, err := t.db.BeginTx(ctx)
 	if err != nil {
-		return err
+		logger.Error.Println("BeginTx:", err.Error())
+		return status.Error(codes.Internal, "internal")
 	}
 
 	// Close transaction at exit

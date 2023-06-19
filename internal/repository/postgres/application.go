@@ -48,7 +48,8 @@ func (r *Application) Create(
 
 	err := row.Scan(&app.ID, &app.CreatedAt, &app.UpdatedAt)
 	if err != nil {
-		return nil, err
+		logger.Error.Println("Create:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return app, nil
 }
@@ -116,7 +117,8 @@ func (r *Application) Item(ctx context.Context, req *dto.ApplicationItemRequest)
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
+		logger.Error.Println("Item:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return app, nil
 }
@@ -141,7 +143,8 @@ func (r *Application) PrivateItem(
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
+		logger.Error.Println("PrivateItem:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return app, nil
 }

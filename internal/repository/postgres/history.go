@@ -4,8 +4,11 @@ import (
 	"context"
 
 	"github.com/dimonrus/gosql"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/HardDie/mmr_boost_server/internal/db"
+	"github.com/HardDie/mmr_boost_server/internal/logger"
 )
 
 type History struct {
@@ -30,7 +33,8 @@ func (r *History) NewEvent(ctx context.Context, userID int32, message string) er
 	var id int32
 	err := row.Scan(&id)
 	if err != nil {
-		return err
+		logger.Error.Println("NewEvent:", err.Error())
+		return status.Error(codes.Internal, "internal")
 	}
 
 	return nil
@@ -47,7 +51,8 @@ func (r *History) NewEventWithAffected(ctx context.Context, userID, affectedUser
 	var id int32
 	err := row.Scan(&id)
 	if err != nil {
-		return err
+		logger.Error.Println("NewEventWithAffected:", err.Error())
+		return status.Error(codes.Internal, "internal")
 	}
 
 	return nil

@@ -8,9 +8,12 @@ import (
 	"time"
 
 	"github.com/dimonrus/gosql"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/HardDie/mmr_boost_server/internal/db"
 	"github.com/HardDie/mmr_boost_server/internal/entity"
+	"github.com/HardDie/mmr_boost_server/internal/logger"
 )
 
 type EmailValidation struct {
@@ -47,7 +50,8 @@ func (r *EmailValidation) CreateOrUpdate(
 
 	err := row.Scan(&ent.ID, &ent.CreatedAt)
 	if err != nil {
-		return nil, err
+		logger.Error.Println("CreateOrUpdate:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return ent, nil
 }
@@ -68,7 +72,8 @@ func (r *EmailValidation) GetByCode(ctx context.Context, code string) (*entity.E
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, err
+		logger.Error.Println("GetByCode:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	return ent, nil
 }
@@ -82,7 +87,8 @@ func (r *EmailValidation) DeleteByID(ctx context.Context, id int32) error {
 
 	err := row.Scan(&id)
 	if err != nil {
-		return err
+		logger.Error.Println("DeleteByID:", err.Error())
+		return status.Error(codes.Internal, "internal")
 	}
 	return nil
 }
