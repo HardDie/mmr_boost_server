@@ -1,10 +1,11 @@
 package middleware
 
 import (
-	"errors"
 	"net/http"
 
-	"github.com/HardDie/mmr_boost_server/internal/errs"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/HardDie/mmr_boost_server/internal/service"
 	"github.com/HardDie/mmr_boost_server/internal/utils"
 )
@@ -47,7 +48,7 @@ func (m *AuthMiddleware) RequestMiddleware(next http.Handler) http.Handler {
 		ctx := r.Context()
 		user, session, err := m.service.Auth.ValidateCookie(ctx, token)
 		if err != nil {
-			if errors.Is(err, errs.ErrSessionInvalid) {
+			if status.Convert(err).Code() == codes.PermissionDenied {
 				http.Error(w, err.Error(), http.StatusUnauthorized)
 			} else {
 				http.Error(w, "Internal error", http.StatusInternalServerError)
