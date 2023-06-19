@@ -3,7 +3,11 @@ package service
 import (
 	"errors"
 	"io"
+	"io/fs"
 	"os"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/HardDie/mmr_boost_server/internal/logger"
 )
@@ -28,8 +32,11 @@ func (s *System) GetSwagger() ([]byte, error) {
 	// Open file
 	file, err := os.Open("api.swagger.yaml")
 	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil, status.Error(codes.NotFound, "can't find swagger.yaml file")
+		}
 		logger.Error.Println("error opening swagger.yaml file:", err.Error())
-		return nil, errors.New("can't find swagger.yaml file")
+		return nil, status.Error(codes.Internal, "internal")
 	}
 	defer file.Close()
 
@@ -37,7 +44,7 @@ func (s *System) GetSwagger() ([]byte, error) {
 	data, err := io.ReadAll(file)
 	if err != nil {
 		logger.Error.Println("error reading swagger.yaml file:", err.Error())
-		return nil, errors.New("error reading swagger.yaml file")
+		return nil, status.Error(codes.Internal, "internal")
 	}
 
 	// Save cache and return result

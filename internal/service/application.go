@@ -9,7 +9,6 @@ import (
 
 	"github.com/HardDie/mmr_boost_server/internal/dto"
 	"github.com/HardDie/mmr_boost_server/internal/entity"
-	"github.com/HardDie/mmr_boost_server/internal/errs"
 	"github.com/HardDie/mmr_boost_server/internal/logger"
 	"github.com/HardDie/mmr_boost_server/internal/repository/postgres"
 	"github.com/HardDie/mmr_boost_server/internal/utils"
@@ -32,7 +31,7 @@ func (s *Application) Create(
 	resp, err := s.repository.Application.Create(ctx, req)
 	if err != nil {
 		logger.Error.Println("error creating new application:", err.Error())
-		return nil, errs.ErrInternalError
+		return nil, status.Error(codes.Internal, "internal")
 	}
 
 	msg := fmt.Sprintf("application %d were created", resp.ID)
@@ -102,33 +101,36 @@ func (s *Application) ManagementPrivateItem(
 		ApplicationID: req.ApplicationID,
 	})
 	if err != nil {
+		msg := fmt.Sprintf("error get private application_id=%d", req.ApplicationID)
 		if err := s.repository.History.NewEvent(
 			ctx,
 			userID,
-			fmt.Sprintf("error get private application_id=%d", req.ApplicationID),
+			msg,
 		); err != nil {
-			logger.Error.Printf("error writing history message: error get private application_id=%d", req.ApplicationID)
+			logger.Error.Println("error writing history message:", msg)
 		}
 		return nil, err
 	}
 
 	if res == nil {
+		msg := fmt.Sprintf("get not exist private application_id=%d", req.ApplicationID)
 		if err := s.repository.History.NewEvent(
 			ctx,
 			userID,
-			fmt.Sprintf("get not exist private application_id=%d", req.ApplicationID),
+			msg,
 		); err != nil {
-			logger.Error.Printf("error writing history message: get not exist private application_id=%d", req.ApplicationID)
+			logger.Error.Println("error writing history message:", msg)
 		}
 		return nil, status.Error(codes.NotFound, "application not exist")
 	}
 
+	msg := fmt.Sprintf("get private application_id=%d", req.ApplicationID)
 	if err := s.repository.History.NewEvent(
 		ctx,
 		userID,
-		fmt.Sprintf("get private application_id=%d", req.ApplicationID),
+		msg,
 	); err != nil {
-		logger.Error.Printf("error writing history message: get private application_id=%d", req.ApplicationID)
+		logger.Error.Println("error writing history message:", msg)
 	}
 	return res, nil
 }
