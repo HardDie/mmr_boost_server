@@ -8,7 +8,17 @@ import (
 	"github.com/HardDie/mmr_boost_server/internal/logger"
 )
 
+var (
+	env string
+)
+
+const (
+	ENV_DEV  = "dev"
+	ENV_PROD = "prod"
+)
+
 type Config struct {
+	App             App
 	Postgres        Postgres
 	HTTP            HTTP
 	Password        Password
@@ -24,7 +34,8 @@ func Get() Config {
 		}
 	}
 
-	return Config{
+	cfg := Config{
+		App:             appConfig(),
 		Postgres:        postgresConfig(),
 		HTTP:            httpConfig(),
 		Password:        passwordConfig(),
@@ -32,4 +43,10 @@ func Get() Config {
 		Session:         sessionConfig(),
 		EmailValidation: emailValidationConfig(),
 	}
+	env = cfg.App.Env
+	return cfg
+}
+
+func GetEnv() string {
+	return env
 }

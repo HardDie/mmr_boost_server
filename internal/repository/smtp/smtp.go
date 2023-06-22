@@ -1,11 +1,13 @@
 package smtp
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/go-mail/mail/v2"
 
 	"github.com/HardDie/mmr_boost_server/internal/config"
+	"github.com/HardDie/mmr_boost_server/internal/logger"
 )
 
 const (
@@ -42,6 +44,16 @@ func (r *SMTP) SendEmailVerification(email, code string) error {
 			code, r.baseURL, code,
 		),
 	)
+
+	if config.GetEnv() == config.ENV_DEV {
+		b := bytes.NewBuffer(nil)
+		_, err := msg.WriteTo(b)
+		if err != nil {
+			return fmt.Errorf("smtp: error write message to buffer: %w", err)
+		}
+		logger.Debug.Println("Email:", b.String())
+		return nil
+	}
 
 	err := r.dialer.DialAndSend(msg)
 	if err != nil {
