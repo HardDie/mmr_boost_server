@@ -11,7 +11,7 @@ RUN go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@la
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 # Install dependency
-COPY go.mod go.sum .
+COPY go.mod go.sum ./
 RUN go mod download
 # Build project
 COPY . .
