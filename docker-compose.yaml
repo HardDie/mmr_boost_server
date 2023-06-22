@@ -2,26 +2,26 @@ version: '3.0'
 
 services:
   app:
-    image: golang:latest
-    volumes:
-      - '.:/home/app:ro'
+    build:
+      context: .
+      dockerfile: Dockerfile
     env_file:
       - .env
-    working_dir: '/home/app'
-    command: sh -c "./server"
-  caddy:
-    image: caddy:latest
-    volumes:
-      - './caddy/Caddyfile:/etc/caddy/Caddyfile:ro'
-      - './caddy/data:/data'
-      - './caddy/config:/config'
-    ports:
-      - 443:443
+#  caddy:
+#    image: caddy:latest
+#    volumes:
+#      - './caddy/Caddyfile:/etc/caddy/Caddyfile:ro'
+#      - './caddy/data:/data'
+#      - './caddy/config:/config'
+#    ports:
+#      - 443:443
   db:
     image: postgres:latest
     volumes:
-      - './db_data:/var/lib/postgresql/data'
+      - '/tmp/db_data:/var/lib/postgresql/data'
     environment:
       - POSTGRES_PASSWORD=mmr_boost
       - POSTGRES_USER=mmr_boost
       - POSTGRES_DB=db
+    ports:
+      - 5432:5432

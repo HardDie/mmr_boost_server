@@ -1,0 +1,11 @@
+version: '3.0'
+
+services:
+  caddy:
+    image: caddy:latest
+    volumes:
+      - './caddy/Caddyfile:/etc/caddy/Caddyfile:ro'
+      - './caddy/data:/data'
+      - './caddy/config:/config'
+    ports:
+      - 443:443
