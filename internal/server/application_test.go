@@ -333,13 +333,6 @@ func TestApplication_GetManagementList(t *testing.T) {
 			nil,
 			codes.Internal,
 		},
-		{
-			"role error",
-			&pb.GetManagementListRequest{},
-			utils.ContextSetRoleID(context.Background(), int32(pb.UserRoleID_user)),
-			nil,
-			codes.Unauthenticated,
-		},
 	}
 
 	for _, tt := range tests {
@@ -418,13 +411,6 @@ func TestApplication_GetManagementItem(t *testing.T) {
 			nil,
 			codes.Internal,
 		},
-		{
-			"role error",
-			&pb.GetManagementItemRequest{Id: 1},
-			utils.ContextSetRoleID(context.Background(), int32(pb.UserRoleID_user)),
-			nil,
-			codes.Unauthenticated,
-		},
 	}
 
 	for _, tt := range tests {
@@ -494,13 +480,6 @@ func TestApplication_GetManagementPrivateItem(t *testing.T) {
 			ctx,
 			nil,
 			codes.Internal,
-		},
-		{
-			"role error",
-			&pb.GetManagementItemRequest{Id: 1},
-			utils.ContextSetRoleID(context.Background(), int32(pb.UserRoleID_user)),
-			nil,
-			codes.Unauthenticated,
 		},
 	}
 

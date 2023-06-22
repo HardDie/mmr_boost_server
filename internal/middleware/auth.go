@@ -8,6 +8,7 @@ import (
 
 	"github.com/HardDie/mmr_boost_server/internal/service"
 	"github.com/HardDie/mmr_boost_server/internal/utils"
+	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
 )
 
 type AuthMiddleware struct {
@@ -21,16 +22,6 @@ func NewAuthMiddleware(srvc *service.Service) *AuthMiddleware {
 }
 func (m *AuthMiddleware) RequestMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// List of public routes
-		if r.URL.Path == "/api/v1/auth/login" ||
-			r.URL.Path == "/api/v1/auth/register" ||
-			r.URL.Path == "/api/v1/auth/validate_email" ||
-			r.URL.Path == "/api/v1/auth/send_validation_email" ||
-			r.URL.Path == "/api/v1/system/swagger" {
-			next.ServeHTTP(w, r)
-			return
-		}
-
 		// Extract token from cookie
 		token := utils.GetCookie(r)
 
@@ -60,5 +51,18 @@ func (m *AuthMiddleware) RequestMiddleware(next http.Handler) http.Handler {
 		ctx = utils.ContextSetRoleID(ctx, user.RoleID)
 		ctx = utils.ContextSetSession(ctx, session)
 		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// ManagementMiddleware Validate that current user is admin or manager
+func ManagementMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		roleID := utils.ContextGetRoleID(r.Context())
+		if roleID != int32(pb.UserRoleID_admin) &&
+			roleID != int32(pb.UserRoleID_manager) {
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
 	})
 }

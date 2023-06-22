@@ -14,7 +14,7 @@ service User
     rpc Password(PasswordRequest) returns (google.protobuf.Empty)
     {
         option (google.api.http) = {
-            patch : "/api/v1/user/password"
+            patch : "/api/v1/private/user/password"
             body : "*"
         };
     }
@@ -22,7 +22,7 @@ service User
     rpc SteamID(SteamIDRequest) returns (SteamIDResponse)
     {
         option (google.api.http) = {
-            patch : "/api/v1/user/steam_id"
+            patch : "/api/v1/private/user/steam_id"
             body : "*"
         };
     }

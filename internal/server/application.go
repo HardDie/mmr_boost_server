@@ -102,13 +102,6 @@ func (s *application) GetManagementList(
 	ctx context.Context,
 	req *pb.GetManagementListRequest,
 ) (*pb.GetManagementListResponse, error) {
-	roleID := utils.ContextGetRoleID(ctx)
-
-	if roleID != int32(pb.UserRoleID_admin) &&
-		roleID != int32(pb.UserRoleID_manager) {
-		return nil, status.Error(codes.Unauthenticated, "forbidden request")
-	}
-
 	r := &dto.ApplicationManagementListRequest{
 		UserID:   req.UserId,
 		StatusID: req.StatusId,
@@ -135,13 +128,6 @@ func (s *application) GetManagementItem(
 	ctx context.Context,
 	req *pb.GetManagementItemRequest,
 ) (*pb.GetManagementItemResponse, error) {
-	roleID := utils.ContextGetRoleID(ctx)
-
-	if roleID != int32(pb.UserRoleID_admin) &&
-		roleID != int32(pb.UserRoleID_manager) {
-		return nil, status.Error(codes.Unauthenticated, "forbidden request")
-	}
-
 	r := &dto.ApplicationManagementItemRequest{
 		ApplicationID: req.Id,
 	}
@@ -163,13 +149,6 @@ func (s *application) GetManagementPrivateItem(
 	ctx context.Context,
 	req *pb.GetManagementItemRequest,
 ) (*pb.GetManagementPrivateItemResponse, error) {
-	roleID := utils.ContextGetRoleID(ctx)
-
-	if roleID != int32(pb.UserRoleID_admin) &&
-		roleID != int32(pb.UserRoleID_manager) {
-		return nil, status.Error(codes.Unauthenticated, "forbidden request")
-	}
-
 	r := &dto.ApplicationManagementItemRequest{
 		ApplicationID: req.Id,
 	}

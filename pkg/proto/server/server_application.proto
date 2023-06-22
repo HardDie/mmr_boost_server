@@ -13,7 +13,7 @@ service Application
     rpc Create(CreateRequest) returns (CreateResponse)
     {
         option (google.api.http) = {
-            post : "/api/v1/applications"
+            post : "/api/v1/private/applications"
             body : "*"
         };
     }
@@ -21,14 +21,14 @@ service Application
     rpc GetList(GetListRequest) returns (GetListResponse)
     {
         option (google.api.http) = {
-            get : "/api/v1/applications"
+            get : "/api/v1/private/applications"
         };
     }
     // Get the application you created
     rpc GetItem(GetItemRequest) returns (GetItemResponse)
     {
         option (google.api.http) = {
-            get : "/api/v1/applications/{id}"
+            get : "/api/v1/private/applications/{id}"
         };
     }
     // Getting a list of all applications. Access: admin, manager

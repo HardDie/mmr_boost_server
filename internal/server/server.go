@@ -40,38 +40,53 @@ func customOutgoingHeaderMatcher(h string) (string, bool) {
 }
 
 func (s *Server) Register(router *mux.Router) {
-	ctx := context.Background()
-	router.Use(
+	commonMiddlewares := []mux.MiddlewareFunc{
 		middleware.LoggerMiddleware,
 		middleware.CorsMiddleware,
+	}
+	privateMiddlewares := []mux.MiddlewareFunc{
 		s.authMiddleware.RequestMiddleware,
-	)
+	}
+	managementMiddlewares := []mux.MiddlewareFunc{
+		s.authMiddleware.RequestMiddleware,
+		middleware.ManagementMiddleware,
+	}
 
+	ctx := context.Background()
 	// Create grpc mux
 	grpcMux := runtime.NewServeMux(
 		// Fix "Grpc-Metadata-" prefix for outgoing headers
 		runtime.WithOutgoingHeaderMatcher(customOutgoingHeaderMatcher),
 	)
 
+	// Init grpcMux with all APIs
 	err := s.application.RegisterHTTP(ctx, grpcMux)
 	if err != nil {
 		logger.Error.Fatal("error register application", err.Error())
 	}
-
 	err = s.auth.RegisterHTTP(ctx, grpcMux)
 	if err != nil {
 		logger.Error.Fatal("error register auth", err.Error())
 	}
-
 	err = s.user.RegisterHTTP(ctx, grpcMux)
 	if err != nil {
 		logger.Error.Fatal("error register user", err.Error())
 	}
-
 	err = s.system.RegisterHTTP(ctx, grpcMux)
 	if err != nil {
 		logger.Error.Fatal("error register system", err.Error())
 	}
 
-	router.PathPrefix("/").Handler(grpcMux)
+	// management
+	managementRoute := router.PathPrefix("/management").Subrouter()
+	managementRoute.Use(managementMiddlewares...)
+	managementRoute.PathPrefix("").Handler(grpcMux)
+
+	// private
+	privateRoute := router.PathPrefix("/private").Subrouter()
+	privateRoute.Use(privateMiddlewares...)
+	privateRoute.PathPrefix("").Handler(grpcMux)
+
+	router.Use(commonMiddlewares...)
+	router.PathPrefix("").Handler(grpcMux)
 }

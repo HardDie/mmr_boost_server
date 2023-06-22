@@ -336,7 +336,7 @@ func RegisterAuthHandlerServer(ctx context.Context, mux *runtime.ServeMux, serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/gateway.Auth/User", runtime.WithHTTPPathPattern("/api/v1/auth/user"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/gateway.Auth/User", runtime.WithHTTPPathPattern("/api/v1/private/auth/user"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -361,7 +361,7 @@ func RegisterAuthHandlerServer(ctx context.Context, mux *runtime.ServeMux, serve
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/gateway.Auth/Logout", runtime.WithHTTPPathPattern("/api/v1/auth/logout"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/gateway.Auth/Logout", runtime.WithHTTPPathPattern("/api/v1/private/auth/logout"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -513,7 +513,7 @@ func RegisterAuthHandlerClient(ctx context.Context, mux *runtime.ServeMux, clien
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/gateway.Auth/User", runtime.WithHTTPPathPattern("/api/v1/auth/user"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/gateway.Auth/User", runtime.WithHTTPPathPattern("/api/v1/private/auth/user"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -535,7 +535,7 @@ func RegisterAuthHandlerClient(ctx context.Context, mux *runtime.ServeMux, clien
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/gateway.Auth/Logout", runtime.WithHTTPPathPattern("/api/v1/auth/logout"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/gateway.Auth/Logout", runtime.WithHTTPPathPattern("/api/v1/private/auth/logout"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -563,9 +563,9 @@ var (
 
 	pattern_Auth_SendValidationEmail_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "auth", "send_validation_email"}, ""))
 
-	pattern_Auth_User_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "auth", "user"}, ""))
+	pattern_Auth_User_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "private", "auth", "user"}, ""))
 
-	pattern_Auth_Logout_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "auth", "logout"}, ""))
+	pattern_Auth_Logout_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "private", "auth", "logout"}, ""))
 )
 
 var (
