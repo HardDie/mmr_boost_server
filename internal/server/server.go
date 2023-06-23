@@ -18,6 +18,7 @@ type Server struct {
 	auth
 	system
 	user
+	price
 
 	authMiddleware    *middleware.AuthMiddleware
 	timeoutMiddleware *middleware.TimeoutRequestMiddleware
@@ -29,6 +30,7 @@ func NewServer(config config.Config, srvc *service.Service) *Server {
 		auth:        newAuth(srvc),
 		system:      newSystem(srvc),
 		user:        newUser(srvc),
+		price:       newPrice(srvc),
 
 		authMiddleware:    middleware.NewAuthMiddleware(srvc),
 		timeoutMiddleware: middleware.NewTimeoutRequestMiddleware(time.Duration(config.HTTP.RequestTimeout) * time.Second),
@@ -75,6 +77,10 @@ func (s *Server) Register(router *mux.Router) {
 	err = s.system.RegisterHTTP(ctx, grpcMux)
 	if err != nil {
 		logger.Error.Fatal("error register system", err.Error())
+	}
+	err = s.price.RegisterHTTP(ctx, grpcMux)
+	if err != nil {
+		logger.Error.Fatal("error register price", err.Error())
 	}
 
 	// management

@@ -22,7 +22,7 @@ import (
 func TestAuth_Register(t *testing.T) {
 	ctx := context.Background()
 	serviceAuth := mocks.NewIServiceAuth(t)
-	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil))
+	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil, nil))
 
 	serviceAuth.On("Register",
 		mock.AnythingOfType("*context.emptyCtx"),
@@ -73,7 +73,7 @@ func TestAuth_Register(t *testing.T) {
 func TestAuth_Login(t *testing.T) {
 	ctx := context.Background()
 	serviceAuth := mocks.NewIServiceAuth(t)
-	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil))
+	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil, nil))
 
 	serviceAuth.On("Login",
 		mock.AnythingOfType("*context.emptyCtx"),
@@ -146,7 +146,7 @@ func TestAuth_Login(t *testing.T) {
 func TestAuth_ValidateEmail(t *testing.T) {
 	ctx := context.Background()
 	serviceAuth := mocks.NewIServiceAuth(t)
-	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil))
+	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil, nil))
 
 	uuid, err := utils.UUIDGenerate()
 	if err != nil {
@@ -202,7 +202,7 @@ func TestAuth_ValidateEmail(t *testing.T) {
 func TestAuth_SendValidationEmail(t *testing.T) {
 	ctx := context.Background()
 	serviceAuth := mocks.NewIServiceAuth(t)
-	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil))
+	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil, nil))
 
 	serviceAuth.On("SendValidationEmail",
 		mock.AnythingOfType("*context.emptyCtx"),
@@ -252,7 +252,7 @@ func TestAuth_SendValidationEmail(t *testing.T) {
 
 func TestAuth_User(t *testing.T) {
 	serviceAuth := mocks.NewIServiceAuth(t)
-	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil))
+	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil, nil))
 
 	serviceAuth.On("GetUserInfo",
 		mock.AnythingOfType("*context.valueCtx"),
@@ -312,7 +312,7 @@ func TestAuth_User(t *testing.T) {
 
 func TestAuth_Logout(t *testing.T) {
 	serviceAuth := mocks.NewIServiceAuth(t)
-	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil))
+	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil, nil))
 
 	serviceAuth.On("Logout",
 		mock.AnythingOfType("*context.valueCtx"),

@@ -33,7 +33,7 @@ func (s *application) Create(ctx context.Context, req *pb.CreateRequest) (*pb.Cr
 
 	r := &dto.ApplicationCreateRequest{
 		UserID:     userID,
-		TypeID:     req.TypeId,
+		TypeID:     int32(req.TypeId),
 		CurrentMMR: req.CurrentMmr,
 		TargetMMR:  req.TargetMmr,
 		TgContact:  req.TgContact,

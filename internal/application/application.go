@@ -71,11 +71,13 @@ func Get() (*Application, error) {
 	serviceAuth := service.NewAuth(app.Cfg, postgresRepository, smtpRepository)
 	serviceSystem := service.NewSystem()
 	serviceUser := service.NewUser(postgresRepository)
+	servicePrice := service.NewPrice(postgresRepository)
 	srvc := service.NewService(
 		serviceApplication,
 		serviceAuth,
 		serviceSystem,
 		serviceUser,
+		servicePrice,
 	)
 
 	// Init severs

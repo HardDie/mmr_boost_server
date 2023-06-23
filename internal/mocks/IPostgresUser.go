@@ -118,6 +118,32 @@ func (_m *IPostgresUser) GetByName(ctx context.Context, name string) (*entity.Us
 	return r0, r1
 }
 
+// GetByNameOrEmail provides a mock function with given fields: ctx, name, email
+func (_m *IPostgresUser) GetByNameOrEmail(ctx context.Context, name string, email string) (*entity.User, error) {
+	ret := _m.Called(ctx, name, email)
+
+	var r0 *entity.User
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (*entity.User, error)); ok {
+		return rf(ctx, name, email)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) *entity.User); ok {
+		r0 = rf(ctx, name, email)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*entity.User)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, name, email)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // UpdateSteamID provides a mock function with given fields: ctx, userID, steamID
 func (_m *IPostgresUser) UpdateSteamID(ctx context.Context, userID int32, steamID string) (*entity.User, error) {
 	ret := _m.Called(ctx, userID, steamID)

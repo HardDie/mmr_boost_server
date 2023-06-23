@@ -27,7 +27,7 @@ func ApplicationPublicToPb(a *entity.ApplicationPublic) *pb.PublicApplicationObj
 		Id:         a.ID,
 		UserId:     a.UserID,
 		StatusId:   a.StatusID,
-		TypeId:     a.TypeID,
+		TypeId:     pb.ApplicationTypeID(a.TypeID),
 		CurrentMmr: a.CurrentMMR,
 		TargetMmr:  a.TargetMMR,
 		TgContact:  a.TgContact,

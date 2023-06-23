@@ -39,11 +39,16 @@ type IServiceUser interface {
 	UpdateSteamID(ctx context.Context, req *dto.UserUpdateSteamIDRequest, userID int32) (*entity.User, error)
 }
 
+type IServicePrice interface {
+	Price(ctx context.Context, req *dto.PriceRequest) (float64, error)
+}
+
 type Service struct {
 	Application IServiceApplication
 	Auth        IServiceAuth
 	System      IServiceSystem
 	User        IServiceUser
+	Price       IServicePrice
 }
 
 func NewService(
@@ -51,11 +56,13 @@ func NewService(
 	auth IServiceAuth,
 	system IServiceSystem,
 	user IServiceUser,
+	price IServicePrice,
 ) *Service {
 	return &Service{
 		Application: application,
 		Auth:        auth,
 		System:      system,
 		User:        user,
+		Price:       price,
 	}
 }

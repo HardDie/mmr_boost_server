@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package gateway;
+
+option go_package = "github.com/HardDie/mmr_boost_server/pkg/server";
+
+import "google/api/annotations.proto";
+import "server_application.proto";
+
+service Price
+{
+    // Get a price for the selected service
+    rpc Price(PriceRequest) returns (PriceResponse)
+    {
+        option (google.api.http) = {
+            get : "/api/v1/price"
+        };
+    }
+}
+
+message PriceRequest
+{
+    ApplicationTypeID type_id = 1;
+    optional int32 current_mmr = 2;
+    optional int32 target_mmr = 3;
+}
+message PriceResponse
+{
+    double price = 1;
+}

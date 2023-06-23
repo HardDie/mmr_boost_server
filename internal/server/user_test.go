@@ -22,7 +22,7 @@ import (
 func TestUser_Password(t *testing.T) {
 	ctx := context.Background()
 	serviceUser := mocks.NewIServiceUser(t)
-	srv := newUser(service.NewService(nil, nil, nil, serviceUser))
+	srv := newUser(service.NewService(nil, nil, nil, serviceUser, nil))
 
 	serviceUser.On("UpdatePassword",
 		mock.AnythingOfType("*context.valueCtx"),
@@ -78,7 +78,7 @@ func TestUser_Password(t *testing.T) {
 func TestUser_SteamID(t *testing.T) {
 	ctx := context.Background()
 	serviceUser := mocks.NewIServiceUser(t)
-	srv := newUser(service.NewService(nil, nil, nil, serviceUser))
+	srv := newUser(service.NewService(nil, nil, nil, serviceUser, nil))
 
 	serviceUser.On("UpdateSteamID",
 		mock.AnythingOfType("*context.valueCtx"),
