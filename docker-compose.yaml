@@ -9,5 +9,3 @@ services:
       - POSTGRES_PASSWORD=mmr_boost
       - POSTGRES_USER=mmr_boost
       - POSTGRES_DB=db
-    ports:
-      - 5432:5432
