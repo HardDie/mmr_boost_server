@@ -13,6 +13,7 @@ import (
 	"github.com/HardDie/mmr_boost_server/internal/dto"
 	"github.com/HardDie/mmr_boost_server/internal/entity"
 	"github.com/HardDie/mmr_boost_server/internal/logger"
+	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
 )
 
 type Application struct {
@@ -25,15 +26,12 @@ func NewApplication(db *db.DB) *Application {
 	}
 }
 
-func (r *Application) Create(
-	ctx context.Context,
-	req *dto.ApplicationCreateRequest,
-) (*entity.ApplicationPublic, error) {
+func (r *Application) Create(ctx context.Context, req *dto.ApplicationCreateRequest) (*entity.ApplicationPublic, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	app := &entity.ApplicationPublic{
 		UserID:     req.UserID,
-		StatusID:   1,
+		StatusID:   int32(pb.ApplicationStatusID_created),
 		TypeID:     req.TypeID,
 		CurrentMMR: req.CurrentMMR,
 		TargetMMR:  req.TargetMMR,
@@ -122,10 +120,7 @@ func (r *Application) Item(ctx context.Context, req *dto.ApplicationItemRequest)
 	}
 	return app, nil
 }
-func (r *Application) PrivateItem(
-	ctx context.Context,
-	req *dto.ApplicationItemRequest,
-) (*entity.ApplicationPrivate, error) {
+func (r *Application) PrivateItem(ctx context.Context, req *dto.ApplicationItemRequest) (*entity.ApplicationPrivate, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	app := &entity.ApplicationPrivate{

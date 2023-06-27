@@ -62,13 +62,25 @@ enum ApplicationTypeID {
     calibration = 2;
 }
 
+enum ApplicationStatusID {
+    default_application_status_id = 0;
+    created = 1;
+    awaits_payment = 2;
+    paid = 3;
+    in_progress = 4;
+    done = 5;
+    deleted = 6;
+    canceled = 7;
+    suspended = 8;
+}
+
 // Structures
 
 message PublicApplicationObject
 {
     int32 id = 1;
     int32 user_id = 2;
-    int32 status_id = 3;
+    ApplicationStatusID status_id = 3;
     ApplicationTypeID type_id = 4;
     int32 current_mmr = 5;
     int32 target_mmr = 6;
@@ -103,7 +115,7 @@ message CreateResponse
 
 message GetListRequest
 {
-    optional int32 status_id = 1;
+    optional ApplicationStatusID status_id = 1;
 }
 message GetListResponse
 {
@@ -121,7 +133,7 @@ message GetItemResponse
 
 message GetManagementListRequest
 {
-    optional int32 status_id = 1;
+    optional ApplicationStatusID status_id = 1;
     optional int32 user_id = 2;
 }
 message GetManagementListResponse

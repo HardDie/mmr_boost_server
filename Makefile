@@ -52,5 +52,5 @@ proto: ## generate go files from *.proto
 		--grpc-gateway_out ./pkg/proto/server \
 		--grpc-gateway_opt=paths=source_relative \
 		--openapiv2_out ./ \
-		--openapiv2_opt allow_merge=true,merge_file_name=api,enums_as_ints=true,omit_enum_default_value=true,output_format=yaml \
+		--openapiv2_opt allow_merge=true,merge_file_name=api,omit_enum_default_value=true,output_format=yaml \
 		./pkg/proto/server/*.proto

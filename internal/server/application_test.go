@@ -166,13 +166,13 @@ func TestApplication_GetList(t *testing.T) {
 		},
 		{
 			"validation error",
-			&pb.GetListRequest{StatusId: utils.Allocate[int32](-1)},
+			&pb.GetListRequest{StatusId: utils.Allocate[pb.ApplicationStatusID](-1)},
 			nil,
 			codes.InvalidArgument,
 		},
 		{
 			"internal error",
-			&pb.GetListRequest{StatusId: utils.Allocate[int32](3)},
+			&pb.GetListRequest{StatusId: utils.Allocate[pb.ApplicationStatusID](3)},
 			nil,
 			codes.Internal,
 		},
@@ -321,7 +321,7 @@ func TestApplication_GetManagementList(t *testing.T) {
 		},
 		{
 			"validation error",
-			&pb.GetManagementListRequest{StatusId: utils.Allocate[int32](-1)},
+			&pb.GetManagementListRequest{StatusId: utils.Allocate[pb.ApplicationStatusID](-1)},
 			ctx,
 			nil,
 			codes.InvalidArgument,

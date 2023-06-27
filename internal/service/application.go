@@ -12,6 +12,7 @@ import (
 	"github.com/HardDie/mmr_boost_server/internal/logger"
 	"github.com/HardDie/mmr_boost_server/internal/repository/postgres"
 	"github.com/HardDie/mmr_boost_server/internal/utils"
+	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
 )
 
 type Application struct {
@@ -25,19 +26,40 @@ func NewApplication(repository *postgres.Postgres) *Application {
 }
 
 func (s *Application) Create(ctx context.Context, req *dto.ApplicationCreateRequest) (*entity.ApplicationPublic, error) {
-	resp, err := s.repository.Application.Create(ctx, req)
+	var res *entity.ApplicationPublic
+
+	err := s.repository.TxManager().ReadWriteTx(ctx, func(ctx context.Context) error {
+		items, err := s.repository.Application.List(ctx, &dto.ApplicationListRequest{
+			UserID:   &req.UserID,
+			StatusID: utils.Allocate(int32(pb.ApplicationStatusID_created)),
+		})
+		if err != nil {
+			logger.Error.Println("error get list of applications:", err.Error())
+			return status.Error(codes.Internal, "internal")
+		}
+		if len(items) != 0 {
+			return status.Error(codes.InvalidArgument, "user already have active application")
+		}
+
+		resp, err := s.repository.Application.Create(ctx, req)
+		if err != nil {
+			logger.Error.Println("error creating new application:", err.Error())
+			return status.Error(codes.Internal, "internal")
+		}
+
+		res = resp
+		return nil
+	})
 	if err != nil {
-		logger.Error.Println("error creating new application:", err.Error())
-		return nil, status.Error(codes.Internal, "internal")
+		return nil, err
 	}
 
-	msg := fmt.Sprintf("application %d were created", resp.ID)
+	msg := fmt.Sprintf("application %d were created", res.ID)
 	err = s.repository.History.NewEvent(ctx, req.UserID, msg)
 	if err != nil {
 		logger.Error.Println("error writing history message:", msg)
 	}
-
-	return resp, nil
+	return res, nil
 }
 func (s *Application) UserList(ctx context.Context, req *dto.ApplicationUserListRequest) ([]*entity.ApplicationPublic, error) {
 	return s.repository.Application.List(ctx, &dto.ApplicationListRequest{

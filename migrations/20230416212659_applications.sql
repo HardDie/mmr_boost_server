@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS applications (
     id             SERIAL   PRIMARY KEY,
-    user_id        INT      NOT NULL UNIQUE    REFERENCES users(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    user_id        INT      NOT NULL           REFERENCES users(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     status_id      INT      NOT NULL DEFAULT 1 REFERENCES application_statuses(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     type_id        INT      NOT NULL,
     current_mmr    INT      NOT NULL,

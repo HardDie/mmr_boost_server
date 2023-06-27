@@ -57,7 +57,7 @@ func (s *application) GetList(ctx context.Context, req *pb.GetListRequest) (*pb.
 
 	r := &dto.ApplicationUserListRequest{
 		UserID:   userID,
-		StatusID: req.StatusId,
+		StatusID: utils.ToInt32(req.StatusId),
 	}
 	err := getValidator().Struct(r)
 	if err != nil {
@@ -102,7 +102,7 @@ func (s *application) GetItem(ctx context.Context, req *pb.GetItemRequest) (*pb.
 func (s *application) GetManagementList(ctx context.Context, req *pb.GetManagementListRequest) (*pb.GetManagementListResponse, error) {
 	r := &dto.ApplicationManagementListRequest{
 		UserID:   req.UserId,
-		StatusID: req.StatusId,
+		StatusID: utils.ToInt32(req.StatusId),
 	}
 	err := getValidator().Struct(r)
 	if err != nil {
