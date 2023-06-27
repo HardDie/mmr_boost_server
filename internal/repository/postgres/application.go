@@ -57,7 +57,7 @@ func (r *Application) List(ctx context.Context, req *dto.ApplicationListRequest)
 
 	q := gosql.NewSelect().From("applications")
 	q.Columns().Add("id", "user_id", "status_id", "type_id", "current_mmr", "target_mmr", "tg_contact",
-		"created_at", "updated_at")
+		"created_at", "updated_at", "coalesce(steam_login <> '' OR steam_password <> '', false)")
 	if req.UserID != nil {
 		q.Where().AddExpression("user_id = ?", req.UserID)
 	}
@@ -77,7 +77,7 @@ func (r *Application) List(ctx context.Context, req *dto.ApplicationListRequest)
 	for rows.Next() {
 		app := &entity.ApplicationPublic{}
 		err = rows.Scan(&app.ID, &app.UserID, &app.StatusID, &app.TypeID, &app.CurrentMMR, &app.TargetMMR, &app.TgContact,
-			&app.CreatedAt, &app.UpdatedAt)
+			&app.CreatedAt, &app.UpdatedAt, &app.IsPrivateSet)
 		if err != nil {
 			logger.Error.Println("error scan applications row from DB:", err.Error())
 			return nil, status.Error(codes.Internal, "internal error")
@@ -101,7 +101,7 @@ func (r *Application) Item(ctx context.Context, req *dto.ApplicationItemRequest)
 
 	q := gosql.NewSelect().From("applications")
 	q.Columns().Add("user_id", "status_id", "type_id", "current_mmr", "target_mmr", "tg_contact",
-		"created_at", "updated_at")
+		"created_at", "updated_at", "coalesce(steam_login <> '' OR steam_password <> '', false)")
 	q.Where().AddExpression("id = ?", req.ApplicationID)
 	if req.UserID != nil {
 		q.Where().AddExpression("user_id = ?", req.UserID)
@@ -110,7 +110,7 @@ func (r *Application) Item(ctx context.Context, req *dto.ApplicationItemRequest)
 	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
 
 	err := row.Scan(&app.UserID, &app.StatusID, &app.TypeID, &app.CurrentMMR, &app.TargetMMR, &app.TgContact,
-		&app.CreatedAt, &app.UpdatedAt)
+		&app.CreatedAt, &app.UpdatedAt, &app.IsPrivateSet)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil

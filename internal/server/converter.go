@@ -24,16 +24,17 @@ func UserToPb(u *entity.User) *pb.UserObject {
 
 func ApplicationPublicToPb(a *entity.ApplicationPublic) *pb.PublicApplicationObject {
 	return &pb.PublicApplicationObject{
-		Id:         a.ID,
-		UserId:     a.UserID,
-		StatusId:   pb.ApplicationStatusID(a.StatusID),
-		TypeId:     pb.ApplicationTypeID(a.TypeID),
-		CurrentMmr: a.CurrentMMR,
-		TargetMmr:  a.TargetMMR,
-		TgContact:  a.TgContact,
-		CreatedAt:  timestamppb.New(a.CreatedAt),
-		UpdatedAt:  timestamppb.New(a.UpdatedAt),
-		DeletedAt:  utils.TimetamppbFromTime(a.DeletedAt),
+		Id:           a.ID,
+		UserId:       a.UserID,
+		StatusId:     pb.ApplicationStatusID(a.StatusID),
+		TypeId:       pb.ApplicationTypeID(a.TypeID),
+		CurrentMmr:   a.CurrentMMR,
+		TargetMmr:    a.TargetMMR,
+		TgContact:    a.TgContact,
+		IsPrivateSet: a.IsPrivateSet,
+		CreatedAt:    timestamppb.New(a.CreatedAt),
+		UpdatedAt:    timestamppb.New(a.UpdatedAt),
+		DeletedAt:    utils.TimetamppbFromTime(a.DeletedAt),
 	}
 }
 
