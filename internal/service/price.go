@@ -21,13 +21,13 @@ func NewPrice(repository *postgres.Postgres) *Price {
 	}
 }
 
-func (s *Price) Price(ctx context.Context, req *dto.PriceRequest) (float64, error) {
+func (s *Price) Price(_ context.Context, req *dto.PriceRequest) (float64, error) {
 	switch req.TypeID {
 	case int32(pb.ApplicationTypeID_boost_mmr):
-		val := float64(req.TargetMmr-req.CurrentMmr) / 100 * 300
+		val := float64(req.TargetMmr-req.CurrentMmr) / 100 * 300 //nolint:gomnd
 		return val, nil
 	case int32(pb.ApplicationTypeID_calibration):
-		return 1000, nil
+		return 1000, nil //nolint:gomnd
 	}
 	return 0, status.Error(codes.InvalidArgument, "unknown service type")
 }

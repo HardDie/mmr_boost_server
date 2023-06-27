@@ -45,7 +45,7 @@ func (r *SMTP) SendEmailVerification(email, code string) error {
 		),
 	)
 
-	if config.GetEnv() == config.ENV_DEV {
+	if config.GetEnv() == config.EnvDev {
 		b := bytes.NewBuffer(nil)
 		_, err := msg.WriteTo(b)
 		if err != nil {

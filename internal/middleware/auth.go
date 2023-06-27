@@ -54,7 +54,7 @@ func (m *AuthMiddleware) RequestMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// ManagementMiddleware Validate that current user is admin or manager
+// ManagementMiddleware Validate that current user is admin or manager.
 func ManagementMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		roleID := utils.ContextGetRoleID(r.Context())

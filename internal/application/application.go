@@ -19,6 +19,10 @@ import (
 	"github.com/HardDie/mmr_boost_server/internal/service"
 )
 
+const (
+	ServerTimeout = 30
+)
+
 type Application struct {
 	Cfg    config.Config
 	DB     *db.DB
@@ -100,8 +104,8 @@ func (app *Application) Run() error {
 
 	srv := &http.Server{
 		Addr:         app.Cfg.HTTP.Port,
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: 30 * time.Second,
+		ReadTimeout:  ServerTimeout * time.Second,
+		WriteTimeout: ServerTimeout * time.Second,
 		Handler:      app.Router,
 	}
 	return srv.ListenAndServe()

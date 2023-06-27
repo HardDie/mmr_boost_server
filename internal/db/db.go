@@ -13,6 +13,11 @@ import (
 	"github.com/HardDie/mmr_boost_server/internal/logger"
 )
 
+const (
+	MaxConnections         = 50
+	ConnectionIdleLifetime = 15
+)
+
 type DB struct {
 	DB *godb.DBO
 }
@@ -25,8 +30,8 @@ func Get(cfg config.Postgres) (*DB, error) {
 			Name:                   cfg.Database,
 			User:                   cfg.User,
 			Password:               cfg.Password,
-			MaxConnections:         50,
-			ConnectionIdleLifetime: 15,
+			MaxConnections:         MaxConnections,
+			ConnectionIdleLifetime: ConnectionIdleLifetime,
 		},
 		SSLMode: "disable",
 	}

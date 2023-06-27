@@ -80,31 +80,10 @@ func (s *Auth) Register(ctx context.Context, req *dto.AuthRegisterRequest) error
 		logger.Error.Println("error writing history message: user was created")
 	}
 
-	// Generate new email validation code
-	emailCode, err := utils.UUIDGenerate()
+	err = s.generateAndSendEmail(ctx, res.ID, res.Email)
 	if err != nil {
-		logger.Error.Println("error generating email code:", err.Error())
-		return status.Error(codes.Internal, "internal")
+		return err
 	}
-	emailCode = strings.ToLower(emailCode)
-	codeHash := utils.HashSha256(emailCode)
-
-	// Calculate expired at
-	expiredAt := time.Now().Add(time.Hour * time.Duration(s.config.EmailValidation.Expiration))
-
-	// Create record of email validation in DB
-	_, err = s.repository.EmailValidation.CreateOrUpdate(ctx, res.ID, codeHash, expiredAt)
-	if err != nil {
-		logger.Error.Println("error writing email validation token to DB:", err.Error())
-		return status.Error(codes.Internal, "internal")
-	}
-
-	// Send code to email
-	err = s.smtpRepository.SendEmailVerification(res.Email, emailCode)
-	if err != nil {
-		logger.Error.Println("error sending email with verification code:", err.Error())
-	}
-
 	return nil
 }
 func (s *Auth) Login(ctx context.Context, req *dto.AuthLoginRequest) (*entity.User, error) {
@@ -292,6 +271,14 @@ func (s *Auth) SendValidationEmail(ctx context.Context, name string) error {
 		return nil
 	}
 
+	err = s.generateAndSendEmail(ctx, u.ID, u.Email)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Auth) generateAndSendEmail(ctx context.Context, userID int32, email string) error {
 	// Generate new email validation code
 	emailCode, err := utils.UUIDGenerate()
 	if err != nil {
@@ -305,18 +292,17 @@ func (s *Auth) SendValidationEmail(ctx context.Context, name string) error {
 	expiredAt := time.Now().Add(time.Hour * time.Duration(s.config.EmailValidation.Expiration))
 
 	// Create record of email validation in DB
-	_, err = s.repository.EmailValidation.CreateOrUpdate(ctx, u.ID, codeHash, expiredAt)
+	_, err = s.repository.EmailValidation.CreateOrUpdate(ctx, userID, codeHash, expiredAt)
 	if err != nil {
 		logger.Error.Println("error writing email validation token to DB:", err.Error())
 		return status.Error(codes.Internal, "internal")
 	}
 
 	// Send code to email
-	err = s.smtpRepository.SendEmailVerification(u.Email, emailCode)
+	err = s.smtpRepository.SendEmailVerification(email, emailCode)
 	if err != nil {
 		logger.Error.Println("error sending email with verification code:", err.Error())
 		return status.Error(codes.Internal, "internal")
 	}
-
 	return nil
 }

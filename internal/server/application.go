@@ -98,10 +98,8 @@ func (s *application) GetItem(ctx context.Context, req *pb.GetItemRequest) (*pb.
 		Data: ApplicationPublicToPb(resp),
 	}, nil
 }
-func (s *application) GetManagementList(
-	ctx context.Context,
-	req *pb.GetManagementListRequest,
-) (*pb.GetManagementListResponse, error) {
+
+func (s *application) GetManagementList(ctx context.Context, req *pb.GetManagementListRequest) (*pb.GetManagementListResponse, error) {
 	r := &dto.ApplicationManagementListRequest{
 		UserID:   req.UserId,
 		StatusID: req.StatusId,
@@ -124,10 +122,7 @@ func (s *application) GetManagementList(
 		Data: data,
 	}, nil
 }
-func (s *application) GetManagementItem(
-	ctx context.Context,
-	req *pb.GetManagementItemRequest,
-) (*pb.GetManagementItemResponse, error) {
+func (s *application) GetManagementItem(ctx context.Context, req *pb.GetManagementItemRequest) (*pb.GetManagementItemResponse, error) {
 	r := &dto.ApplicationManagementItemRequest{
 		ApplicationID: req.Id,
 	}
@@ -145,10 +140,7 @@ func (s *application) GetManagementItem(
 		Data: ApplicationPublicToPb(resp),
 	}, nil
 }
-func (s *application) GetManagementPrivateItem(
-	ctx context.Context,
-	req *pb.GetManagementItemRequest,
-) (*pb.GetManagementPrivateItemResponse, error) {
+func (s *application) GetManagementPrivateItem(ctx context.Context, req *pb.GetManagementItemRequest) (*pb.GetManagementPrivateItemResponse, error) {
 	r := &dto.ApplicationManagementItemRequest{
 		ApplicationID: req.Id,
 	}

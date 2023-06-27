@@ -61,11 +61,7 @@ func (s *User) UpdatePassword(ctx context.Context, req *dto.UserUpdatePasswordRe
 	}
 	return nil
 }
-func (s *User) UpdateSteamID(
-	ctx context.Context,
-	req *dto.UserUpdateSteamIDRequest,
-	userID int32,
-) (*entity.User, error) {
+func (s *User) UpdateSteamID(ctx context.Context, req *dto.UserUpdateSteamIDRequest, userID int32) (*entity.User, error) {
 	u, err := s.repository.User.UpdateSteamID(ctx, userID, req.SteamID)
 	if err != nil {
 		return nil, err
