@@ -13,7 +13,7 @@ func UserToPb(u *entity.User) *pb.UserObject {
 		Id:          u.ID,
 		Email:       u.Email,
 		Username:    u.Username,
-		RoleId:      u.RoleID,
+		RoleId:      pb.UserRoleID(u.RoleID),
 		SteamId:     u.SteamID,
 		IsActivated: u.IsActivated,
 		CreatedAt:   timestamppb.New(u.CreatedAt),

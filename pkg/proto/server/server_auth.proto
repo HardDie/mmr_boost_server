@@ -88,7 +88,7 @@ message UserObject
     int32 id = 1;
     string email = 2;
     string username = 3;
-    int32 role_id = 4;
+    UserRoleID role_id = 4;
     optional string steam_id = 5;
     bool is_activated = 6;
     google.protobuf.Timestamp created_at = 7;
