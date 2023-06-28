@@ -36,3 +36,15 @@ type ApplicationUserItemRequest struct {
 type ApplicationManagementItemRequest struct {
 	ApplicationID int32 `json:"applicationId" validate:"required,gt=0"`
 }
+
+type ApplicationItemDeleteRequest struct {
+	ApplicationID int32 `json:"applicationId" validate:"required,gt=0"`
+
+	// autofill
+	UserID int32
+}
+
+type ApplicationUpdateStatusRequest struct {
+	ApplicationID int32
+	StatusID      int32
+}

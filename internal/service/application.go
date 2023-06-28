@@ -80,6 +80,38 @@ func (s *Application) UserItem(ctx context.Context, req *dto.ApplicationUserItem
 	}
 	return res, nil
 }
+func (s *Application) DeleteItem(ctx context.Context, req *dto.ApplicationItemDeleteRequest) error {
+	err := s.repository.TxManager().ReadWriteTx(ctx, func(ctx context.Context) error {
+		item, err := s.repository.Application.Item(ctx, &dto.ApplicationItemRequest{
+			UserID:        &req.UserID,
+			ApplicationID: req.ApplicationID,
+		})
+		if err != nil {
+			logger.Error.Println("error get application:", err.Error())
+			return status.Error(codes.Internal, "internal")
+		}
+		if item == nil {
+			return status.Error(codes.InvalidArgument, "application not found")
+		}
+		if item.StatusID != int32(pb.ApplicationStatusID_created) {
+			return status.Error(codes.InvalidArgument, "application can't be deleted")
+		}
+
+		_, err = s.repository.Application.UpdateStatus(ctx, &dto.ApplicationUpdateStatusRequest{
+			ApplicationID: item.ID,
+			StatusID:      int32(pb.ApplicationStatusID_deleted),
+		})
+		if err != nil {
+			logger.Error.Println("error deleting application status:", err.Error())
+			return status.Error(codes.Internal, "internal")
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 func (s *Application) ManagementList(ctx context.Context, req *dto.ApplicationManagementListRequest) ([]*entity.ApplicationPublic, error) {
 	return s.repository.Application.List(ctx, &dto.ApplicationListRequest{

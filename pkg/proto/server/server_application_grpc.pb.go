@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -22,6 +23,7 @@ const (
 	Application_Create_FullMethodName                   = "/gateway.Application/Create"
 	Application_GetList_FullMethodName                  = "/gateway.Application/GetList"
 	Application_GetItem_FullMethodName                  = "/gateway.Application/GetItem"
+	Application_DeleteItem_FullMethodName               = "/gateway.Application/DeleteItem"
 	Application_GetManagementList_FullMethodName        = "/gateway.Application/GetManagementList"
 	Application_GetManagementItem_FullMethodName        = "/gateway.Application/GetManagementItem"
 	Application_GetManagementPrivateItem_FullMethodName = "/gateway.Application/GetManagementPrivateItem"
@@ -37,6 +39,8 @@ type ApplicationClient interface {
 	GetList(ctx context.Context, in *GetListRequest, opts ...grpc.CallOption) (*GetListResponse, error)
 	// Get the application you created
 	GetItem(ctx context.Context, in *GetItemRequest, opts ...grpc.CallOption) (*GetItemResponse, error)
+	// Delete created application
+	DeleteItem(ctx context.Context, in *DeleteItemRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Getting a list of all applications. Access: admin, manager
 	GetManagementList(ctx context.Context, in *GetManagementListRequest, opts ...grpc.CallOption) (*GetManagementListResponse, error)
 	// Get the application by id
@@ -80,6 +84,15 @@ func (c *applicationClient) GetItem(ctx context.Context, in *GetItemRequest, opt
 	return out, nil
 }
 
+func (c *applicationClient) DeleteItem(ctx context.Context, in *DeleteItemRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Application_DeleteItem_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *applicationClient) GetManagementList(ctx context.Context, in *GetManagementListRequest, opts ...grpc.CallOption) (*GetManagementListResponse, error) {
 	out := new(GetManagementListResponse)
 	err := c.cc.Invoke(ctx, Application_GetManagementList_FullMethodName, in, out, opts...)
@@ -117,6 +130,8 @@ type ApplicationServer interface {
 	GetList(context.Context, *GetListRequest) (*GetListResponse, error)
 	// Get the application you created
 	GetItem(context.Context, *GetItemRequest) (*GetItemResponse, error)
+	// Delete created application
+	DeleteItem(context.Context, *DeleteItemRequest) (*emptypb.Empty, error)
 	// Getting a list of all applications. Access: admin, manager
 	GetManagementList(context.Context, *GetManagementListRequest) (*GetManagementListResponse, error)
 	// Get the application by id
@@ -138,6 +153,9 @@ func (UnimplementedApplicationServer) GetList(context.Context, *GetListRequest) 
 }
 func (UnimplementedApplicationServer) GetItem(context.Context, *GetItemRequest) (*GetItemResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetItem not implemented")
+}
+func (UnimplementedApplicationServer) DeleteItem(context.Context, *DeleteItemRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteItem not implemented")
 }
 func (UnimplementedApplicationServer) GetManagementList(context.Context, *GetManagementListRequest) (*GetManagementListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetManagementList not implemented")
@@ -215,6 +233,24 @@ func _Application_GetItem_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Application_DeleteItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteItemRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServer).DeleteItem(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Application_DeleteItem_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServer).DeleteItem(ctx, req.(*DeleteItemRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Application_GetManagementList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetManagementListRequest)
 	if err := dec(in); err != nil {
@@ -287,6 +323,10 @@ var Application_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetItem",
 			Handler:    _Application_GetItem_Handler,
+		},
+		{
+			MethodName: "DeleteItem",
+			Handler:    _Application_DeleteItem_Handler,
 		},
 		{
 			MethodName: "GetManagementList",

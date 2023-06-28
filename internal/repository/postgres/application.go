@@ -143,3 +143,28 @@ func (r *Application) PrivateItem(ctx context.Context, req *dto.ApplicationItemR
 	}
 	return app, nil
 }
+func (r *Application) UpdateStatus(ctx context.Context, req *dto.ApplicationUpdateStatusRequest) (*entity.ApplicationPublic, error) {
+	tx := getTxOrConn(ctx, r.db)
+
+	app := &entity.ApplicationPublic{
+		ID:       req.ApplicationID,
+		StatusID: req.StatusID,
+	}
+
+	q := gosql.NewUpdate().Table("applications")
+	q.Set().Append("status_id = ?", app.StatusID)
+	q.Set().Add("updated_at = now()")
+	q.Where().AddExpression("id = ?", app.ID)
+	q.Where().AddExpression("deleted_at IS NULL")
+	q.Returning().Add("user_id", "type_id", "current_mmr", "target_mmr", "tg_contact",
+		"created_at", "updated_at", "coalesce(steam_login <> '' OR steam_password <> '', false)")
+	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
+
+	err := row.Scan(&app.UserID, &app.TypeID, &app.CurrentMMR, &app.TargetMMR, &app.TgContact,
+		&app.CreatedAt, &app.UpdatedAt, &app.IsPrivateSet)
+	if err != nil {
+		logger.Error.Println("Update status:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
+	}
+	return app, nil
+}

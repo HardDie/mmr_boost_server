@@ -42,6 +42,20 @@ func (_m *IServiceApplication) Create(ctx context.Context, req *dto.ApplicationC
 	return r0, r1
 }
 
+// DeleteItem provides a mock function with given fields: ctx, req
+func (_m *IServiceApplication) DeleteItem(ctx context.Context, req *dto.ApplicationItemDeleteRequest) error {
+	ret := _m.Called(ctx, req)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *dto.ApplicationItemDeleteRequest) error); ok {
+		r0 = rf(ctx, req)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // ManagementItem provides a mock function with given fields: ctx, req
 func (_m *IServiceApplication) ManagementItem(ctx context.Context, req *dto.ApplicationManagementItemRequest) (*entity.ApplicationPublic, error) {
 	ret := _m.Called(ctx, req)

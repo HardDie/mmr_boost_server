@@ -5,8 +5,8 @@ package gateway;
 option go_package = "github.com/HardDie/mmr_boost_server/pkg/server";
 
 import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
-import "server_auth.proto";
 
 service User
 {
@@ -27,6 +27,33 @@ service User
         };
     }
 }
+
+// Enums
+
+enum UserRoleID {
+    default_role_id = 0;
+    admin = 1;
+    manager = 2;
+    booster = 3;
+    user = 4;
+}
+
+// Structures
+
+message UserObject
+{
+    int32 id = 1;
+    string email = 2;
+    string username = 3;
+    UserRoleID role_id = 4;
+    optional string steam_id = 5;
+    bool is_activated = 6;
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp updated_at = 8;
+    optional google.protobuf.Timestamp deleted_at = 9;
+}
+
+// Request/Response
 
 message PasswordRequest
 {

@@ -6,6 +6,7 @@ option go_package = "github.com/HardDie/mmr_boost_server/pkg/server";
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 service Application
 {
@@ -31,6 +32,14 @@ service Application
             get : "/api/v1/private/applications/{id}"
         };
     }
+    // Delete created application
+    rpc DeleteItem(DeleteItemRequest) returns (google.protobuf.Empty)
+    {
+        option (google.api.http) = {
+            delete : "/api/v1/private/applications/{id}"
+        };
+    }
+
     // Getting a list of all applications. Access: admin, manager
     rpc GetManagementList(GetManagementListRequest) returns (GetManagementListResponse)
     {
@@ -130,6 +139,11 @@ message GetItemRequest
 message GetItemResponse
 {
     PublicApplicationObject data = 1;
+}
+
+message DeleteItemRequest
+{
+    int32 id = 1;
 }
 
 message GetManagementListRequest

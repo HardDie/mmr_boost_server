@@ -6,6 +6,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/HardDie/mmr_boost_server/internal/dto"
 	"github.com/HardDie/mmr_boost_server/internal/service"
@@ -97,6 +98,25 @@ func (s *application) GetItem(ctx context.Context, req *pb.GetItemRequest) (*pb.
 	return &pb.GetItemResponse{
 		Data: ApplicationPublicToPb(resp),
 	}, nil
+}
+func (s *application) DeleteItem(ctx context.Context, req *pb.DeleteItemRequest) (*emptypb.Empty, error) {
+	userID := utils.ContextGetUserID(ctx)
+
+	r := &dto.ApplicationItemDeleteRequest{
+		ApplicationID: req.Id,
+		UserID:        userID,
+	}
+	err := getValidator().Struct(r)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	err = s.service.Application.DeleteItem(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 func (s *application) GetManagementList(ctx context.Context, req *pb.GetManagementListRequest) (*pb.GetManagementListResponse, error) {
