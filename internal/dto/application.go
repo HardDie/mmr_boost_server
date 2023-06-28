@@ -15,12 +15,12 @@ type ApplicationListRequest struct {
 
 type ApplicationUserListRequest struct {
 	UserID   int32  `json:"userId" validate:"required,gt=0"`
-	StatusID *int32 `json:"statusId" validate:"omitempty,gte=1,lte=7"`
+	StatusID *int32 `json:"statusId" validate:"omitempty,gte=1,lte=8"`
 }
 
 type ApplicationManagementListRequest struct {
 	UserID   *int32 `json:"userId" validate:"omitempty,gt=0"`
-	StatusID *int32 `json:"statusId" validate:"omitempty,gte=1,lte=7"`
+	StatusID *int32 `json:"statusId" validate:"omitempty,gte=1,lte=8"`
 }
 
 type ApplicationItemRequest struct {
@@ -47,4 +47,9 @@ type ApplicationItemDeleteRequest struct {
 type ApplicationUpdateStatusRequest struct {
 	ApplicationID int32
 	StatusID      int32
+}
+
+type ApplicationManagementUpdateStatusRequest struct {
+	ApplicationID int32 `json:"applicationId" validate:"required,gt=0"`
+	StatusID      int32 `json:"statusId" validate:"required,gte=1,lte=8"`
 }

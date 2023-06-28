@@ -178,3 +178,22 @@ func (s *application) GetManagementPrivateItem(ctx context.Context, req *pb.GetM
 		Data: ApplicationPrivateToPb(resp),
 	}, nil
 }
+func (s *application) UpdateManagementItemStatus(ctx context.Context, req *pb.UpdateManagementItemStatusRequest) (*pb.UpdateManagementItemStatusResponse, error) {
+	r := &dto.ApplicationManagementUpdateStatusRequest{
+		ApplicationID: req.Id,
+		StatusID:      int32(req.StatusId),
+	}
+	err := getValidator().Struct(r)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	resp, err := s.service.Application.ManagementUpdateStatus(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.UpdateManagementItemStatusResponse{
+		Data: ApplicationPublicToPb(resp),
+	}, nil
+}

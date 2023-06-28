@@ -61,6 +61,14 @@ service Application
             get : "/api/v1/management/applications/{id}/private"
         };
     }
+    // Update application status
+    rpc UpdateManagementItemStatus(UpdateManagementItemStatusRequest) returns (UpdateManagementItemStatusResponse)
+    {
+        option (google.api.http) = {
+            put : "/api/v1/management/applications/{id}/status"
+            body : "*"
+        };
+    }
 }
 
 // Enums
@@ -168,4 +176,14 @@ message GetManagementItemResponse
 message GetManagementPrivateItemResponse
 {
     PrivateApplicationObject data = 1;
+}
+
+message UpdateManagementItemStatusRequest
+{
+    int32 id = 1;
+    ApplicationStatusID status_id = 2;
+}
+message UpdateManagementItemStatusResponse
+{
+    PublicApplicationObject data = 1;
 }

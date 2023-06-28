@@ -171,3 +171,14 @@ func (s *Application) ManagementPrivateItem(ctx context.Context, req *dto.Applic
 	}
 	return res, nil
 }
+func (s *Application) ManagementUpdateStatus(ctx context.Context, req *dto.ApplicationManagementUpdateStatusRequest) (*entity.ApplicationPublic, error) {
+	resp, err := s.repository.Application.UpdateStatus(ctx, &dto.ApplicationUpdateStatusRequest{
+		ApplicationID: req.ApplicationID,
+		StatusID:      req.StatusID,
+	})
+	if err != nil {
+		logger.Error.Println("error update application status:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
+	}
+	return resp, nil
+}
