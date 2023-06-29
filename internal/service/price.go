@@ -65,6 +65,10 @@ func (s *Price) Price(_ context.Context, req *dto.PriceRequest) (float64, error)
 		return 0, status.Error(codes.InvalidArgument, "unknown service type")
 	}
 
+	if req.TargetMmr <= req.CurrentMmr {
+		return 0, status.Error(codes.InvalidArgument, "invalid mmr values")
+	}
+
 	var res float64
 
 	for _, p := range price {

@@ -21,7 +21,25 @@ import (
 func TestApplication_Create(t *testing.T) {
 	ctx := context.Background()
 	serviceApplication := mocks.NewIServiceApplication(t)
-	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, nil))
+	servicePrice := mocks.NewIServicePrice(t)
+	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, servicePrice))
+
+	servicePrice.On("Price",
+		mock.AnythingOfType("*context.valueCtx"),
+		&dto.PriceRequest{
+			TypeID:     1,
+			CurrentMmr: 1000,
+			TargetMmr:  2000,
+		},
+	).Return(float64(150), nil)
+	servicePrice.On("Price",
+		mock.AnythingOfType("*context.valueCtx"),
+		&dto.PriceRequest{
+			TypeID:     1,
+			CurrentMmr: 0,
+			TargetMmr:  10,
+		},
+	).Return(float64(0), status.Error(codes.Internal, "internal"))
 
 	serviceApplication.On("Create",
 		mock.AnythingOfType("*context.valueCtx"),
@@ -31,28 +49,29 @@ func TestApplication_Create(t *testing.T) {
 			CurrentMMR: 1000,
 			TargetMMR:  2000,
 			TgContact:  "testuser",
+			Price:      150,
 		},
-	).
-		Return(&entity.ApplicationPublic{
-			ID:         1,
-			UserID:     1,
-			StatusID:   1,
-			TypeID:     1,
-			CurrentMMR: 1000,
-			TargetMMR:  2000,
-			TgContact:  "testuser",
-		}, nil)
+	).Return(&entity.ApplicationPublic{
+		ID:         1,
+		UserID:     1,
+		StatusID:   1,
+		TypeID:     1,
+		CurrentMMR: 1000,
+		TargetMMR:  2000,
+		TgContact:  "testuser",
+		Price:      150,
+	}, nil)
 	serviceApplication.On("Create",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.ApplicationCreateRequest{
 			UserID:     1,
 			TypeID:     1,
-			CurrentMMR: 10,
-			TargetMMR:  666,
+			CurrentMMR: 1000,
+			TargetMMR:  2000,
 			TgContact:  "internal",
+			Price:      150,
 		},
-	).
-		Return(nil, status.Error(codes.Internal, "internal"))
+	).Return(nil, status.Error(codes.Internal, "internal"))
 
 	// Set user for context
 	ctx = utils.ContextSetUserID(ctx, 1)
@@ -80,6 +99,7 @@ func TestApplication_Create(t *testing.T) {
 					CurrentMmr: 1000,
 					TargetMmr:  2000,
 					TgContact:  "testuser",
+					Price:      150,
 					CreatedAt:  timestamppb.New(time.Time{}),
 					UpdatedAt:  timestamppb.New(time.Time{}),
 				},
@@ -93,8 +113,14 @@ func TestApplication_Create(t *testing.T) {
 			codes.InvalidArgument,
 		},
 		{
+			"price internal",
+			&pb.CreateRequest{TypeId: 1, CurrentMmr: 0, TargetMmr: 10, TgContact: "price"},
+			nil,
+			codes.Internal,
+		},
+		{
 			"internal error",
-			&pb.CreateRequest{TypeId: 1, CurrentMmr: 10, TargetMmr: 666, TgContact: "internal"},
+			&pb.CreateRequest{TypeId: 1, CurrentMmr: 1000, TargetMmr: 2000, TgContact: "internal"},
 			nil,
 			codes.Internal,
 		},
