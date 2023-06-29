@@ -26,6 +26,7 @@ const (
 	Application_DeleteItem_FullMethodName                 = "/gateway.Application/DeleteItem"
 	Application_GetManagementList_FullMethodName          = "/gateway.Application/GetManagementList"
 	Application_GetManagementItem_FullMethodName          = "/gateway.Application/GetManagementItem"
+	Application_UpdateManagementItem_FullMethodName       = "/gateway.Application/UpdateManagementItem"
 	Application_GetManagementPrivateItem_FullMethodName   = "/gateway.Application/GetManagementPrivateItem"
 	Application_UpdateManagementItemStatus_FullMethodName = "/gateway.Application/UpdateManagementItemStatus"
 )
@@ -46,6 +47,8 @@ type ApplicationClient interface {
 	GetManagementList(ctx context.Context, in *GetManagementListRequest, opts ...grpc.CallOption) (*GetManagementListResponse, error)
 	// Get the application by id
 	GetManagementItem(ctx context.Context, in *GetManagementItemRequest, opts ...grpc.CallOption) (*GetManagementItemResponse, error)
+	// Update application data
+	UpdateManagementItem(ctx context.Context, in *UpdateManagementItemRequest, opts ...grpc.CallOption) (*UpdateManagementItemResponse, error)
 	// Getting private information from an application by id
 	GetManagementPrivateItem(ctx context.Context, in *GetManagementItemRequest, opts ...grpc.CallOption) (*GetManagementPrivateItemResponse, error)
 	// Update application status
@@ -114,6 +117,15 @@ func (c *applicationClient) GetManagementItem(ctx context.Context, in *GetManage
 	return out, nil
 }
 
+func (c *applicationClient) UpdateManagementItem(ctx context.Context, in *UpdateManagementItemRequest, opts ...grpc.CallOption) (*UpdateManagementItemResponse, error) {
+	out := new(UpdateManagementItemResponse)
+	err := c.cc.Invoke(ctx, Application_UpdateManagementItem_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *applicationClient) GetManagementPrivateItem(ctx context.Context, in *GetManagementItemRequest, opts ...grpc.CallOption) (*GetManagementPrivateItemResponse, error) {
 	out := new(GetManagementPrivateItemResponse)
 	err := c.cc.Invoke(ctx, Application_GetManagementPrivateItem_FullMethodName, in, out, opts...)
@@ -148,6 +160,8 @@ type ApplicationServer interface {
 	GetManagementList(context.Context, *GetManagementListRequest) (*GetManagementListResponse, error)
 	// Get the application by id
 	GetManagementItem(context.Context, *GetManagementItemRequest) (*GetManagementItemResponse, error)
+	// Update application data
+	UpdateManagementItem(context.Context, *UpdateManagementItemRequest) (*UpdateManagementItemResponse, error)
 	// Getting private information from an application by id
 	GetManagementPrivateItem(context.Context, *GetManagementItemRequest) (*GetManagementPrivateItemResponse, error)
 	// Update application status
@@ -176,6 +190,9 @@ func (UnimplementedApplicationServer) GetManagementList(context.Context, *GetMan
 }
 func (UnimplementedApplicationServer) GetManagementItem(context.Context, *GetManagementItemRequest) (*GetManagementItemResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetManagementItem not implemented")
+}
+func (UnimplementedApplicationServer) UpdateManagementItem(context.Context, *UpdateManagementItemRequest) (*UpdateManagementItemResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateManagementItem not implemented")
 }
 func (UnimplementedApplicationServer) GetManagementPrivateItem(context.Context, *GetManagementItemRequest) (*GetManagementPrivateItemResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetManagementPrivateItem not implemented")
@@ -304,6 +321,24 @@ func _Application_GetManagementItem_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Application_UpdateManagementItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateManagementItemRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServer).UpdateManagementItem(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Application_UpdateManagementItem_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServer).UpdateManagementItem(ctx, req.(*UpdateManagementItemRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Application_GetManagementPrivateItem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetManagementItemRequest)
 	if err := dec(in); err != nil {
@@ -370,6 +405,10 @@ var Application_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetManagementItem",
 			Handler:    _Application_GetManagementItem_Handler,
+		},
+		{
+			MethodName: "UpdateManagementItem",
+			Handler:    _Application_UpdateManagementItem_Handler,
 		},
 		{
 			MethodName: "GetManagementPrivateItem",

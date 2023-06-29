@@ -134,6 +134,32 @@ func (_m *IServiceApplication) ManagementPrivateItem(ctx context.Context, req *d
 	return r0, r1
 }
 
+// ManagementUpdateItem provides a mock function with given fields: ctx, req
+func (_m *IServiceApplication) ManagementUpdateItem(ctx context.Context, req *dto.ApplicationManagementUpdateItemRequest) (*entity.ApplicationPublic, error) {
+	ret := _m.Called(ctx, req)
+
+	var r0 *entity.ApplicationPublic
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *dto.ApplicationManagementUpdateItemRequest) (*entity.ApplicationPublic, error)); ok {
+		return rf(ctx, req)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *dto.ApplicationManagementUpdateItemRequest) *entity.ApplicationPublic); ok {
+		r0 = rf(ctx, req)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*entity.ApplicationPublic)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *dto.ApplicationManagementUpdateItemRequest) error); ok {
+		r1 = rf(ctx, req)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ManagementUpdateStatus provides a mock function with given fields: ctx, req
 func (_m *IServiceApplication) ManagementUpdateStatus(ctx context.Context, req *dto.ApplicationManagementUpdateStatusRequest) (*entity.ApplicationPublic, error) {
 	ret := _m.Called(ctx, req)

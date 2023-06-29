@@ -21,6 +21,7 @@ type IPostgresApplication interface {
 	Item(ctx context.Context, req *dto.ApplicationItemRequest) (*entity.ApplicationPublic, error)
 	PrivateItem(ctx context.Context, req *dto.ApplicationItemRequest) (*entity.ApplicationPrivate, error)
 	UpdateStatus(ctx context.Context, req *dto.ApplicationUpdateStatusRequest) (*entity.ApplicationPublic, error)
+	UpdateItem(ctx context.Context, req *dto.ApplicationUpdateRequest) (*entity.ApplicationPublic, error)
 }
 
 type IPostgresEmailValidation interface {

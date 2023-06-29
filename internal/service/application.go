@@ -138,35 +138,14 @@ func (s *Application) ManagementPrivateItem(ctx context.Context, req *dto.Applic
 		ApplicationID: req.ApplicationID,
 	})
 	if err != nil {
-		msg := fmt.Sprintf("error get private application_id=%d", req.ApplicationID)
-		if err := s.repository.History.NewEvent(
-			ctx,
-			userID,
-			msg,
-		); err != nil {
-			logger.Error.Println("error writing history message:", msg)
-		}
 		return nil, err
 	}
-
 	if res == nil {
-		msg := fmt.Sprintf("get not exist private application_id=%d", req.ApplicationID)
-		if err := s.repository.History.NewEvent(
-			ctx,
-			userID,
-			msg,
-		); err != nil {
-			logger.Error.Println("error writing history message:", msg)
-		}
 		return nil, status.Error(codes.NotFound, "application not exist")
 	}
 
 	msg := fmt.Sprintf("get private application_id=%d", req.ApplicationID)
-	if err := s.repository.History.NewEvent(
-		ctx,
-		userID,
-		msg,
-	); err != nil {
+	if err := s.repository.History.NewEvent(ctx, userID, msg); err != nil {
 		logger.Error.Println("error writing history message:", msg)
 	}
 	return res, nil
@@ -177,8 +156,24 @@ func (s *Application) ManagementUpdateStatus(ctx context.Context, req *dto.Appli
 		StatusID:      req.StatusID,
 	})
 	if err != nil {
-		logger.Error.Println("error update application status:", err.Error())
-		return nil, status.Error(codes.Internal, "internal")
+		return nil, err
+	}
+	return resp, nil
+}
+func (s *Application) ManagementUpdateItem(ctx context.Context, req *dto.ApplicationManagementUpdateItemRequest) (*entity.ApplicationPublic, error) {
+	resp, err := s.repository.Application.UpdateItem(ctx, &dto.ApplicationUpdateRequest{
+		ApplicationID: req.ApplicationID,
+		CurrentMMR:    req.CurrentMMR,
+		TargetMMR:     req.TargetMMR,
+		Price:         &req.Price,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	msg := fmt.Sprintf("update data application_id=%d", req.ApplicationID)
+	if err = s.repository.History.NewEvent(ctx, req.UserID, msg); err != nil {
+		logger.Error.Println("error writing history message:", msg)
 	}
 	return resp, nil
 }

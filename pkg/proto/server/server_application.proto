@@ -54,6 +54,14 @@ service Application
             get : "/api/v1/management/applications/{id}"
         };
     }
+    // Update application data
+    rpc UpdateManagementItem(UpdateManagementItemRequest) returns (UpdateManagementItemResponse)
+    {
+        option (google.api.http) = {
+            put : "/api/v1/management/applications/{id}"
+            body : "*"
+        };
+    }
     // Getting private information from an application by id
     rpc GetManagementPrivateItem(GetManagementItemRequest) returns (GetManagementPrivateItemResponse)
     {
@@ -171,6 +179,18 @@ message GetManagementItemRequest
     int32 id = 1;
 }
 message GetManagementItemResponse
+{
+    PublicApplicationObject data = 1;
+}
+
+message UpdateManagementItemRequest
+{
+    int32 id = 1;
+    int32 current_mmr = 2;
+    int32 target_mmr = 3;
+    double price = 4;
+}
+message UpdateManagementItemResponse
 {
     PublicApplicationObject data = 1;
 }

@@ -9,11 +9,6 @@ type ApplicationCreateRequest struct {
 	Price      float64 `json:"price"`
 }
 
-type ApplicationListRequest struct {
-	UserID   *int32
-	StatusID *int32
-}
-
 type ApplicationUserListRequest struct {
 	UserID   int32  `json:"userId" validate:"required,gt=0"`
 	StatusID *int32 `json:"statusId" validate:"omitempty,gte=1,lte=8"`
@@ -22,11 +17,6 @@ type ApplicationUserListRequest struct {
 type ApplicationManagementListRequest struct {
 	UserID   *int32 `json:"userId" validate:"omitempty,gt=0"`
 	StatusID *int32 `json:"statusId" validate:"omitempty,gte=1,lte=8"`
-}
-
-type ApplicationItemRequest struct {
-	UserID        *int32
-	ApplicationID int32
 }
 
 type ApplicationUserItemRequest struct {
@@ -45,12 +35,17 @@ type ApplicationItemDeleteRequest struct {
 	UserID int32
 }
 
-type ApplicationUpdateStatusRequest struct {
-	ApplicationID int32
-	StatusID      int32
-}
-
 type ApplicationManagementUpdateStatusRequest struct {
 	ApplicationID int32 `json:"applicationId" validate:"required,gt=0"`
 	StatusID      int32 `json:"statusId" validate:"required,gte=1,lte=8"`
+}
+
+type ApplicationManagementUpdateItemRequest struct {
+	ApplicationID int32   `json:"applicationId" validate:"required,gt=0"`
+	CurrentMMR    int32   `json:"currentMmr" validate:"omitempty,gte=0,ltfield=TargetMMR"`
+	TargetMMR     int32   `json:"targetMmr" validate:"omitempty,lte=7000,gtfield=CurrentMMR"`
+	Price         float64 `json:"price"`
+
+	// autofill
+	UserID int32
 }

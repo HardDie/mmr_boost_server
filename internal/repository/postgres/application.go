@@ -57,7 +57,7 @@ func (r *Application) List(ctx context.Context, req *dto.ApplicationListRequest)
 	tx := getTxOrConn(ctx, r.db)
 
 	q := gosql.NewSelect().From("applications")
-	q.Columns().Add("id", "user_id", "status_id", "type_id", "current_mmr", "target_mmr", "tg_contact",
+	q.Columns().Add("id", "user_id", "status_id", "type_id", "current_mmr", "target_mmr", "tg_contact", "price",
 		"created_at", "updated_at", "coalesce(steam_login <> '' OR steam_password <> '', false)")
 	if req.UserID != nil {
 		q.Where().AddExpression("user_id = ?", req.UserID)
@@ -77,7 +77,7 @@ func (r *Application) List(ctx context.Context, req *dto.ApplicationListRequest)
 	var res []*entity.ApplicationPublic
 	for rows.Next() {
 		app := &entity.ApplicationPublic{}
-		err = rows.Scan(&app.ID, &app.UserID, &app.StatusID, &app.TypeID, &app.CurrentMMR, &app.TargetMMR, &app.TgContact,
+		err = rows.Scan(&app.ID, &app.UserID, &app.StatusID, &app.TypeID, &app.CurrentMMR, &app.TargetMMR, &app.TgContact, &app.Price,
 			&app.CreatedAt, &app.UpdatedAt, &app.IsPrivateSet)
 		if err != nil {
 			logger.Error.Println("error scan applications row from DB:", err.Error())
@@ -101,7 +101,7 @@ func (r *Application) Item(ctx context.Context, req *dto.ApplicationItemRequest)
 	}
 
 	q := gosql.NewSelect().From("applications")
-	q.Columns().Add("user_id", "status_id", "type_id", "current_mmr", "target_mmr", "tg_contact",
+	q.Columns().Add("user_id", "status_id", "type_id", "current_mmr", "target_mmr", "tg_contact", "price",
 		"created_at", "updated_at", "coalesce(steam_login <> '' OR steam_password <> '', false)")
 	q.Where().AddExpression("id = ?", req.ApplicationID)
 	if req.UserID != nil {
@@ -110,7 +110,7 @@ func (r *Application) Item(ctx context.Context, req *dto.ApplicationItemRequest)
 	q.Where().AddExpression("deleted_at IS NULL")
 	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
 
-	err := row.Scan(&app.UserID, &app.StatusID, &app.TypeID, &app.CurrentMMR, &app.TargetMMR, &app.TgContact,
+	err := row.Scan(&app.UserID, &app.StatusID, &app.TypeID, &app.CurrentMMR, &app.TargetMMR, &app.TgContact, &app.Price,
 		&app.CreatedAt, &app.UpdatedAt, &app.IsPrivateSet)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -157,14 +157,53 @@ func (r *Application) UpdateStatus(ctx context.Context, req *dto.ApplicationUpda
 	q.Set().Add("updated_at = now()")
 	q.Where().AddExpression("id = ?", app.ID)
 	q.Where().AddExpression("deleted_at IS NULL")
-	q.Returning().Add("user_id", "type_id", "current_mmr", "target_mmr", "tg_contact",
+	q.Returning().Add("user_id", "type_id", "current_mmr", "target_mmr", "tg_contact", "price",
 		"created_at", "updated_at", "coalesce(steam_login <> '' OR steam_password <> '', false)")
 	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
 
-	err := row.Scan(&app.UserID, &app.TypeID, &app.CurrentMMR, &app.TargetMMR, &app.TgContact,
+	err := row.Scan(&app.UserID, &app.TypeID, &app.CurrentMMR, &app.TargetMMR, &app.TgContact, &app.Price,
 		&app.CreatedAt, &app.UpdatedAt, &app.IsPrivateSet)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, status.Error(codes.InvalidArgument, "application not exist")
+		}
 		logger.Error.Println("Update status:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
+	}
+	return app, nil
+}
+func (r *Application) UpdateItem(ctx context.Context, req *dto.ApplicationUpdateRequest) (*entity.ApplicationPublic, error) {
+	tx := getTxOrConn(ctx, r.db)
+
+	app := &entity.ApplicationPublic{
+		ID:         req.ApplicationID,
+		CurrentMMR: req.CurrentMMR,
+		TargetMMR:  req.TargetMMR,
+	}
+
+	q := gosql.NewUpdate().Table("applications")
+	q.Set().Append("current_mmr = ?", app.CurrentMMR)
+	q.Set().Append("target_mmr = ?", app.TargetMMR)
+	if req.TgContact != nil {
+		q.Set().Append("tg_contact = ?", *req.TgContact)
+	}
+	if req.Price != nil {
+		q.Set().Append("price = ?", *req.Price)
+	}
+	q.Set().Add("updated_at = now()")
+	q.Where().AddExpression("id = ?", app.ID)
+	q.Where().AddExpression("deleted_at IS NULL")
+	q.Returning().Add("user_id", "type_id", "tg_contact", "price",
+		"created_at", "updated_at", "coalesce(steam_login <> '' OR steam_password <> '', false)")
+	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
+
+	err := row.Scan(&app.UserID, &app.TypeID, &app.TgContact, &app.Price,
+		&app.CreatedAt, &app.UpdatedAt, &app.IsPrivateSet)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, status.Error(codes.InvalidArgument, "application not exist")
+		}
+		logger.Error.Println("Update:", err.Error())
 		return nil, status.Error(codes.Internal, "internal")
 	}
 	return app, nil

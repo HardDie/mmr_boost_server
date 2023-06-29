@@ -207,3 +207,28 @@ func (s *application) UpdateManagementItemStatus(ctx context.Context, req *pb.Up
 		Data: ApplicationPublicToPb(resp),
 	}, nil
 }
+func (s *application) UpdateManagementItem(ctx context.Context, req *pb.UpdateManagementItemRequest) (*pb.UpdateManagementItemResponse, error) {
+	userID := utils.ContextGetUserID(ctx)
+
+	r := &dto.ApplicationManagementUpdateItemRequest{
+		ApplicationID: req.Id,
+		CurrentMMR:    req.CurrentMmr,
+		TargetMMR:     req.TargetMmr,
+		Price:         req.Price,
+
+		UserID: userID,
+	}
+	err := getValidator().Struct(r)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	resp, err := s.service.Application.ManagementUpdateItem(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.UpdateManagementItemResponse{
+		Data: ApplicationPublicToPb(resp),
+	}, nil
+}
