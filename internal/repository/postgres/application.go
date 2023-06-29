@@ -194,11 +194,11 @@ func (r *Application) UpdateItem(ctx context.Context, req *dto.ApplicationUpdate
 	q.Set().Add("updated_at = now()")
 	q.Where().AddExpression("id = ?", app.ID)
 	q.Where().AddExpression("deleted_at IS NULL")
-	q.Returning().Add("user_id", "type_id", "tg_contact", "price",
+	q.Returning().Add("user_id", "status_id", "type_id", "tg_contact", "price",
 		"created_at", "updated_at", "coalesce(steam_login <> '' OR steam_password <> '', false)")
 	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
 
-	err := row.Scan(&app.UserID, &app.TypeID, &app.TgContact, &app.Price,
+	err := row.Scan(&app.UserID, &app.StatusID, &app.TypeID, &app.TgContact, &app.Price,
 		&app.CreatedAt, &app.UpdatedAt, &app.IsPrivateSet)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
