@@ -31,6 +31,8 @@ func ApplicationPublicToPb(a *entity.ApplicationPublic) *pb.PublicApplicationObj
 		CurrentMmr:   a.CurrentMMR,
 		TargetMmr:    a.TargetMMR,
 		TgContact:    a.TgContact,
+		Price:        a.Price,
+		Comment:      a.Comment,
 		IsPrivateSet: a.IsPrivateSet,
 		CreatedAt:    timestamppb.New(a.CreatedAt),
 		UpdatedAt:    timestamppb.New(a.UpdatedAt),

@@ -44,6 +44,16 @@ func (s *application) Create(ctx context.Context, req *pb.CreateRequest) (*pb.Cr
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
+	// Calculate price for application
+	r.Price, err = s.service.Price.Price(ctx, &dto.PriceRequest{
+		TypeID:     r.TypeID,
+		CurrentMmr: r.CurrentMMR,
+		TargetMmr:  r.TargetMMR,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	resp, err := s.service.Application.Create(ctx, r)
 	if err != nil {
 		return nil, err

@@ -102,10 +102,12 @@ message PublicApplicationObject
     int32 current_mmr = 5;
     int32 target_mmr = 6;
     string tg_contact = 7;
-    bool is_private_set = 8;
-    google.protobuf.Timestamp created_at = 9;
-    google.protobuf.Timestamp updated_at = 10;
-    optional google.protobuf.Timestamp deleted_at = 11;
+    double price = 8;
+    string comment = 9;
+    bool is_private_set = 10;
+    google.protobuf.Timestamp created_at = 11;
+    google.protobuf.Timestamp updated_at = 12;
+    optional google.protobuf.Timestamp deleted_at = 13;
 }
 message PrivateApplicationObject
 {

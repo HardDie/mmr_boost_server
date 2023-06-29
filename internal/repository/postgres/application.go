@@ -36,11 +36,12 @@ func (r *Application) Create(ctx context.Context, req *dto.ApplicationCreateRequ
 		CurrentMMR: req.CurrentMMR,
 		TargetMMR:  req.TargetMMR,
 		TgContact:  req.TgContact,
+		Price:      req.Price,
 	}
 
 	q := gosql.NewInsert().Into("applications")
-	q.Columns().Add("user_id", "status_id", "type_id", "current_mmr", "target_mmr", "tg_contact")
-	q.Columns().Arg(app.UserID, app.StatusID, app.TypeID, app.CurrentMMR, app.TargetMMR, app.TgContact)
+	q.Columns().Add("user_id", "status_id", "type_id", "current_mmr", "target_mmr", "tg_contact", "price")
+	q.Columns().Arg(app.UserID, app.StatusID, app.TypeID, app.CurrentMMR, app.TargetMMR, app.TgContact, app.Price)
 	q.Returning().Add("id", "created_at", "updated_at")
 	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
 

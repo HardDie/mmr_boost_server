@@ -1,11 +1,12 @@
 package dto
 
 type ApplicationCreateRequest struct {
-	UserID     int32  `json:"userId" validate:"required,gt=0"`
-	TypeID     int32  `json:"typeId" validate:"required,gt=0"`
-	CurrentMMR int32  `json:"currentMmr" validate:"required,gte=0,ltfield=TargetMMR"`
-	TargetMMR  int32  `json:"targetMmr" validate:"required,gtfield=CurrentMMR,lte=7000"`
-	TgContact  string `json:"tgContact" validate:"required,gte=5"`
+	UserID     int32   `json:"userId" validate:"required,gt=0"`
+	TypeID     int32   `json:"typeId" validate:"required,gt=0"`
+	CurrentMMR int32   `json:"currentMmr" validate:"required,gte=0,ltfield=TargetMMR"`
+	TargetMMR  int32   `json:"targetMmr" validate:"required,gtfield=CurrentMMR,lte=7000"`
+	TgContact  string  `json:"tgContact" validate:"required,gte=5"`
+	Price      float64 `json:"price"`
 }
 
 type ApplicationListRequest struct {
