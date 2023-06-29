@@ -22,3 +22,9 @@ type ApplicationUpdateRequest struct {
 	TgContact     *string
 	Price         *float64
 }
+
+type ApplicationUpdatePrivateRequest struct {
+	ApplicationID int32
+	SteamLogin    string
+	SteamPassword string
+}

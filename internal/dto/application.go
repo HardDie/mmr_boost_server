@@ -49,3 +49,12 @@ type ApplicationManagementUpdateItemRequest struct {
 	// autofill
 	UserID int32
 }
+
+type ApplicationManagementUpdatePrivateRequest struct {
+	ApplicationID int32  `json:"applicationId" validate:"required,gt=0"`
+	SteamLogin    string `json:"steamLogin" validate:"required"`
+	SteamPassword string `json:"steamPassword" validate:"required"`
+
+	// autofill
+	UserID int32
+}

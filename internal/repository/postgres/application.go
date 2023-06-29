@@ -13,6 +13,7 @@ import (
 	"github.com/HardDie/mmr_boost_server/internal/dto"
 	"github.com/HardDie/mmr_boost_server/internal/entity"
 	"github.com/HardDie/mmr_boost_server/internal/logger"
+	"github.com/HardDie/mmr_boost_server/internal/utils"
 	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
 )
 
@@ -204,6 +205,34 @@ func (r *Application) UpdateItem(ctx context.Context, req *dto.ApplicationUpdate
 			return nil, status.Error(codes.InvalidArgument, "application not exist")
 		}
 		logger.Error.Println("Update:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
+	}
+	return app, nil
+}
+func (r *Application) UpdatePrivate(ctx context.Context, req *dto.ApplicationUpdatePrivateRequest) (*entity.ApplicationPrivate, error) {
+	tx := getTxOrConn(ctx, r.db)
+
+	app := &entity.ApplicationPrivate{
+		ID:            req.ApplicationID,
+		SteamLogin:    utils.Allocate(req.SteamLogin),
+		SteamPassword: utils.Allocate(req.SteamPassword),
+	}
+
+	q := gosql.NewUpdate().Table("applications")
+	q.Set().Append("steam_login = ?", app.SteamLogin)
+	q.Set().Append("steam_password = ?", app.SteamPassword)
+	q.Set().Add("updated_at = now()")
+	q.Where().AddExpression("id = ?", app.ID)
+	q.Where().AddExpression("deleted_at IS NULL")
+	q.Returning().Add("created_at", "updated_at")
+	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
+
+	err := row.Scan(&app.CreatedAt, &app.UpdatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, status.Error(codes.InvalidArgument, "application not exist")
+		}
+		logger.Error.Println("Update private:", err.Error())
 		return nil, status.Error(codes.Internal, "internal")
 	}
 	return app, nil

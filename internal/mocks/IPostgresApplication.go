@@ -146,6 +146,32 @@ func (_m *IPostgresApplication) UpdateItem(ctx context.Context, req *dto.Applica
 	return r0, r1
 }
 
+// UpdatePrivate provides a mock function with given fields: ctx, req
+func (_m *IPostgresApplication) UpdatePrivate(ctx context.Context, req *dto.ApplicationUpdatePrivateRequest) (*entity.ApplicationPrivate, error) {
+	ret := _m.Called(ctx, req)
+
+	var r0 *entity.ApplicationPrivate
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *dto.ApplicationUpdatePrivateRequest) (*entity.ApplicationPrivate, error)); ok {
+		return rf(ctx, req)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *dto.ApplicationUpdatePrivateRequest) *entity.ApplicationPrivate); ok {
+		r0 = rf(ctx, req)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*entity.ApplicationPrivate)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *dto.ApplicationUpdatePrivateRequest) error); ok {
+		r1 = rf(ctx, req)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // UpdateStatus provides a mock function with given fields: ctx, req
 func (_m *IPostgresApplication) UpdateStatus(ctx context.Context, req *dto.ApplicationUpdateStatusRequest) (*entity.ApplicationPublic, error) {
 	ret := _m.Called(ctx, req)

@@ -69,6 +69,14 @@ service Application
             get : "/api/v1/management/applications/{id}/private"
         };
     }
+    // Update private information in application by id
+    rpc UpdateManagementPrivateItem(UpdateManagementPrivateItemRequest) returns (UpdateManagementPrivateItemResponse)
+    {
+        option (google.api.http) = {
+            put : "/api/v1/management/applications/{id}/private"
+            body : "*"
+        };
+    }
     // Update application status
     rpc UpdateManagementItemStatus(UpdateManagementItemStatusRequest) returns (UpdateManagementItemStatusResponse)
     {
@@ -196,6 +204,17 @@ message UpdateManagementItemResponse
 }
 
 message GetManagementPrivateItemResponse
+{
+    PrivateApplicationObject data = 1;
+}
+
+message UpdateManagementPrivateItemRequest
+{
+    int32 id = 1;
+    string steam_login = 2;
+    string steam_password = 3;
+}
+message UpdateManagementPrivateItemResponse
 {
     PrivateApplicationObject data = 1;
 }

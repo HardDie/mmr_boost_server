@@ -188,6 +188,30 @@ func (s *application) GetManagementPrivateItem(ctx context.Context, req *pb.GetM
 		Data: ApplicationPrivateToPb(resp),
 	}, nil
 }
+func (s *application) UpdateManagementPrivateItem(ctx context.Context, req *pb.UpdateManagementPrivateItemRequest) (*pb.UpdateManagementPrivateItemResponse, error) {
+	userID := utils.ContextGetUserID(ctx)
+
+	r := &dto.ApplicationManagementUpdatePrivateRequest{
+		ApplicationID: req.Id,
+		SteamPassword: req.SteamPassword,
+		SteamLogin:    req.SteamLogin,
+
+		UserID: userID,
+	}
+	err := getValidator().Struct(r)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	resp, err := s.service.Application.ManagementUpdatePrivate(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.UpdateManagementPrivateItemResponse{
+		Data: ApplicationPrivateToPb(resp),
+	}, nil
+}
 func (s *application) UpdateManagementItemStatus(ctx context.Context, req *pb.UpdateManagementItemStatusRequest) (*pb.UpdateManagementItemStatusResponse, error) {
 	r := &dto.ApplicationManagementUpdateStatusRequest{
 		ApplicationID: req.Id,

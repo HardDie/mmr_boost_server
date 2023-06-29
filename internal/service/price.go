@@ -64,7 +64,6 @@ func (s *Price) Price(_ context.Context, req *dto.PriceRequest) (float64, error)
 	if req.TypeID != int32(pb.ApplicationTypeID_boost_mmr) {
 		return 0, status.Error(codes.InvalidArgument, "unknown service type")
 	}
-
 	if req.TargetMmr <= req.CurrentMmr {
 		return 0, status.Error(codes.InvalidArgument, "invalid mmr values")
 	}

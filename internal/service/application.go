@@ -177,3 +177,19 @@ func (s *Application) ManagementUpdateItem(ctx context.Context, req *dto.Applica
 	}
 	return resp, nil
 }
+func (s *Application) ManagementUpdatePrivate(ctx context.Context, req *dto.ApplicationManagementUpdatePrivateRequest) (*entity.ApplicationPrivate, error) {
+	resp, err := s.repository.Application.UpdatePrivate(ctx, &dto.ApplicationUpdatePrivateRequest{
+		ApplicationID: req.ApplicationID,
+		SteamLogin:    req.SteamLogin,
+		SteamPassword: req.SteamPassword,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	msg := fmt.Sprintf("update private application_id=%d", req.ApplicationID)
+	if err = s.repository.History.NewEvent(ctx, req.UserID, msg); err != nil {
+		logger.Error.Println("error writing history message:", msg)
+	}
+	return resp, nil
+}
