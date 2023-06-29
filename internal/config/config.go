@@ -25,6 +25,7 @@ type Config struct {
 	SMTP            SMTP
 	Session         Session
 	EmailValidation EmailValidation
+	Encrypt         Encrypt
 }
 
 func Get() Config {
@@ -42,6 +43,7 @@ func Get() Config {
 		SMTP:            smtpConfig(),
 		Session:         sessionConfig(),
 		EmailValidation: emailValidationConfig(),
+		Encrypt:         encryptConfig(),
 	}
 	env = cfg.App.Env
 	return cfg

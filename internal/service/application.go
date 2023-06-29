@@ -10,18 +10,21 @@ import (
 	"github.com/HardDie/mmr_boost_server/internal/dto"
 	"github.com/HardDie/mmr_boost_server/internal/entity"
 	"github.com/HardDie/mmr_boost_server/internal/logger"
+	"github.com/HardDie/mmr_boost_server/internal/repository/encrypt"
 	"github.com/HardDie/mmr_boost_server/internal/repository/postgres"
 	"github.com/HardDie/mmr_boost_server/internal/utils"
 	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
 )
 
 type Application struct {
-	repository *postgres.Postgres
+	repository        *postgres.Postgres
+	encryptRepository *encrypt.Encrypt
 }
 
-func NewApplication(repository *postgres.Postgres) *Application {
+func NewApplication(repository *postgres.Postgres, encrypt *encrypt.Encrypt) *Application {
 	return &Application{
-		repository: repository,
+		repository:        repository,
+		encryptRepository: encrypt,
 	}
 }
 
@@ -144,6 +147,23 @@ func (s *Application) ManagementPrivateItem(ctx context.Context, req *dto.Applic
 		return nil, status.Error(codes.NotFound, "application not exist")
 	}
 
+	if res.SteamLogin != nil && len(*res.SteamLogin) > 0 {
+		login, err := s.encryptRepository.Decrypt(*res.SteamLogin)
+		if err != nil {
+			logger.Error.Println("error decrypt steam login:", err.Error())
+			return nil, status.Error(codes.Internal, "internal")
+		}
+		*res.SteamLogin = login
+	}
+	if res.SteamPassword != nil && len(*res.SteamPassword) > 0 {
+		password, err := s.encryptRepository.Decrypt(*res.SteamPassword)
+		if err != nil {
+			logger.Error.Println("error decrypt steam password:", err.Error())
+			return nil, status.Error(codes.Internal, "internal")
+		}
+		*res.SteamPassword = password
+	}
+
 	msg := fmt.Sprintf("get private application_id=%d", req.ApplicationID)
 	if err := s.repository.History.NewEvent(ctx, userID, msg); err != nil {
 		logger.Error.Println("error writing history message:", msg)
@@ -178,14 +198,28 @@ func (s *Application) ManagementUpdateItem(ctx context.Context, req *dto.Applica
 	return resp, nil
 }
 func (s *Application) ManagementUpdatePrivate(ctx context.Context, req *dto.ApplicationManagementUpdatePrivateRequest) (*entity.ApplicationPrivate, error) {
+	login, err := s.encryptRepository.Encrypt(req.SteamLogin)
+	if err != nil {
+		logger.Error.Println("error encrypt steam login:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
+	}
+	password, err := s.encryptRepository.Encrypt(req.SteamPassword)
+	if err != nil {
+		logger.Error.Println("error encrypt steam password:", err.Error())
+		return nil, status.Error(codes.Internal, "internal")
+	}
+
 	resp, err := s.repository.Application.UpdatePrivate(ctx, &dto.ApplicationUpdatePrivateRequest{
 		ApplicationID: req.ApplicationID,
-		SteamLogin:    req.SteamLogin,
-		SteamPassword: req.SteamPassword,
+		SteamLogin:    login,
+		SteamPassword: password,
 	})
 	if err != nil {
 		return nil, err
 	}
+
+	*resp.SteamLogin = req.SteamLogin
+	*resp.SteamPassword = req.SteamPassword
 
 	msg := fmt.Sprintf("update private application_id=%d", req.ApplicationID)
 	if err = s.repository.History.NewEvent(ctx, req.UserID, msg); err != nil {

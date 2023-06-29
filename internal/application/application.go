@@ -1,6 +1,7 @@
 package application
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,6 +14,7 @@ import (
 	"github.com/HardDie/mmr_boost_server/internal/db"
 	"github.com/HardDie/mmr_boost_server/internal/logger"
 	"github.com/HardDie/mmr_boost_server/internal/migration"
+	"github.com/HardDie/mmr_boost_server/internal/repository/encrypt"
 	"github.com/HardDie/mmr_boost_server/internal/repository/postgres"
 	"github.com/HardDie/mmr_boost_server/internal/repository/smtp"
 	"github.com/HardDie/mmr_boost_server/internal/server"
@@ -38,14 +40,14 @@ func Get() (*Application, error) {
 	// Init DB
 	newDB, err := db.Get(app.Cfg.Postgres)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error init db: %w", err)
 	}
 	app.DB = newDB
 
 	// Init migrations
 	err = migration.NewMigrate(app.DB).Up()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error run migrations: %w", err)
 	}
 
 	// Prepare router
@@ -69,9 +71,13 @@ func Get() (*Application, error) {
 		repositoryUser,
 	)
 	smtpRepository := smtp.NewSMTP(app.Cfg)
+	encryptRepository, err := encrypt.NewEncrypt(app.Cfg.Encrypt)
+	if err != nil {
+		return nil, fmt.Errorf("error init encrypt repo: %w", err)
+	}
 
 	// Init services
-	serviceApplication := service.NewApplication(postgresRepository)
+	serviceApplication := service.NewApplication(postgresRepository, encryptRepository)
 	serviceAuth := service.NewAuth(app.Cfg, postgresRepository, smtpRepository)
 	serviceSystem := service.NewSystem()
 	serviceUser := service.NewUser(postgresRepository)
