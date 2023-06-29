@@ -54,3 +54,9 @@ proto: ## generate go files from *.proto
 		--openapiv2_out ./ \
 		--openapiv2_opt allow_merge=true,merge_file_name=api,omit_enum_default_value=true,output_format=yaml \
 		./pkg/proto/server/*.proto
+
+.PHONY: prod-restart
+prod-restart: ## restart production server
+	docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml build &&
+		docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml down &&
+		docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up -d
