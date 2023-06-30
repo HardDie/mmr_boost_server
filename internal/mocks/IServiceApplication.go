@@ -109,15 +109,15 @@ func (_m *IServiceApplication) ManagementList(ctx context.Context, req *dto.Appl
 }
 
 // ManagementPrivateItem provides a mock function with given fields: ctx, req
-func (_m *IServiceApplication) ManagementPrivateItem(ctx context.Context, req *dto.ApplicationManagementItemRequest) (*entity.ApplicationPrivate, error) {
+func (_m *IServiceApplication) ManagementPrivateItem(ctx context.Context, req *dto.ApplicationManagementPrivateItemRequest) (*entity.ApplicationPrivate, error) {
 	ret := _m.Called(ctx, req)
 
 	var r0 *entity.ApplicationPrivate
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *dto.ApplicationManagementItemRequest) (*entity.ApplicationPrivate, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *dto.ApplicationManagementPrivateItemRequest) (*entity.ApplicationPrivate, error)); ok {
 		return rf(ctx, req)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *dto.ApplicationManagementItemRequest) *entity.ApplicationPrivate); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *dto.ApplicationManagementPrivateItemRequest) *entity.ApplicationPrivate); ok {
 		r0 = rf(ctx, req)
 	} else {
 		if ret.Get(0) != nil {
@@ -125,7 +125,7 @@ func (_m *IServiceApplication) ManagementPrivateItem(ctx context.Context, req *d
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *dto.ApplicationManagementItemRequest) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *dto.ApplicationManagementPrivateItemRequest) error); ok {
 		r1 = rf(ctx, req)
 	} else {
 		r1 = ret.Error(1)

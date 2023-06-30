@@ -171,8 +171,12 @@ func (s *application) GetManagementItem(ctx context.Context, req *pb.GetManageme
 	}, nil
 }
 func (s *application) GetManagementPrivateItem(ctx context.Context, req *pb.GetManagementItemRequest) (*pb.GetManagementPrivateItemResponse, error) {
-	r := &dto.ApplicationManagementItemRequest{
+	userID := utils.ContextGetUserID(ctx)
+
+	r := &dto.ApplicationManagementPrivateItemRequest{
 		ApplicationID: req.Id,
+
+		UserID: userID,
 	}
 	err := getValidator().Struct(r)
 	if err != nil {

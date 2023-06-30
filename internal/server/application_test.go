@@ -455,20 +455,19 @@ func TestApplication_GetManagementPrivateItem(t *testing.T) {
 
 	serviceApplication.On("ManagementPrivateItem",
 		mock.AnythingOfType("*context.valueCtx"),
-		&dto.ApplicationManagementItemRequest{ApplicationID: 1},
-	).
-		Return(&entity.ApplicationPrivate{
-			ID:            1,
-			SteamLogin:    utils.Allocate("testlogin"),
-			SteamPassword: utils.Allocate("testpassword"),
-		}, nil)
+		&dto.ApplicationManagementPrivateItemRequest{ApplicationID: 1, UserID: 1},
+	).Return(&entity.ApplicationPrivate{
+		ID:            1,
+		SteamLogin:    utils.Allocate("testlogin"),
+		SteamPassword: utils.Allocate("testpassword"),
+	}, nil)
 	serviceApplication.On("ManagementPrivateItem",
 		mock.AnythingOfType("*context.valueCtx"),
-		&dto.ApplicationManagementItemRequest{ApplicationID: 3},
-	).
-		Return(nil, status.Error(codes.Internal, "internal"))
+		&dto.ApplicationManagementPrivateItemRequest{ApplicationID: 3, UserID: 1},
+	).Return(nil, status.Error(codes.Internal, "internal"))
 
 	// Set user for context
+	ctx = utils.ContextSetUserID(ctx, 1)
 	ctx = utils.ContextSetRoleID(ctx, int32(pb.UserRoleID_admin))
 
 	tests := []struct {

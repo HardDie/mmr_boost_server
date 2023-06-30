@@ -134,9 +134,7 @@ func (s *Application) ManagementItem(ctx context.Context, req *dto.ApplicationMa
 	}
 	return res, nil
 }
-func (s *Application) ManagementPrivateItem(ctx context.Context, req *dto.ApplicationManagementItemRequest) (*entity.ApplicationPrivate, error) {
-	userID := utils.ContextGetUserID(ctx)
-
+func (s *Application) ManagementPrivateItem(ctx context.Context, req *dto.ApplicationManagementPrivateItemRequest) (*entity.ApplicationPrivate, error) {
 	res, err := s.repository.Application.PrivateItem(ctx, &dto.ApplicationItemRequest{
 		ApplicationID: req.ApplicationID,
 	})
@@ -165,7 +163,7 @@ func (s *Application) ManagementPrivateItem(ctx context.Context, req *dto.Applic
 	}
 
 	msg := fmt.Sprintf("get private application_id=%d", req.ApplicationID)
-	if err := s.repository.History.NewEvent(ctx, userID, msg); err != nil {
+	if err := s.repository.History.NewEvent(ctx, req.UserID, msg); err != nil {
 		logger.Error.Println("error writing history message:", msg)
 	}
 	return res, nil

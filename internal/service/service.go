@@ -15,7 +15,7 @@ type IServiceApplication interface {
 	DeleteItem(ctx context.Context, req *dto.ApplicationItemDeleteRequest) error
 
 	ManagementItem(ctx context.Context, req *dto.ApplicationManagementItemRequest) (*entity.ApplicationPublic, error)
-	ManagementPrivateItem(ctx context.Context, req *dto.ApplicationManagementItemRequest) (*entity.ApplicationPrivate, error)
+	ManagementPrivateItem(ctx context.Context, req *dto.ApplicationManagementPrivateItemRequest) (*entity.ApplicationPrivate, error)
 	ManagementUpdateStatus(ctx context.Context, req *dto.ApplicationManagementUpdateStatusRequest) (*entity.ApplicationPublic, error)
 	ManagementUpdateItem(ctx context.Context, req *dto.ApplicationManagementUpdateItemRequest) (*entity.ApplicationPublic, error)
 	ManagementUpdatePrivate(ctx context.Context, req *dto.ApplicationManagementUpdatePrivateRequest) (*entity.ApplicationPrivate, error)
