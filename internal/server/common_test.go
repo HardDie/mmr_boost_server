@@ -8,7 +8,31 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+
+	"github.com/HardDie/mmr_boost_server/internal/mocks"
+	"github.com/HardDie/mmr_boost_server/internal/service"
 )
+
+type serviceMock struct {
+	application   *mocks.IServiceApplication
+	auth          *mocks.IServiceAuth
+	system        *mocks.IServiceSystem
+	user          *mocks.IServiceUser
+	price         *mocks.IServicePrice
+	statusHistory *mocks.IServiceStatusHistory
+}
+
+func initServerObject(t *testing.T) (serviceMock, *service.Service) {
+	m := serviceMock{
+		application:   mocks.NewIServiceApplication(t),
+		auth:          mocks.NewIServiceAuth(t),
+		system:        mocks.NewIServiceSystem(t),
+		user:          mocks.NewIServiceUser(t),
+		price:         mocks.NewIServicePrice(t),
+		statusHistory: mocks.NewIServiceStatusHistory(t),
+	}
+	return m, service.NewService(m.application, m.auth, m.system, m.user, m.price, m.statusHistory)
+}
 
 func validateError(t *testing.T, err error, errCode codes.Code) {
 	if err != nil {

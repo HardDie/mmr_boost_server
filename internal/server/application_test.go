@@ -12,19 +12,16 @@ import (
 
 	"github.com/HardDie/mmr_boost_server/internal/dto"
 	"github.com/HardDie/mmr_boost_server/internal/entity"
-	"github.com/HardDie/mmr_boost_server/internal/mocks"
-	"github.com/HardDie/mmr_boost_server/internal/service"
 	"github.com/HardDie/mmr_boost_server/internal/utils"
 	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
 )
 
 func TestApplication_Create(t *testing.T) {
 	ctx := context.Background()
-	serviceApplication := mocks.NewIServiceApplication(t)
-	servicePrice := mocks.NewIServicePrice(t)
-	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, servicePrice, nil))
+	m, s := initServerObject(t)
+	srv := newApplication(s)
 
-	servicePrice.On("Price",
+	m.price.On("Price",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.PriceRequest{
 			TypeID:     1,
@@ -32,7 +29,7 @@ func TestApplication_Create(t *testing.T) {
 			TargetMmr:  2000,
 		},
 	).Return(float64(150), nil)
-	servicePrice.On("Price",
+	m.price.On("Price",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.PriceRequest{
 			TypeID:     1,
@@ -41,7 +38,7 @@ func TestApplication_Create(t *testing.T) {
 		},
 	).Return(float64(0), status.Error(codes.Internal, "internal"))
 
-	serviceApplication.On("Create",
+	m.application.On("Create",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.ApplicationCreateRequest{
 			UserID:     1,
@@ -61,7 +58,7 @@ func TestApplication_Create(t *testing.T) {
 		TgContact:  "testuser",
 		Price:      150,
 	}, nil)
-	serviceApplication.On("Create",
+	m.application.On("Create",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.ApplicationCreateRequest{
 			UserID:     1,
@@ -137,29 +134,28 @@ func TestApplication_Create(t *testing.T) {
 
 func TestApplication_GetList(t *testing.T) {
 	ctx := context.Background()
-	serviceApplication := mocks.NewIServiceApplication(t)
-	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, nil, nil))
 
-	serviceApplication.On("UserList",
+	m, s := initServerObject(t)
+	srv := newApplication(s)
+
+	m.application.On("UserList",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.ApplicationUserListRequest{UserID: 1},
-	).
-		Return([]*entity.ApplicationPublic{
-			{
-				ID:         1,
-				UserID:     1,
-				StatusID:   1,
-				TypeID:     1,
-				CurrentMMR: 1000,
-				TargetMMR:  2000,
-				TgContact:  "testuser",
-			},
-		}, nil)
-	serviceApplication.On("UserList",
+	).Return([]*entity.ApplicationPublic{
+		{
+			ID:         1,
+			UserID:     1,
+			StatusID:   1,
+			TypeID:     1,
+			CurrentMMR: 1000,
+			TargetMMR:  2000,
+			TgContact:  "testuser",
+		},
+	}, nil)
+	m.application.On("UserList",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.ApplicationUserListRequest{UserID: 1, StatusID: utils.Allocate[int32](3)},
-	).
-		Return(nil, status.Error(codes.Internal, "internal"))
+	).Return(nil, status.Error(codes.Internal, "internal"))
 
 	// Set user for context
 	ctx = utils.ContextSetUserID(ctx, 1)
@@ -215,27 +211,25 @@ func TestApplication_GetList(t *testing.T) {
 
 func TestApplication_GetItem(t *testing.T) {
 	ctx := context.Background()
-	serviceApplication := mocks.NewIServiceApplication(t)
-	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, nil, nil))
+	m, s := initServerObject(t)
+	srv := newApplication(s)
 
-	serviceApplication.On("UserItem",
+	m.application.On("UserItem",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.ApplicationUserItemRequest{UserID: 1, ApplicationID: 1},
-	).
-		Return(&entity.ApplicationPublic{
-			ID:         1,
-			UserID:     1,
-			StatusID:   1,
-			TypeID:     1,
-			CurrentMMR: 1000,
-			TargetMMR:  2000,
-			TgContact:  "testuser",
-		}, nil)
-	serviceApplication.On("UserItem",
+	).Return(&entity.ApplicationPublic{
+		ID:         1,
+		UserID:     1,
+		StatusID:   1,
+		TypeID:     1,
+		CurrentMMR: 1000,
+		TargetMMR:  2000,
+		TgContact:  "testuser",
+	}, nil)
+	m.application.On("UserItem",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.ApplicationUserItemRequest{UserID: 1, ApplicationID: 2},
-	).
-		Return(nil, status.Error(codes.Internal, "internal"))
+	).Return(nil, status.Error(codes.Internal, "internal"))
 
 	// Set user for context
 	ctx = utils.ContextSetUserID(ctx, 1)
@@ -289,29 +283,27 @@ func TestApplication_GetItem(t *testing.T) {
 
 func TestApplication_GetManagementList(t *testing.T) {
 	ctx := context.Background()
-	serviceApplication := mocks.NewIServiceApplication(t)
-	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, nil, nil))
+	m, s := initServerObject(t)
+	srv := newApplication(s)
 
-	serviceApplication.On("ManagementList",
+	m.application.On("ManagementList",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.ApplicationManagementListRequest{},
-	).
-		Return([]*entity.ApplicationPublic{
-			{
-				ID:         1,
-				UserID:     1,
-				StatusID:   1,
-				TypeID:     1,
-				CurrentMMR: 1000,
-				TargetMMR:  2000,
-				TgContact:  "testuser",
-			},
-		}, nil)
-	serviceApplication.On("ManagementList",
+	).Return([]*entity.ApplicationPublic{
+		{
+			ID:         1,
+			UserID:     1,
+			StatusID:   1,
+			TypeID:     1,
+			CurrentMMR: 1000,
+			TargetMMR:  2000,
+			TgContact:  "testuser",
+		},
+	}, nil)
+	m.application.On("ManagementList",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.ApplicationManagementListRequest{UserID: utils.Allocate[int32](3)},
-	).
-		Return(nil, status.Error(codes.Internal, "internal"))
+	).Return(nil, status.Error(codes.Internal, "internal"))
 
 	// Set user for context
 	ctx = utils.ContextSetUserID(ctx, 1)
@@ -372,27 +364,25 @@ func TestApplication_GetManagementList(t *testing.T) {
 
 func TestApplication_GetManagementItem(t *testing.T) {
 	ctx := context.Background()
-	serviceApplication := mocks.NewIServiceApplication(t)
-	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, nil, nil))
+	m, s := initServerObject(t)
+	srv := newApplication(s)
 
-	serviceApplication.On("ManagementItem",
+	m.application.On("ManagementItem",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.ApplicationManagementItemRequest{ApplicationID: 1},
-	).
-		Return(&entity.ApplicationPublic{
-			ID:         1,
-			UserID:     1,
-			StatusID:   1,
-			TypeID:     1,
-			CurrentMMR: 1000,
-			TargetMMR:  2000,
-			TgContact:  "testuser",
-		}, nil)
-	serviceApplication.On("ManagementItem",
+	).Return(&entity.ApplicationPublic{
+		ID:         1,
+		UserID:     1,
+		StatusID:   1,
+		TypeID:     1,
+		CurrentMMR: 1000,
+		TargetMMR:  2000,
+		TgContact:  "testuser",
+	}, nil)
+	m.application.On("ManagementItem",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.ApplicationManagementItemRequest{ApplicationID: 3},
-	).
-		Return(nil, status.Error(codes.Internal, "internal"))
+	).Return(nil, status.Error(codes.Internal, "internal"))
 
 	// Set user for context
 	ctx = utils.ContextSetRoleID(ctx, int32(pb.UserRoleID_admin))
@@ -450,10 +440,10 @@ func TestApplication_GetManagementItem(t *testing.T) {
 
 func TestApplication_GetManagementPrivateItem(t *testing.T) {
 	ctx := context.Background()
-	serviceApplication := mocks.NewIServiceApplication(t)
-	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, nil, nil))
+	m, s := initServerObject(t)
+	srv := newApplication(s)
 
-	serviceApplication.On("ManagementPrivateItem",
+	m.application.On("ManagementPrivateItem",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.ApplicationManagementPrivateItemRequest{ApplicationID: 1, UserID: 1},
 	).Return(&entity.ApplicationPrivate{
@@ -461,7 +451,7 @@ func TestApplication_GetManagementPrivateItem(t *testing.T) {
 		SteamLogin:    utils.Allocate("testlogin"),
 		SteamPassword: utils.Allocate("testpassword"),
 	}, nil)
-	serviceApplication.On("ManagementPrivateItem",
+	m.application.On("ManagementPrivateItem",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.ApplicationManagementPrivateItemRequest{ApplicationID: 3, UserID: 1},
 	).Return(nil, status.Error(codes.Internal, "internal"))

@@ -13,29 +13,25 @@ import (
 
 	"github.com/HardDie/mmr_boost_server/internal/dto"
 	"github.com/HardDie/mmr_boost_server/internal/entity"
-	"github.com/HardDie/mmr_boost_server/internal/mocks"
-	"github.com/HardDie/mmr_boost_server/internal/service"
 	"github.com/HardDie/mmr_boost_server/internal/utils"
 	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
 )
 
 func TestUser_Password(t *testing.T) {
 	ctx := context.Background()
-	serviceUser := mocks.NewIServiceUser(t)
-	srv := newUser(service.NewService(nil, nil, nil, serviceUser, nil, nil))
+	m, s := initServerObject(t)
+	srv := newUser(s)
 
-	serviceUser.On("UpdatePassword",
+	m.user.On("UpdatePassword",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.UserUpdatePasswordRequest{OldPassword: "test", NewPassword: "new"},
 		int32(1),
-	).
-		Return(nil)
-	serviceUser.On("UpdatePassword",
+	).Return(nil)
+	m.user.On("UpdatePassword",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.UserUpdatePasswordRequest{OldPassword: "internal", NewPassword: "error"},
 		int32(1),
-	).
-		Return(status.Error(codes.Internal, "internal"))
+	).Return(status.Error(codes.Internal, "internal"))
 
 	// Set user for context
 	ctx = utils.ContextSetUserID(ctx, 1)
@@ -77,28 +73,26 @@ func TestUser_Password(t *testing.T) {
 
 func TestUser_SteamID(t *testing.T) {
 	ctx := context.Background()
-	serviceUser := mocks.NewIServiceUser(t)
-	srv := newUser(service.NewService(nil, nil, nil, serviceUser, nil, nil))
+	m, s := initServerObject(t)
+	srv := newUser(s)
 
-	serviceUser.On("UpdateSteamID",
+	m.user.On("UpdateSteamID",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.UserUpdateSteamIDRequest{SteamID: "666"},
 		int32(1),
-	).
-		Return(&entity.User{
-			ID:          1,
-			Email:       "test@mail.com",
-			Username:    "test",
-			RoleID:      1,
-			SteamID:     utils.Allocate("666"),
-			IsActivated: true,
-		}, nil)
-	serviceUser.On("UpdateSteamID",
+	).Return(&entity.User{
+		ID:          1,
+		Email:       "test@mail.com",
+		Username:    "test",
+		RoleID:      1,
+		SteamID:     utils.Allocate("666"),
+		IsActivated: true,
+	}, nil)
+	m.user.On("UpdateSteamID",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.UserUpdateSteamIDRequest{SteamID: "000"},
 		int32(1),
-	).
-		Return(nil, status.Error(codes.Internal, "internal"))
+	).Return(nil, status.Error(codes.Internal, "internal"))
 
 	// Set user for context
 	ctx = utils.ContextSetUserID(ctx, 1)

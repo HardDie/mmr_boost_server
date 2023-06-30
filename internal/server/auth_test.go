@@ -13,27 +13,23 @@ import (
 
 	"github.com/HardDie/mmr_boost_server/internal/dto"
 	"github.com/HardDie/mmr_boost_server/internal/entity"
-	"github.com/HardDie/mmr_boost_server/internal/mocks"
-	"github.com/HardDie/mmr_boost_server/internal/service"
 	"github.com/HardDie/mmr_boost_server/internal/utils"
 	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
 )
 
 func TestAuth_Register(t *testing.T) {
 	ctx := context.Background()
-	serviceAuth := mocks.NewIServiceAuth(t)
-	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil, nil, nil))
+	m, s := initServerObject(t)
+	srv := newAuth(s)
 
-	serviceAuth.On("Register",
+	m.auth.On("Register",
 		mock.AnythingOfType("*context.emptyCtx"),
 		&dto.AuthRegisterRequest{Username: "test", Password: "test", Email: "test@mail.com"},
-	).
-		Return(nil)
-	serviceAuth.On("Register",
+	).Return(nil)
+	m.auth.On("Register",
 		mock.AnythingOfType("*context.emptyCtx"),
 		&dto.AuthRegisterRequest{Username: "internal", Password: "internal", Email: "test@mail.com"},
-	).
-		Return(status.Error(codes.Internal, "internal"))
+	).Return(status.Error(codes.Internal, "internal"))
 
 	tests := []struct {
 		name    string
@@ -72,35 +68,30 @@ func TestAuth_Register(t *testing.T) {
 
 func TestAuth_Login(t *testing.T) {
 	ctx := context.Background()
-	serviceAuth := mocks.NewIServiceAuth(t)
-	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil, nil, nil))
+	m, s := initServerObject(t)
+	srv := newAuth(s)
 
-	serviceAuth.On("Login",
+	m.auth.On("Login",
 		mock.AnythingOfType("*context.emptyCtx"),
 		&dto.AuthLoginRequest{Username: "test", Password: "test"},
-	).
-		Return(&entity.User{ID: 1}, nil)
-	serviceAuth.On("Login",
+	).Return(&entity.User{ID: 1}, nil)
+	m.auth.On("Login",
 		mock.AnythingOfType("*context.emptyCtx"),
 		&dto.AuthLoginRequest{Username: "test2", Password: "test2"},
-	).
-		Return(&entity.User{ID: 2}, nil)
-	serviceAuth.On("Login",
+	).Return(&entity.User{ID: 2}, nil)
+	m.auth.On("Login",
 		mock.AnythingOfType("*context.emptyCtx"),
 		&dto.AuthLoginRequest{Username: "internal", Password: "internal"},
-	).
-		Return(nil, status.Error(codes.Internal, "internal"))
+	).Return(nil, status.Error(codes.Internal, "internal"))
 
-	serviceAuth.On("GenerateCookie",
+	m.auth.On("GenerateCookie",
 		mock.AnythingOfType("*context.emptyCtx"),
 		int32(1),
-	).
-		Return(&entity.AccessToken{TokenHash: "session"}, nil)
-	serviceAuth.On("GenerateCookie",
+	).Return(&entity.AccessToken{TokenHash: "session"}, nil)
+	m.auth.On("GenerateCookie",
 		mock.AnythingOfType("*context.emptyCtx"),
 		int32(2),
-	).
-		Return(nil, status.Error(codes.Internal, "internal"))
+	).Return(nil, status.Error(codes.Internal, "internal"))
 
 	tests := []struct {
 		name    string
@@ -145,24 +136,22 @@ func TestAuth_Login(t *testing.T) {
 
 func TestAuth_ValidateEmail(t *testing.T) {
 	ctx := context.Background()
-	serviceAuth := mocks.NewIServiceAuth(t)
-	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil, nil, nil))
+	m, s := initServerObject(t)
+	srv := newAuth(s)
 
 	uuid, err := utils.UUIDGenerate()
 	if err != nil {
 		t.Fatal("error generate uuid:", err.Error())
 	}
 
-	serviceAuth.On("ValidateEmail",
+	m.auth.On("ValidateEmail",
 		mock.AnythingOfType("*context.emptyCtx"),
 		uuid,
-	).
-		Return(nil)
-	serviceAuth.On("ValidateEmail",
+	).Return(nil)
+	m.auth.On("ValidateEmail",
 		mock.AnythingOfType("*context.emptyCtx"),
 		"deadc0de-dead-c0de-dead-c0dedeadc0de",
-	).
-		Return(status.Error(codes.Internal, "internal"))
+	).Return(status.Error(codes.Internal, "internal"))
 
 	tests := []struct {
 		name    string
@@ -201,19 +190,17 @@ func TestAuth_ValidateEmail(t *testing.T) {
 
 func TestAuth_SendValidationEmail(t *testing.T) {
 	ctx := context.Background()
-	serviceAuth := mocks.NewIServiceAuth(t)
-	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil, nil, nil))
+	m, s := initServerObject(t)
+	srv := newAuth(s)
 
-	serviceAuth.On("SendValidationEmail",
+	m.auth.On("SendValidationEmail",
 		mock.AnythingOfType("*context.emptyCtx"),
 		"test",
-	).
-		Return(nil)
-	serviceAuth.On("SendValidationEmail",
+	).Return(nil)
+	m.auth.On("SendValidationEmail",
 		mock.AnythingOfType("*context.emptyCtx"),
 		"internal",
-	).
-		Return(status.Error(codes.Internal, "internal"))
+	).Return(status.Error(codes.Internal, "internal"))
 
 	tests := []struct {
 		name    string
@@ -251,25 +238,23 @@ func TestAuth_SendValidationEmail(t *testing.T) {
 }
 
 func TestAuth_User(t *testing.T) {
-	serviceAuth := mocks.NewIServiceAuth(t)
-	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil, nil, nil))
+	m, s := initServerObject(t)
+	srv := newAuth(s)
 
-	serviceAuth.On("GetUserInfo",
+	m.auth.On("GetUserInfo",
 		mock.AnythingOfType("*context.valueCtx"),
 		int32(1),
-	).
-		Return(&entity.User{
-			ID:          1,
-			Email:       "test@mail.com",
-			Username:    "test",
-			RoleID:      1,
-			IsActivated: true,
-		}, nil)
-	serviceAuth.On("GetUserInfo",
+	).Return(&entity.User{
+		ID:          1,
+		Email:       "test@mail.com",
+		Username:    "test",
+		RoleID:      1,
+		IsActivated: true,
+	}, nil)
+	m.auth.On("GetUserInfo",
 		mock.AnythingOfType("*context.valueCtx"),
 		int32(2),
-	).
-		Return(nil, status.Error(codes.Internal, "internal"))
+	).Return(nil, status.Error(codes.Internal, "internal"))
 
 	tests := []struct {
 		name    string
@@ -311,19 +296,17 @@ func TestAuth_User(t *testing.T) {
 }
 
 func TestAuth_Logout(t *testing.T) {
-	serviceAuth := mocks.NewIServiceAuth(t)
-	srv := newAuth(service.NewService(nil, serviceAuth, nil, nil, nil, nil))
+	m, s := initServerObject(t)
+	srv := newAuth(s)
 
-	serviceAuth.On("Logout",
+	m.auth.On("Logout",
 		mock.AnythingOfType("*context.valueCtx"),
 		int32(1),
-	).
-		Return(nil)
-	serviceAuth.On("Logout",
+	).Return(nil)
+	m.auth.On("Logout",
 		mock.AnythingOfType("*context.valueCtx"),
 		int32(2),
-	).
-		Return(status.Error(codes.Internal, "internal"))
+	).Return(status.Error(codes.Internal, "internal"))
 
 	tests := []struct {
 		name    string
