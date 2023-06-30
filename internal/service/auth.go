@@ -80,7 +80,7 @@ func (s *Auth) Register(ctx context.Context, req *dto.AuthRegisterRequest) error
 		logger.Error.Println("error writing history message: user was created")
 	}
 
-	err = s.generateAndSendEmail(ctx, res.ID, res.Email)
+	err = s.generateAndSendValidateAccountEmail(ctx, res.ID, res.Email)
 	if err != nil {
 		return err
 	}
@@ -271,14 +271,80 @@ func (s *Auth) SendValidationEmail(ctx context.Context, name string) error {
 		return nil
 	}
 
-	err = s.generateAndSendEmail(ctx, u.ID, u.Email)
+	err = s.generateAndSendValidateAccountEmail(ctx, u.ID, u.Email)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *Auth) generateAndSendEmail(ctx context.Context, userID int32, email string) error {
+func (s *Auth) SendResetPasswordEmail(ctx context.Context, req *dto.AuthResetPasswordEmailRequest) error {
+	u, err := s.repository.User.GetByName(ctx, req.Username)
+	if err != nil || u == nil {
+		return status.Error(codes.InvalidArgument, "username or email invalid")
+	}
+	if u.Email != req.Email {
+		return status.Error(codes.InvalidArgument, "username or email invalid")
+	}
+
+	err = s.generateAndSendResetPasswordEmail(ctx, u.ID, u.Email)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (s *Auth) ResetPassword(ctx context.Context, req *dto.AuthResetPasswordRequest) error {
+	err := s.repository.TxManager().ReadWriteTx(ctx, func(ctx context.Context) error {
+		// Hash code
+		req.Code = strings.ToLower(req.Code)
+		codeHash := utils.HashSha256(req.Code)
+		// Validate code
+		rp, err := s.repository.ResetPassword.GetByCode(ctx, codeHash)
+		if err != nil {
+			return err
+		}
+		if rp == nil {
+			return status.Error(codes.InvalidArgument, "code or username invalid")
+		}
+		// Validate username
+		u, err := s.repository.User.GetByID(ctx, rp.UserID)
+		if err != nil {
+			return err
+		}
+		if u == nil {
+			logger.Error.Printf("error find user related to reset password record = %d", rp.ID)
+			return status.Error(codes.Internal, "internal")
+		}
+		if u.Username != req.Username {
+			return status.Error(codes.InvalidArgument, "code or username invalid")
+		}
+		// Hashing password
+		hashPassword, err := utils.HashBcrypt(req.NewPassword)
+		if err != nil {
+			logger.Error.Printf("error hashing password: %v", err.Error())
+			return status.Error(codes.Internal, "internal")
+		}
+		// Update password
+		_, err = s.repository.Password.Update(ctx, u.ID, hashPassword)
+		if err != nil {
+			logger.Error.Printf("error updating password in DB: %v", err.Error())
+			return status.Error(codes.Internal, "internal")
+		}
+		// Remove reset password entity
+		err = s.repository.ResetPassword.DeleteByID(ctx, rp.ID)
+		if err != nil {
+			logger.Error.Printf("error deleting reset password entity = %d", rp.ID)
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+//nolint:dupl
+func (s *Auth) generateAndSendValidateAccountEmail(ctx context.Context, userID int32, email string) error {
 	// Generate new email validation code
 	emailCode, err := utils.UUIDGenerate()
 	if err != nil {
@@ -302,6 +368,36 @@ func (s *Auth) generateAndSendEmail(ctx context.Context, userID int32, email str
 	err = s.smtpRepository.SendEmailVerification(email, emailCode)
 	if err != nil {
 		logger.Error.Println("error sending email with verification code:", err.Error())
+		return status.Error(codes.Internal, "internal")
+	}
+	return nil
+}
+
+//nolint:dupl
+func (s *Auth) generateAndSendResetPasswordEmail(ctx context.Context, userID int32, email string) error {
+	// Generate new email reset password code
+	emailCode, err := utils.UUIDGenerate()
+	if err != nil {
+		logger.Error.Println("error generating reset password code:", err.Error())
+		return status.Error(codes.Internal, "internal")
+	}
+	emailCode = strings.ToLower(emailCode)
+	codeHash := utils.HashSha256(emailCode)
+
+	// Calculate expired at
+	expiredAt := time.Now().Add(time.Hour * time.Duration(s.config.EmailValidation.Expiration))
+
+	// Create record of reset password in DB
+	_, err = s.repository.ResetPassword.CreateOrUpdate(ctx, userID, codeHash, expiredAt)
+	if err != nil {
+		logger.Error.Println("error writing reset password token to DB:", err.Error())
+		return status.Error(codes.Internal, "internal")
+	}
+
+	// Send code to email
+	err = s.smtpRepository.SendResetPasswordEmail(email, emailCode)
+	if err != nil {
+		logger.Error.Println("error sending email with reset password code:", err.Error())
 		return status.Error(codes.Internal, "internal")
 	}
 	return nil

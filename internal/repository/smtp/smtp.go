@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	Subject = "E-mail verification"
+	ValidateEmailSubject = "E-mail verification"
+	ResetPasswordSubject = "Reset password"
 )
 
 type SMTP struct {
@@ -30,19 +31,47 @@ func NewSMTP(cfg config.Config) *SMTP {
 	}
 }
 
+//nolint:dupl
 func (r *SMTP) SendEmailVerification(email, code string) error {
 	msg := mail.NewMessage()
 	msg.SetHeader("To", email)
 	msg.SetHeader("From", fmt.Sprintf("%s <%s>", r.nickname, r.email))
-	msg.SetHeader("Subject", Subject)
+	msg.SetHeader("Subject", ValidateEmailSubject)
 	msg.SetBody("text/plain",
-		fmt.Sprintf("Your code: %s, or link %s/api/v1/auth/validate_email?code=%s", code, r.baseURL, code),
+		fmt.Sprintf("Your verification code: %s", code),
 	)
 	msg.AddAlternative("text/html",
-		fmt.Sprintf(
-			"<p>Your code: <b>%s</b>, or link <a href=%s/api/v1/auth/validate_email?code=%s>validate email</a></p>",
-			code, r.baseURL, code,
-		),
+		fmt.Sprintf("<p>Your verification code: <b>%s</b></p>", code),
+	)
+
+	if config.GetEnv() == config.EnvDev {
+		b := bytes.NewBuffer(nil)
+		_, err := msg.WriteTo(b)
+		if err != nil {
+			return fmt.Errorf("smtp: error write message to buffer: %w", err)
+		}
+		logger.Debug.Println("Email:", b.String())
+		return nil
+	}
+
+	err := r.dialer.DialAndSend(msg)
+	if err != nil {
+		return fmt.Errorf("smtp: error sending message: %w", err)
+	}
+	return nil
+}
+
+//nolint:dupl
+func (r *SMTP) SendResetPasswordEmail(email, code string) error {
+	msg := mail.NewMessage()
+	msg.SetHeader("To", email)
+	msg.SetHeader("From", fmt.Sprintf("%s <%s>", r.nickname, r.email))
+	msg.SetHeader("Subject", ResetPasswordSubject)
+	msg.SetBody("text/plain",
+		fmt.Sprintf("Your reset password code: %s", code),
+	)
+	msg.AddAlternative("text/html",
+		fmt.Sprintf("<p>Your reset password code: <b>%s</b></p>", code),
 	)
 
 	if config.GetEnv() == config.EnvDev {

@@ -69,6 +69,28 @@ service Auth
             body : "*"
         };
     }
+    // Send reset password email
+    rpc ResetPasswordEmail(ResetPasswordEmailRequest) returns (google.protobuf.Empty)
+    {
+        option (google.api.http) = {
+            post : "/api/v1/auth/reset_password_email"
+            body : "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            security : {}
+        };
+    }
+    // Reset password
+    rpc ResetPassword(ResetPasswordRequest) returns (google.protobuf.Empty)
+    {
+        option (google.api.http) = {
+            post : "/api/v1/auth/reset_password"
+            body : "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            security : {}
+        };
+    }
 }
 
 // Request/Response
@@ -99,4 +121,17 @@ message SendValidationEmailRequest
 message UserResponse
 {
     UserObject data = 1;
+}
+
+message ResetPasswordEmailRequest
+{
+    string username = 1;
+    string email = 2;
+}
+
+message ResetPasswordRequest
+{
+    string code = 1;
+    string username = 2;
+    string new_password = 3;
 }

@@ -124,3 +124,37 @@ func (s *auth) Logout(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, er
 	utils.DeleteGRPCSessionCookie(ctx)
 	return &emptypb.Empty{}, nil
 }
+
+func (s *auth) ResetPasswordEmail(ctx context.Context, req *pb.ResetPasswordEmailRequest) (*emptypb.Empty, error) {
+	r := &dto.AuthResetPasswordEmailRequest{
+		Username: req.Username,
+		Email:    req.Email,
+	}
+	err := getValidator().Struct(r)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	err = s.service.Auth.SendResetPasswordEmail(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
+}
+func (s *auth) ResetPassword(ctx context.Context, req *pb.ResetPasswordRequest) (*emptypb.Empty, error) {
+	r := &dto.AuthResetPasswordRequest{
+		Code:        req.Code,
+		Username:    req.Username,
+		NewPassword: req.NewPassword,
+	}
+	err := getValidator().Struct(r)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	err = s.service.Auth.ResetPassword(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
+}

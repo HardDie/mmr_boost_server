@@ -122,6 +122,34 @@ func (_m *IServiceAuth) Register(ctx context.Context, req *dto.AuthRegisterReque
 	return r0
 }
 
+// ResetPassword provides a mock function with given fields: ctx, req
+func (_m *IServiceAuth) ResetPassword(ctx context.Context, req *dto.AuthResetPasswordRequest) error {
+	ret := _m.Called(ctx, req)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *dto.AuthResetPasswordRequest) error); ok {
+		r0 = rf(ctx, req)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// SendResetPasswordEmail provides a mock function with given fields: ctx, req
+func (_m *IServiceAuth) SendResetPasswordEmail(ctx context.Context, req *dto.AuthResetPasswordEmailRequest) error {
+	ret := _m.Called(ctx, req)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *dto.AuthResetPasswordEmailRequest) error); ok {
+		r0 = rf(ctx, req)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // SendValidationEmail provides a mock function with given fields: ctx, name
 func (_m *IServiceAuth) SendValidationEmail(ctx context.Context, name string) error {
 	ret := _m.Called(ctx, name)

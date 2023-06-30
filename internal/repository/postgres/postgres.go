@@ -31,6 +31,12 @@ type IPostgresEmailValidation interface {
 	DeleteByID(ctx context.Context, id int32) error
 }
 
+type IPostgresResetPassword interface {
+	CreateOrUpdate(ctx context.Context, userID int32, code string, expiredAt time.Time) (*entity.ResetPassword, error)
+	GetByCode(ctx context.Context, code string) (*entity.ResetPassword, error)
+	DeleteByID(ctx context.Context, id int32) error
+}
+
 type IPostgresHistory interface {
 	NewEvent(ctx context.Context, userID int32, message string) error
 	NewEventWithAffected(ctx context.Context, userID, affectedUserID int32, message string) error
@@ -59,6 +65,7 @@ type Postgres struct {
 	AccessToken     IPostgresAccessToken
 	Application     IPostgresApplication
 	EmailValidation IPostgresEmailValidation
+	ResetPassword   IPostgresResetPassword
 	History         IPostgresHistory
 	Password        IPostgresPassword
 	User            IPostgresUser
@@ -68,6 +75,7 @@ func NewPostgres(db *db.DB,
 	accessToken IPostgresAccessToken,
 	application IPostgresApplication,
 	emailValidation IPostgresEmailValidation,
+	resetPassword IPostgresResetPassword,
 	history IPostgresHistory,
 	password IPostgresPassword,
 	user IPostgresUser,
@@ -78,6 +86,7 @@ func NewPostgres(db *db.DB,
 		AccessToken:     accessToken,
 		Application:     application,
 		EmailValidation: emailValidation,
+		ResetPassword:   resetPassword,
 		History:         history,
 		Password:        password,
 		User:            user,

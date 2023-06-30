@@ -58,6 +58,7 @@ func Get() (*Application, error) {
 	repositoryAccessToken := postgres.NewAccessToken(app.DB)
 	repositoryApplication := postgres.NewApplication(app.DB)
 	repositoryEmailValidation := postgres.NewEmailValidation(app.DB)
+	repositoryResetPassword := postgres.NewResetPassword(app.DB)
 	repositoryHistory := postgres.NewHistory(app.DB)
 	repositoryPassword := postgres.NewPassword(app.DB)
 	repositoryUser := postgres.NewUser(app.DB)
@@ -66,6 +67,7 @@ func Get() (*Application, error) {
 		repositoryAccessToken,
 		repositoryApplication,
 		repositoryEmailValidation,
+		repositoryResetPassword,
 		repositoryHistory,
 		repositoryPassword,
 		repositoryUser,

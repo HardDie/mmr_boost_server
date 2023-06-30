@@ -26,6 +26,8 @@ const (
 	Auth_SendValidationEmail_FullMethodName = "/gateway.Auth/SendValidationEmail"
 	Auth_User_FullMethodName                = "/gateway.Auth/User"
 	Auth_Logout_FullMethodName              = "/gateway.Auth/Logout"
+	Auth_ResetPasswordEmail_FullMethodName  = "/gateway.Auth/ResetPasswordEmail"
+	Auth_ResetPassword_FullMethodName       = "/gateway.Auth/ResetPassword"
 )
 
 // AuthClient is the client API for Auth service.
@@ -44,6 +46,10 @@ type AuthClient interface {
 	User(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UserResponse, error)
 	// Close the current session
 	Logout(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Send reset password email
+	ResetPasswordEmail(ctx context.Context, in *ResetPasswordEmailRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Reset password
+	ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type authClient struct {
@@ -108,6 +114,24 @@ func (c *authClient) Logout(ctx context.Context, in *emptypb.Empty, opts ...grpc
 	return out, nil
 }
 
+func (c *authClient) ResetPasswordEmail(ctx context.Context, in *ResetPasswordEmailRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Auth_ResetPasswordEmail_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, Auth_ResetPassword_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServer is the server API for Auth service.
 // All implementations must embed UnimplementedAuthServer
 // for forward compatibility
@@ -124,6 +148,10 @@ type AuthServer interface {
 	User(context.Context, *emptypb.Empty) (*UserResponse, error)
 	// Close the current session
 	Logout(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+	// Send reset password email
+	ResetPasswordEmail(context.Context, *ResetPasswordEmailRequest) (*emptypb.Empty, error)
+	// Reset password
+	ResetPassword(context.Context, *ResetPasswordRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedAuthServer()
 }
 
@@ -148,6 +176,12 @@ func (UnimplementedAuthServer) User(context.Context, *emptypb.Empty) (*UserRespo
 }
 func (UnimplementedAuthServer) Logout(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
+}
+func (UnimplementedAuthServer) ResetPasswordEmail(context.Context, *ResetPasswordEmailRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResetPasswordEmail not implemented")
+}
+func (UnimplementedAuthServer) ResetPassword(context.Context, *ResetPasswordRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResetPassword not implemented")
 }
 func (UnimplementedAuthServer) mustEmbedUnimplementedAuthServer() {}
 
@@ -270,6 +304,42 @@ func _Auth_Logout_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Auth_ResetPasswordEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResetPasswordEmailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).ResetPasswordEmail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Auth_ResetPasswordEmail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).ResetPasswordEmail(ctx, req.(*ResetPasswordEmailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_ResetPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResetPasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).ResetPassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Auth_ResetPassword_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).ResetPassword(ctx, req.(*ResetPasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Auth_ServiceDesc is the grpc.ServiceDesc for Auth service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -300,6 +370,14 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Logout",
 			Handler:    _Auth_Logout_Handler,
+		},
+		{
+			MethodName: "ResetPasswordEmail",
+			Handler:    _Auth_ResetPasswordEmail_Handler,
+		},
+		{
+			MethodName: "ResetPassword",
+			Handler:    _Auth_ResetPassword_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

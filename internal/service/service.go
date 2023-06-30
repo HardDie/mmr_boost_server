@@ -30,6 +30,8 @@ type IServiceAuth interface {
 	GetUserInfo(ctx context.Context, userID int32) (*entity.User, error)
 	ValidateEmail(ctx context.Context, code string) error
 	SendValidationEmail(ctx context.Context, name string) error
+	SendResetPasswordEmail(ctx context.Context, req *dto.AuthResetPasswordEmailRequest) error
+	ResetPassword(ctx context.Context, req *dto.AuthResetPasswordRequest) error
 }
 
 type IServiceSystem interface {
