@@ -28,7 +28,7 @@ func (s *User) UpdatePassword(ctx context.Context, req *dto.UserUpdatePasswordRe
 		// Get password from DB
 		password, err := s.repository.Password.GetByUserID(ctx, userID)
 		if err != nil {
-			logger.Error.Printf("error read password from DB: %v", err.Error())
+			logger.Error.Printf("error read password from DB for user %d: %v", userID, err.Error())
 			return status.Error(codes.Internal, "internal")
 		}
 		if password == nil {
@@ -49,9 +49,9 @@ func (s *User) UpdatePassword(ctx context.Context, req *dto.UserUpdatePasswordRe
 		}
 
 		// Update password
-		_, err = s.repository.Password.Update(ctx, userID, hashPassword)
+		_, err = s.repository.Password.Update(ctx, password.ID, hashPassword)
 		if err != nil {
-			logger.Error.Printf("error updating password in DB: %v", err.Error())
+			logger.Error.Printf("error updating password in DB for user %d: %v", userID, err.Error())
 			return status.Error(codes.Internal, "internal")
 		}
 		return nil
