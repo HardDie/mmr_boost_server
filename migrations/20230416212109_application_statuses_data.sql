@@ -2,12 +2,13 @@
 -- +goose StatementBegin
 INSERT INTO application_statuses (id, title)
 VALUES (1, 'created'),
-       (2, 'waiting for payment'),
-       (3, 'payed'),
-       (4, 'waiting for processing'),
-       (5, 'in progress'),
-       (6, 'paused'),
-       (7, 'done')
+       (2, 'awaits payment'),
+       (3, 'paid'),
+       (4, 'in progress'),
+       (5, 'done'),
+       (6, 'deleted'),
+       (7, 'canceled'),
+       (8, 'suspended')
 ;
 -- +goose StatementEnd
 
