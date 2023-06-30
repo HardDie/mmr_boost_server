@@ -47,12 +47,17 @@ type IServicePrice interface {
 	Price(ctx context.Context, req *dto.PriceRequest) (float64, error)
 }
 
+type IServiceStatusHistory interface {
+	StatusHistory(ctx context.Context, req *dto.StatusHistoryListRequest) ([]*entity.StatusHistory, error)
+}
+
 type Service struct {
-	Application IServiceApplication
-	Auth        IServiceAuth
-	System      IServiceSystem
-	User        IServiceUser
-	Price       IServicePrice
+	Application   IServiceApplication
+	Auth          IServiceAuth
+	System        IServiceSystem
+	User          IServiceUser
+	Price         IServicePrice
+	StatusHistory IServiceStatusHistory
 }
 
 func NewService(
@@ -61,12 +66,14 @@ func NewService(
 	system IServiceSystem,
 	user IServiceUser,
 	price IServicePrice,
+	statusHistory IServiceStatusHistory,
 ) *Service {
 	return &Service{
-		Application: application,
-		Auth:        auth,
-		System:      system,
-		User:        user,
-		Price:       price,
+		Application:   application,
+		Auth:          auth,
+		System:        system,
+		User:          user,
+		Price:         price,
+		StatusHistory: statusHistory,
 	}
 }

@@ -54,6 +54,18 @@ func (m *AuthMiddleware) RequestMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// AdminMiddleware Validate that current user is admin.
+func AdminMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		roleID := utils.ContextGetRoleID(r.Context())
+		if roleID != int32(pb.UserRoleID_admin) {
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 // ManagementMiddleware Validate that current user is admin or manager.
 func ManagementMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -19,6 +19,7 @@ type Server struct {
 	system
 	user
 	price
+	statusHistory
 
 	authMiddleware    *middleware.AuthMiddleware
 	timeoutMiddleware *middleware.TimeoutRequestMiddleware
@@ -26,11 +27,12 @@ type Server struct {
 
 func NewServer(config config.Config, srvc *service.Service) *Server {
 	return &Server{
-		application: newApplication(srvc),
-		auth:        newAuth(srvc),
-		system:      newSystem(srvc),
-		user:        newUser(srvc),
-		price:       newPrice(srvc),
+		application:   newApplication(srvc),
+		auth:          newAuth(srvc),
+		system:        newSystem(srvc),
+		user:          newUser(srvc),
+		price:         newPrice(srvc),
+		statusHistory: newStatusHistory(srvc),
 
 		authMiddleware:    middleware.NewAuthMiddleware(srvc),
 		timeoutMiddleware: middleware.NewTimeoutRequestMiddleware(time.Duration(config.HTTP.RequestTimeout) * time.Second),
@@ -48,6 +50,10 @@ func (s *Server) Register(router *mux.Router) {
 	}
 	privateMiddlewares := []mux.MiddlewareFunc{
 		s.authMiddleware.RequestMiddleware,
+	}
+	adminMiddlewares := []mux.MiddlewareFunc{
+		s.authMiddleware.RequestMiddleware,
+		middleware.AdminMiddleware,
 	}
 	managementMiddlewares := []mux.MiddlewareFunc{
 		s.authMiddleware.RequestMiddleware,
@@ -82,6 +88,15 @@ func (s *Server) Register(router *mux.Router) {
 	if err != nil {
 		logger.Error.Fatal("error register price", err.Error())
 	}
+	err = s.statusHistory.RegisterHTTP(ctx, grpcMux)
+	if err != nil {
+		logger.Error.Fatal("error register statusHistory", err.Error())
+	}
+
+	// admin
+	adminRoute := router.PathPrefix("/admin").Subrouter()
+	adminRoute.Use(adminMiddlewares...)
+	adminRoute.PathPrefix("").Handler(grpcMux)
 
 	// management
 	managementRoute := router.PathPrefix("/management").Subrouter()

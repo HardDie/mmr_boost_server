@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package gateway;
+
+option go_package = "github.com/HardDie/mmr_boost_server/pkg/server";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+service Status
+{
+    // Get status history for application
+    rpc StatusHistory(StatusHistoryRequest) returns (StatusHistoryResponse)
+    {
+        option (google.api.http) = {
+            get : "/api/v1/admin/applications/{id}/status_history"
+        };
+    }
+}
+
+// Structures
+
+message StatusHistory
+{
+    int32 id = 1;
+    int32 user_id = 2;
+    int32 application_id = 3;
+    int32 new_status_id = 4;
+    google.protobuf.Timestamp created_at = 5;
+}
+
+// Request/Response
+
+message StatusHistoryRequest
+{
+    int32 id = 1;
+}
+message StatusHistoryResponse
+{
+    repeated StatusHistory data = 1;
+}

@@ -59,6 +59,11 @@ type IPostgresUser interface {
 	UpdateSteamID(ctx context.Context, userID int32, steamID string) (*entity.User, error)
 }
 
+type IPostgresStatusHistory interface {
+	NewEvent(ctx context.Context, req *dto.StatusHistoryNewEventRequest) error
+	List(ctx context.Context, applicationID int32) ([]*entity.StatusHistory, error)
+}
+
 type Postgres struct {
 	txManager *txManager
 
@@ -69,6 +74,7 @@ type Postgres struct {
 	History         IPostgresHistory
 	Password        IPostgresPassword
 	User            IPostgresUser
+	StatusHistory   IPostgresStatusHistory
 }
 
 func NewPostgres(db *db.DB,
@@ -79,6 +85,7 @@ func NewPostgres(db *db.DB,
 	history IPostgresHistory,
 	password IPostgresPassword,
 	user IPostgresUser,
+	statusHistory IPostgresStatusHistory,
 ) *Postgres {
 	return &Postgres{
 		txManager: newTxManager(db),
@@ -90,6 +97,7 @@ func NewPostgres(db *db.DB,
 		History:         history,
 		Password:        password,
 		User:            user,
+		StatusHistory:   statusHistory,
 	}
 }
 

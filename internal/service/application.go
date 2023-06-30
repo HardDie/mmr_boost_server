@@ -113,6 +113,15 @@ func (s *Application) DeleteItem(ctx context.Context, req *dto.ApplicationItemDe
 	if err != nil {
 		return err
 	}
+	err = s.repository.StatusHistory.NewEvent(ctx, &dto.StatusHistoryNewEventRequest{
+		UserID:        req.UserID,
+		ApplicationID: req.ApplicationID,
+		NewStatusID:   int32(pb.ApplicationStatusID_deleted),
+	})
+	if err != nil {
+		logger.Error.Printf("error writing status_history message: user_id=%d, application_id=%d new_status_id=%d",
+			req.UserID, req.ApplicationID, int32(pb.ApplicationStatusID_deleted))
+	}
 	return nil
 }
 
@@ -175,6 +184,15 @@ func (s *Application) ManagementUpdateStatus(ctx context.Context, req *dto.Appli
 	})
 	if err != nil {
 		return nil, err
+	}
+	err = s.repository.StatusHistory.NewEvent(ctx, &dto.StatusHistoryNewEventRequest{
+		UserID:        req.UserID,
+		ApplicationID: req.ApplicationID,
+		NewStatusID:   req.StatusID,
+	})
+	if err != nil {
+		logger.Error.Printf("error writing status_history message: user_id=%d, application_id=%d new_status_id=%d",
+			req.UserID, req.ApplicationID, req.StatusID)
 	}
 	return resp, nil
 }

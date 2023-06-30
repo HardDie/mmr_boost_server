@@ -45,6 +45,9 @@ type ApplicationItemDeleteRequest struct {
 type ApplicationManagementUpdateStatusRequest struct {
 	ApplicationID int32 `json:"applicationId" validate:"required,gt=0"`
 	StatusID      int32 `json:"statusId" validate:"required,gte=1,lte=8"`
+
+	// autofill
+	UserID int32
 }
 
 type ApplicationManagementUpdateItemRequest struct {

@@ -62,6 +62,7 @@ func Get() (*Application, error) {
 	repositoryHistory := postgres.NewHistory(app.DB)
 	repositoryPassword := postgres.NewPassword(app.DB)
 	repositoryUser := postgres.NewUser(app.DB)
+	repositoryStatusHistory := postgres.NewStatusHistory(app.DB)
 	postgresRepository := postgres.NewPostgres(
 		app.DB,
 		repositoryAccessToken,
@@ -71,6 +72,7 @@ func Get() (*Application, error) {
 		repositoryHistory,
 		repositoryPassword,
 		repositoryUser,
+		repositoryStatusHistory,
 	)
 	smtpRepository := smtp.NewSMTP(app.Cfg)
 	encryptRepository, err := encrypt.NewEncrypt(app.Cfg.Encrypt)
@@ -84,12 +86,14 @@ func Get() (*Application, error) {
 	serviceSystem := service.NewSystem()
 	serviceUser := service.NewUser(postgresRepository)
 	servicePrice := service.NewPrice(postgresRepository)
+	serviceStatusHistory := service.NewStatusHistory(postgresRepository)
 	srvc := service.NewService(
 		serviceApplication,
 		serviceAuth,
 		serviceSystem,
 		serviceUser,
 		servicePrice,
+		serviceStatusHistory,
 	)
 
 	// Init severs

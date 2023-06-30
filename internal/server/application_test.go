@@ -22,7 +22,7 @@ func TestApplication_Create(t *testing.T) {
 	ctx := context.Background()
 	serviceApplication := mocks.NewIServiceApplication(t)
 	servicePrice := mocks.NewIServicePrice(t)
-	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, servicePrice))
+	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, servicePrice, nil))
 
 	servicePrice.On("Price",
 		mock.AnythingOfType("*context.valueCtx"),
@@ -138,7 +138,7 @@ func TestApplication_Create(t *testing.T) {
 func TestApplication_GetList(t *testing.T) {
 	ctx := context.Background()
 	serviceApplication := mocks.NewIServiceApplication(t)
-	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, nil))
+	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, nil, nil))
 
 	serviceApplication.On("UserList",
 		mock.AnythingOfType("*context.valueCtx"),
@@ -216,7 +216,7 @@ func TestApplication_GetList(t *testing.T) {
 func TestApplication_GetItem(t *testing.T) {
 	ctx := context.Background()
 	serviceApplication := mocks.NewIServiceApplication(t)
-	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, nil))
+	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, nil, nil))
 
 	serviceApplication.On("UserItem",
 		mock.AnythingOfType("*context.valueCtx"),
@@ -290,7 +290,7 @@ func TestApplication_GetItem(t *testing.T) {
 func TestApplication_GetManagementList(t *testing.T) {
 	ctx := context.Background()
 	serviceApplication := mocks.NewIServiceApplication(t)
-	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, nil))
+	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, nil, nil))
 
 	serviceApplication.On("ManagementList",
 		mock.AnythingOfType("*context.valueCtx"),
@@ -373,7 +373,7 @@ func TestApplication_GetManagementList(t *testing.T) {
 func TestApplication_GetManagementItem(t *testing.T) {
 	ctx := context.Background()
 	serviceApplication := mocks.NewIServiceApplication(t)
-	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, nil))
+	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, nil, nil))
 
 	serviceApplication.On("ManagementItem",
 		mock.AnythingOfType("*context.valueCtx"),
@@ -451,7 +451,7 @@ func TestApplication_GetManagementItem(t *testing.T) {
 func TestApplication_GetManagementPrivateItem(t *testing.T) {
 	ctx := context.Background()
 	serviceApplication := mocks.NewIServiceApplication(t)
-	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, nil))
+	srv := newApplication(service.NewService(serviceApplication, nil, nil, nil, nil, nil))
 
 	serviceApplication.On("ManagementPrivateItem",
 		mock.AnythingOfType("*context.valueCtx"),

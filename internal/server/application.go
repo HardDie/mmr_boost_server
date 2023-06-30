@@ -217,9 +217,13 @@ func (s *application) UpdateManagementPrivateItem(ctx context.Context, req *pb.U
 	}, nil
 }
 func (s *application) UpdateManagementItemStatus(ctx context.Context, req *pb.UpdateManagementItemStatusRequest) (*pb.UpdateManagementItemStatusResponse, error) {
+	userID := utils.ContextGetUserID(ctx)
+
 	r := &dto.ApplicationManagementUpdateStatusRequest{
 		ApplicationID: req.Id,
 		StatusID:      int32(req.StatusId),
+
+		UserID: userID,
 	}
 	err := getValidator().Struct(r)
 	if err != nil {

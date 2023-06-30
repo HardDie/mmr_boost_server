@@ -50,3 +50,13 @@ func ApplicationPrivateToPb(a *entity.ApplicationPrivate) *pb.PrivateApplication
 		DeletedAt:     utils.TimetamppbFromTime(a.DeletedAt),
 	}
 }
+
+func StatusHistoryToPb(s *entity.StatusHistory) *pb.StatusHistory {
+	return &pb.StatusHistory{
+		Id:            s.ID,
+		UserId:        s.UserID,
+		ApplicationId: s.ApplicationID,
+		NewStatusId:   s.NewStatusID,
+		CreatedAt:     timestamppb.New(s.CreatedAt),
+	}
+}
