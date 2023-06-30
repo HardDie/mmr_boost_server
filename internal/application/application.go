@@ -1,6 +1,7 @@
 package application
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -22,7 +23,8 @@ import (
 )
 
 const (
-	ServerTimeout = 30
+	ServerTimeout   = 30
+	ShutdownTimeout = 30
 )
 
 type Application struct {
@@ -104,23 +106,37 @@ func Get() (*Application, error) {
 }
 
 func (app *Application) Run() error {
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		<-sigs
-		app.Stop()
-		os.Exit(0)
-	}()
-
-	defer app.Stop()
-
 	srv := &http.Server{
 		Addr:         app.Cfg.HTTP.Port,
 		ReadTimeout:  ServerTimeout * time.Second,
 		WriteTimeout: ServerTimeout * time.Second,
 		Handler:      app.Router,
 	}
-	return srv.ListenAndServe()
+
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, syscall.SIGINT, syscall.SIGTERM)
+
+	defer app.Stop()
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Error.Println("server error:", err.Error())
+		}
+	}()
+
+	<-done
+	logger.Info.Println("Server stopped")
+
+	ctx, cancel := context.WithTimeout(context.Background(), ShutdownTimeout*time.Second)
+	defer func() {
+		cancel()
+	}()
+
+	err := srv.Shutdown(ctx)
+	if err != nil {
+		logger.Error.Println("error shutdown server:", err.Error())
+		return err
+	}
+	return nil
 }
 
 func (app *Application) Stop() {
