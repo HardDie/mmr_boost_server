@@ -294,10 +294,10 @@ func (s *Auth) SendResetPasswordEmail(ctx context.Context, req *dto.AuthResetPas
 	return nil
 }
 func (s *Auth) ResetPassword(ctx context.Context, req *dto.AuthResetPasswordRequest) error {
+	// Hash code
+	req.Code = strings.ToLower(req.Code)
+	codeHash := utils.HashSha256(req.Code)
 	err := s.repository.TxManager().ReadWriteTx(ctx, func(ctx context.Context) error {
-		// Hash code
-		req.Code = strings.ToLower(req.Code)
-		codeHash := utils.HashSha256(req.Code)
 		// Validate code
 		rp, err := s.repository.ResetPassword.GetByCode(ctx, codeHash)
 		if err != nil {

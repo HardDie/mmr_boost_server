@@ -33,7 +33,7 @@ func (s *auth) Register(ctx context.Context, req *pb.RegisterRequest) (*emptypb.
 	r := &dto.AuthRegisterRequest{
 		Username: req.Username,
 		Password: req.Password,
-		Email:    req.Email,
+		Email:    utils.NormalizeString(req.Email),
 	}
 	err := getValidator().Struct(r)
 	if err != nil {
@@ -72,7 +72,7 @@ func (s *auth) Login(ctx context.Context, req *pb.LoginRequest) (*emptypb.Empty,
 }
 func (s *auth) ValidateEmail(ctx context.Context, req *pb.ValidateEmailRequest) (*emptypb.Empty, error) {
 	r := &dto.AuthValidateEmailRequest{
-		Code: req.Code,
+		Code: utils.NormalizeString(req.Code),
 	}
 	err := getValidator().Struct(r)
 	if err != nil {
@@ -128,7 +128,7 @@ func (s *auth) Logout(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, er
 func (s *auth) ResetPasswordEmail(ctx context.Context, req *pb.ResetPasswordEmailRequest) (*emptypb.Empty, error) {
 	r := &dto.AuthResetPasswordEmailRequest{
 		Username: req.Username,
-		Email:    req.Email,
+		Email:    utils.NormalizeString(req.Email),
 	}
 	err := getValidator().Struct(r)
 	if err != nil {
@@ -143,7 +143,7 @@ func (s *auth) ResetPasswordEmail(ctx context.Context, req *pb.ResetPasswordEmai
 }
 func (s *auth) ResetPassword(ctx context.Context, req *pb.ResetPasswordRequest) (*emptypb.Empty, error) {
 	r := &dto.AuthResetPasswordRequest{
-		Code:        req.Code,
+		Code:        utils.NormalizeString(req.Code),
 		Username:    req.Username,
 		NewPassword: req.NewPassword,
 	}
