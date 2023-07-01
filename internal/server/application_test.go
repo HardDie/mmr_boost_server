@@ -28,7 +28,7 @@ func TestApplication_Create(t *testing.T) {
 			CurrentMmr: 1000,
 			TargetMmr:  2000,
 		},
-	).Return(float64(150), nil)
+	).Return(int32(150), nil)
 	m.price.On("Price",
 		mock.AnythingOfType("*context.valueCtx"),
 		&dto.PriceRequest{
@@ -36,7 +36,7 @@ func TestApplication_Create(t *testing.T) {
 			CurrentMmr: 0,
 			TargetMmr:  10,
 		},
-	).Return(float64(0), status.Error(codes.Internal, "internal"))
+	).Return(int32(0), status.Error(codes.Internal, "internal"))
 
 	m.application.On("Create",
 		mock.AnythingOfType("*context.valueCtx"),

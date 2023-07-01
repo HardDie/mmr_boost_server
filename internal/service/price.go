@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"math"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,7 +22,7 @@ func NewPrice(repository *postgres.Postgres) *Price {
 	}
 }
 
-var calibrationPrice float64 = 2000
+var calibrationPrice int32 = 2000
 var price = []struct {
 	minMMR int32
 	maxMMR int32
@@ -57,7 +58,7 @@ var price = []struct {
 	{7500, 8000, 1500. / 100},
 }
 
-func (s *Price) Price(_ context.Context, req *dto.PriceRequest) (float64, error) {
+func (s *Price) Price(_ context.Context, req *dto.PriceRequest) (int32, error) {
 	if req.TypeID == int32(pb.ApplicationTypeID_calibration) {
 		return calibrationPrice, nil
 	}
@@ -92,5 +93,5 @@ func (s *Price) Price(_ context.Context, req *dto.PriceRequest) (float64, error)
 		res += float64(maxMMR-minMMR) * p.price
 	}
 
-	return res, nil
+	return int32(math.Ceil(res)), nil
 }

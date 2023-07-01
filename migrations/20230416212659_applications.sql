@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS applications (
     current_mmr    INT      NOT NULL,
     target_mmr     INT      NOT NULL,
     tg_contact     TEXT     NOT NULL,
-    price          REAL     NOT NULL,
+    price          INT      NOT NULL,
     comment        TEXT,
     steam_login    TEXT,
     steam_password TEXT,

@@ -30,5 +30,5 @@ message PriceRequest
 }
 message PriceResponse
 {
-    double price = 1;
+    int32 price = 1;
 }

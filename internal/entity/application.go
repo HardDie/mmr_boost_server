@@ -10,7 +10,7 @@ type ApplicationPublic struct {
 	CurrentMMR   int32      `json:"currentMmr"`
 	TargetMMR    int32      `json:"targetMmr"`
 	TgContact    string     `json:"tgContact"`
-	Price        float64    `json:"price"`
+	Price        int32      `json:"price"`
 	Comment      string     `json:"comment"`
 	IsPrivateSet bool       `json:"isPrivateSet"`
 	CreatedAt    time.Time  `json:"createdAt"`

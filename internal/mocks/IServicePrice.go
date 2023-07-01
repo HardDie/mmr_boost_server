@@ -15,18 +15,18 @@ type IServicePrice struct {
 }
 
 // Price provides a mock function with given fields: ctx, req
-func (_m *IServicePrice) Price(ctx context.Context, req *dto.PriceRequest) (float64, error) {
+func (_m *IServicePrice) Price(ctx context.Context, req *dto.PriceRequest) (int32, error) {
 	ret := _m.Called(ctx, req)
 
-	var r0 float64
+	var r0 int32
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *dto.PriceRequest) (float64, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *dto.PriceRequest) (int32, error)); ok {
 		return rf(ctx, req)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *dto.PriceRequest) float64); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *dto.PriceRequest) int32); ok {
 		r0 = rf(ctx, req)
 	} else {
-		r0 = ret.Get(0).(float64)
+		r0 = ret.Get(0).(int32)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, *dto.PriceRequest) error); ok {

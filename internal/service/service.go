@@ -44,7 +44,7 @@ type IServiceUser interface {
 }
 
 type IServicePrice interface {
-	Price(ctx context.Context, req *dto.PriceRequest) (float64, error)
+	Price(ctx context.Context, req *dto.PriceRequest) (int32, error)
 }
 
 type IServiceStatusHistory interface {
