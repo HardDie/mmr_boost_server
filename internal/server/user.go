@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/HardDie/mmr_boost_server/internal/dto"
+	"github.com/HardDie/mmr_boost_server/internal/logger"
 	"github.com/HardDie/mmr_boost_server/internal/service"
 	"github.com/HardDie/mmr_boost_server/internal/utils"
 	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
@@ -30,13 +31,17 @@ func (s *user) RegisterHTTP(ctx context.Context, mux *runtime.ServeMux) error {
 }
 
 func (s *user) Password(ctx context.Context, req *pb.PasswordRequest) (*emptypb.Empty, error) {
-	userID := utils.ContextGetUserID(ctx)
+	userID, err := utils.ContextGetUserID(ctx)
+	if err != nil {
+		logger.Error.Printf("userID not found in context")
+		return nil, err
+	}
 
 	r := &dto.UserUpdatePasswordRequest{
 		NewPassword: req.NewPassword,
 		OldPassword: req.OldPassword,
 	}
-	err := getValidator().Struct(r)
+	err = getValidator().Struct(r)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -49,12 +54,16 @@ func (s *user) Password(ctx context.Context, req *pb.PasswordRequest) (*emptypb.
 	return &emptypb.Empty{}, nil
 }
 func (s *user) SteamID(ctx context.Context, req *pb.SteamIDRequest) (*pb.SteamIDResponse, error) {
-	userID := utils.ContextGetUserID(ctx)
+	userID, err := utils.ContextGetUserID(ctx)
+	if err != nil {
+		logger.Error.Printf("userID not found in context")
+		return nil, err
+	}
 
 	r := &dto.UserUpdateSteamIDRequest{
 		SteamID: req.SteamId,
 	}
-	err := getValidator().Struct(r)
+	err = getValidator().Struct(r)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}

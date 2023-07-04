@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/HardDie/mmr_boost_server/internal/dto"
+	"github.com/HardDie/mmr_boost_server/internal/logger"
 	"github.com/HardDie/mmr_boost_server/internal/service"
 	"github.com/HardDie/mmr_boost_server/internal/utils"
 	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
@@ -102,7 +103,11 @@ func (s *auth) SendValidationEmail(ctx context.Context, req *pb.SendValidationEm
 }
 
 func (s *auth) User(ctx context.Context, _ *emptypb.Empty) (*pb.UserResponse, error) {
-	userID := utils.ContextGetUserID(ctx)
+	userID, err := utils.ContextGetUserID(ctx)
+	if err != nil {
+		logger.Error.Printf("userID not found in context")
+		return nil, err
+	}
 
 	u, err := s.service.Auth.GetUserInfo(ctx, userID)
 	if err != nil {
