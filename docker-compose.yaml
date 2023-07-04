@@ -5,6 +5,7 @@ services:
     image: postgres:latest
     volumes:
       - '/tmp/db_data:/var/lib/postgresql/data'
+      - '/etc/localtime:/etc/localtime:ro'
     environment:
       - POSTGRES_PASSWORD=mmr_boost
       - POSTGRES_USER=mmr_boost

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/dimonrus/gosql"
 	"google.golang.org/grpc/codes"
@@ -16,12 +17,14 @@ import (
 )
 
 type User struct {
-	db *db.DB
+	db      *db.DB
+	timeNow func() time.Time
 }
 
 func NewUser(db *db.DB) *User {
 	return &User{
-		db: db,
+		db:      db,
+		timeNow: time.Now,
 	}
 }
 
@@ -74,12 +77,10 @@ func (r *User) GetByName(ctx context.Context, name string) (*entity.User, error)
 func (r *User) GetByNameOrEmail(ctx context.Context, name string, email string) (*entity.User, error) {
 	tx := getTxOrConn(ctx, r.db)
 
-	u := &entity.User{
-		Username: name,
-	}
+	u := &entity.User{}
 
 	q := gosql.NewSelect().From("users")
-	q.Columns().Add("id", "email", "role_id", "steam_id", "is_activated", "created_at", "updated_at", "deleted_at")
+	q.Columns().Add("id", "username", "email", "role_id", "steam_id", "is_activated", "created_at", "updated_at", "deleted_at")
 	q.Where().Merge(gosql.ConditionOperatorAnd,
 		gosql.NewSqlCondition(gosql.ConditionOperatorOr).
 			AddExpression("username = ?", name).
@@ -90,7 +91,7 @@ func (r *User) GetByNameOrEmail(ctx context.Context, name string, email string) 
 
 	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
 
-	err := row.Scan(&u.ID, &u.Email, &u.RoleID, &u.SteamID, &u.IsActivated, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt)
+	err := row.Scan(&u.ID, &u.Username, &u.Email, &u.RoleID, &u.SteamID, &u.IsActivated, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -108,11 +109,13 @@ func (r *User) Create(ctx context.Context, email, name string) (*entity.User, er
 		Username:    name,
 		RoleID:      int32(pb.UserRoleID_user),
 		IsActivated: false,
+		CreatedAt:   r.timeNow(),
+		UpdatedAt:   r.timeNow(),
 	}
 
 	q := gosql.NewInsert().Into("users")
-	q.Columns().Add("email", "username", "role_id", "is_activated")
-	q.Columns().Arg(u.Email, u.Username, u.RoleID, u.IsActivated)
+	q.Columns().Add("email", "username", "role_id", "is_activated", "created_at", "updated_at")
+	q.Columns().Arg(u.Email, u.Username, u.RoleID, u.IsActivated, u.CreatedAt, u.UpdatedAt)
 	q.Returning().Add("id", "created_at", "updated_at")
 	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
 
@@ -129,17 +132,18 @@ func (r *User) ActivateRecord(ctx context.Context, userID int32) (*entity.User, 
 	u := &entity.User{
 		ID:          userID,
 		IsActivated: true,
+		UpdatedAt:   r.timeNow(),
 	}
 
 	q := gosql.NewUpdate().Table("users")
 	q.Set().Append("is_activated = true")
-	q.Set().Append("updated_at = now()")
+	q.Set().Append("updated_at = ?", u.UpdatedAt)
 	q.Where().AddExpression("id = ?", userID)
 	q.Where().AddExpression("deleted_at IS NULL")
-	q.Returning().Add("email", "username", "role_id", "created_at", "updated_at")
+	q.Returning().Add("email", "username", "role_id", "steam_id", "created_at", "updated_at")
 	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
 
-	err := row.Scan(&u.Email, &u.Username, &u.RoleID, &u.CreatedAt, &u.UpdatedAt)
+	err := row.Scan(&u.Email, &u.Username, &u.RoleID, &u.SteamID, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -153,13 +157,14 @@ func (r *User) UpdateSteamID(ctx context.Context, userID int32, steamID string) 
 	tx := getTxOrConn(ctx, r.db)
 
 	u := &entity.User{
-		ID:      userID,
-		SteamID: &steamID,
+		ID:        userID,
+		SteamID:   &steamID,
+		UpdatedAt: r.timeNow(),
 	}
 
 	q := gosql.NewUpdate().Table("users")
 	q.Set().Append("steam_id = ?", u.SteamID)
-	q.Set().Append("updated_at = now()")
+	q.Set().Append("updated_at = ?", u.UpdatedAt)
 	q.Where().AddExpression("id = ?", u.ID)
 	q.Where().AddExpression("deleted_at IS NULL")
 	q.Returning().Add("email", "username", "role_id", "is_activated", "created_at", "updated_at")
