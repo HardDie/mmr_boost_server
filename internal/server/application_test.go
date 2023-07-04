@@ -17,117 +17,197 @@ import (
 )
 
 func TestApplication_Create(t *testing.T) {
-	ctx := context.Background()
-	m, s := initServerObject(t)
-	srv := newApplication(s)
-
-	m.price.On("Price",
-		mock.AnythingOfType("*context.valueCtx"),
-		&dto.PriceRequest{
-			TypeID:     1,
-			CurrentMmr: 1000,
-			TargetMmr:  2000,
-		},
-	).Return(int32(150), nil)
-	m.price.On("Price",
-		mock.AnythingOfType("*context.valueCtx"),
-		&dto.PriceRequest{
-			TypeID:     1,
-			CurrentMmr: 0,
-			TargetMmr:  10,
-		},
-	).Return(int32(0), status.Error(codes.Internal, "internal"))
-
-	m.application.On("Create",
-		mock.AnythingOfType("*context.valueCtx"),
-		&dto.ApplicationCreateRequest{
-			UserID:     1,
-			TypeID:     1,
-			CurrentMMR: 1000,
-			TargetMMR:  2000,
-			TgContact:  "testuser",
-			Price:      150,
-		},
-	).Return(&entity.ApplicationPublic{
-		ID:         1,
-		UserID:     1,
-		StatusID:   1,
-		TypeID:     1,
-		CurrentMMR: 1000,
-		TargetMMR:  2000,
-		TgContact:  "testuser",
-		Price:      150,
-	}, nil)
-	m.application.On("Create",
-		mock.AnythingOfType("*context.valueCtx"),
-		&dto.ApplicationCreateRequest{
-			UserID:     1,
-			TypeID:     1,
-			CurrentMMR: 1000,
-			TargetMMR:  2000,
-			TgContact:  "internal",
-			Price:      150,
-		},
-	).Return(nil, status.Error(codes.Internal, "internal"))
-
-	// Set user for context
-	ctx = utils.ContextSetUserID(ctx, 1)
-
-	tests := []struct {
-		name    string
-		req     *pb.CreateRequest
-		resp    *pb.CreateResponse
-		errCode codes.Code
+	tests := map[string]struct {
+		setup       func(m *serviceMock) (*pb.CreateRequest, *pb.CreateResponse, *int32)
+		wantErrCode codes.Code
 	}{
-		{
-			"valid",
-			&pb.CreateRequest{
-				TypeId:     1,
-				CurrentMmr: 1000,
-				TargetMmr:  2000,
-				TgContact:  "testuser",
-			},
-			&pb.CreateResponse{
-				Data: &pb.PublicApplicationObject{
-					Id:         1,
-					UserId:     1,
-					StatusId:   1,
-					TypeId:     1,
+		"valid boost mmr": {
+			setup: func(m *serviceMock) (*pb.CreateRequest, *pb.CreateResponse, *int32) {
+				userID := int32(1)
+				boostPrice := int32(150)
+				now := time.Now()
+
+				pbReq := &pb.CreateRequest{
+					TypeId:     pb.ApplicationTypeID_boost_mmr,
 					CurrentMmr: 1000,
 					TargetMmr:  2000,
 					TgContact:  "testuser",
-					Price:      150,
-					CreatedAt:  timestamppb.New(time.Time{}),
-					UpdatedAt:  timestamppb.New(time.Time{}),
-				},
+				}
+				pbResp := &pb.CreateResponse{
+					Data: &pb.PublicApplicationObject{
+						Id:         1,
+						UserId:     userID,
+						StatusId:   pb.ApplicationStatusID_created,
+						TypeId:     pbReq.TypeId,
+						CurrentMmr: pbReq.CurrentMmr,
+						TargetMmr:  pbReq.TargetMmr,
+						TgContact:  pbReq.TgContact,
+						Price:      boostPrice,
+						CreatedAt:  timestamppb.New(now),
+						UpdatedAt:  timestamppb.New(now),
+					},
+				}
+
+				m.price.On("Price", mock.Anything, &dto.PriceRequest{
+					TypeID:     int32(pbReq.TypeId),
+					CurrentMmr: pbReq.CurrentMmr,
+					TargetMmr:  pbReq.TargetMmr,
+				}).Return(boostPrice, nil)
+				m.application.On("Create", mock.Anything, &dto.ApplicationCreateRequest{
+					UserID:     userID,
+					TypeID:     int32(pbReq.TypeId),
+					CurrentMMR: pbReq.CurrentMmr,
+					TargetMMR:  pbReq.TargetMmr,
+					TgContact:  pbReq.TgContact,
+					Price:      boostPrice,
+				}).Return(&entity.ApplicationPublic{
+					ID:         1,
+					UserID:     userID,
+					StatusID:   int32(pb.ApplicationStatusID_created),
+					TypeID:     int32(pbReq.TypeId),
+					CurrentMMR: pbReq.CurrentMmr,
+					TargetMMR:  pbReq.TargetMmr,
+					TgContact:  pbReq.TgContact,
+					Price:      boostPrice,
+					CreatedAt:  now,
+					UpdatedAt:  now,
+				}, nil)
+				return pbReq, pbResp, &userID
 			},
-			codes.OK,
+			wantErrCode: codes.OK,
 		},
-		{
-			"validation error",
-			&pb.CreateRequest{},
-			nil,
-			codes.InvalidArgument,
+		"valid calibration": {
+			setup: func(m *serviceMock) (*pb.CreateRequest, *pb.CreateResponse, *int32) {
+				userID := int32(2)
+				boostPrice := int32(1000)
+				now := time.Now()
+
+				pbReq := &pb.CreateRequest{
+					TypeId:    pb.ApplicationTypeID_calibration,
+					TgContact: "testuser",
+				}
+				pbResp := &pb.CreateResponse{
+					Data: &pb.PublicApplicationObject{
+						Id:         1,
+						UserId:     userID,
+						StatusId:   pb.ApplicationStatusID_created,
+						TypeId:     pbReq.TypeId,
+						CurrentMmr: pbReq.CurrentMmr,
+						TargetMmr:  pbReq.TargetMmr,
+						TgContact:  pbReq.TgContact,
+						Price:      boostPrice,
+						CreatedAt:  timestamppb.New(now),
+						UpdatedAt:  timestamppb.New(now),
+					},
+				}
+
+				m.price.On("Price", mock.Anything, &dto.PriceRequest{
+					TypeID:     int32(pbReq.TypeId),
+					CurrentMmr: pbReq.CurrentMmr,
+					TargetMmr:  pbReq.TargetMmr,
+				}).Return(boostPrice, nil)
+				m.application.On("Create", mock.Anything, &dto.ApplicationCreateRequest{
+					UserID:     userID,
+					TypeID:     int32(pbReq.TypeId),
+					CurrentMMR: pbReq.CurrentMmr,
+					TargetMMR:  pbReq.TargetMmr,
+					TgContact:  pbReq.TgContact,
+					Price:      boostPrice,
+				}).Return(&entity.ApplicationPublic{
+					ID:         1,
+					UserID:     userID,
+					StatusID:   int32(pb.ApplicationStatusID_created),
+					TypeID:     int32(pbReq.TypeId),
+					CurrentMMR: pbReq.CurrentMmr,
+					TargetMMR:  pbReq.TargetMmr,
+					TgContact:  pbReq.TgContact,
+					Price:      boostPrice,
+					CreatedAt:  now,
+					UpdatedAt:  now,
+				}, nil)
+				return pbReq, pbResp, &userID
+			},
+			wantErrCode: codes.OK,
 		},
-		{
-			"price internal",
-			&pb.CreateRequest{TypeId: 1, CurrentMmr: 0, TargetMmr: 10, TgContact: "price"},
-			nil,
-			codes.Internal,
+		"no user in context error": {
+			setup: func(m *serviceMock) (*pb.CreateRequest, *pb.CreateResponse, *int32) {
+				return nil, nil, nil
+			},
+			wantErrCode: codes.Internal,
 		},
-		{
-			"internal error",
-			&pb.CreateRequest{TypeId: 1, CurrentMmr: 1000, TargetMmr: 2000, TgContact: "internal"},
-			nil,
-			codes.Internal,
+		"validation error": {
+			setup: func(_ *serviceMock) (*pb.CreateRequest, *pb.CreateResponse, *int32) {
+				userID := int32(3)
+				return &pb.CreateRequest{}, nil, &userID
+			},
+			wantErrCode: codes.InvalidArgument,
+		},
+		"price internal error": {
+			setup: func(m *serviceMock) (*pb.CreateRequest, *pb.CreateResponse, *int32) {
+				userID := int32(1)
+
+				pbReq := &pb.CreateRequest{
+					TypeId:     pb.ApplicationTypeID_boost_mmr,
+					CurrentMmr: 1000,
+					TargetMmr:  2000,
+					TgContact:  "testuser",
+				}
+
+				m.price.On("Price", mock.Anything, &dto.PriceRequest{
+					TypeID:     int32(pbReq.TypeId),
+					CurrentMmr: pbReq.CurrentMmr,
+					TargetMmr:  pbReq.TargetMmr,
+				}).Return(int32(0), status.Error(codes.Internal, "internal"))
+
+				return pbReq, nil, &userID
+			},
+			wantErrCode: codes.Internal,
+		},
+		"create internal error": {
+			setup: func(m *serviceMock) (*pb.CreateRequest, *pb.CreateResponse, *int32) {
+				userID := int32(1)
+				boostPrice := int32(150)
+
+				pbReq := &pb.CreateRequest{
+					TypeId:     pb.ApplicationTypeID_boost_mmr,
+					CurrentMmr: 1000,
+					TargetMmr:  2000,
+					TgContact:  "testuser",
+				}
+
+				m.price.On("Price", mock.Anything, &dto.PriceRequest{
+					TypeID:     int32(pbReq.TypeId),
+					CurrentMmr: pbReq.CurrentMmr,
+					TargetMmr:  pbReq.TargetMmr,
+				}).Return(boostPrice, nil)
+				m.application.On("Create", mock.Anything, &dto.ApplicationCreateRequest{
+					UserID:     userID,
+					TypeID:     int32(pbReq.TypeId),
+					CurrentMMR: pbReq.CurrentMmr,
+					TargetMMR:  pbReq.TargetMmr,
+					TgContact:  pbReq.TgContact,
+					Price:      boostPrice,
+				}).Return(nil, status.Error(codes.Internal, "internal"))
+				return pbReq, nil, &userID
+			},
+			wantErrCode: codes.Internal,
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			resp, err := srv.Create(ctx, tt.req)
-			validateError(t, err, tt.errCode)
-			validateResponse(t, resp, tt.resp)
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctx := context.Background()
+			m, s := initServerObject(t)
+			srv := newApplication(s)
+
+			arg, wantResp, userID := tc.setup(&m)
+			if userID != nil {
+				ctx = utils.ContextSetUserID(ctx, *userID)
+			}
+
+			resp, err := srv.Create(ctx, arg)
+			validateError(t, err, tc.wantErrCode)
+			validateResponse(t, resp, wantResp)
 		})
 	}
 }
