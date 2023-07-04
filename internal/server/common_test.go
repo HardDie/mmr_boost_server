@@ -35,25 +35,31 @@ func initServerObject(t *testing.T) (serviceMock, *service.Service) {
 }
 
 func validateError(t *testing.T, err error, errCode codes.Code) {
-	if err != nil {
-		if errCode == codes.OK {
-			st, ok := status.FromError(err)
-			if ok {
-				t.Error("not expected error: ", err.Error(), st.Code())
-			} else {
-				t.Error("not expected error: ", err.Error())
-			}
-		} else {
-			st, ok := status.FromError(err)
-			if !ok {
-				t.Error("invalid error, must be code:", errCode)
-				return
-			}
-
-			if st.Code() != errCode {
-				t.Errorf("error code: got %d, waited %d", st.Code(), errCode)
-			}
+	if err == nil {
+		if errCode != codes.OK {
+			t.Errorf("err = nil; want = %d", errCode)
 		}
+		return
+	}
+
+	if errCode == codes.OK {
+		st, ok := status.FromError(err)
+		if ok {
+			t.Errorf("err = %s:%d; want nil", err.Error(), st.Code())
+		} else {
+			t.Errorf("err = %s; want nil", err.Error())
+		}
+		return
+	}
+
+	st, ok := status.FromError(err)
+	if !ok {
+		t.Errorf("err %T; want status.Error", err)
+		return
+	}
+
+	if st.Code() != errCode {
+		t.Errorf("err = %d; want %d", st.Code(), errCode)
 	}
 }
 func validateEmptyResponse(t *testing.T, got, wait *emptypb.Empty) {
