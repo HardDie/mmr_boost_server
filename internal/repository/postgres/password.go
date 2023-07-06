@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/dimonrus/gosql"
 	"google.golang.org/grpc/codes"
@@ -15,12 +16,14 @@ import (
 )
 
 type Password struct {
-	db *db.DB
+	db      *db.DB
+	timeNow func() time.Time
 }
 
 func NewPassword(db *db.DB) *Password {
 	return &Password{
-		db: db,
+		db:      db,
+		timeNow: time.Now,
 	}
 }
 
@@ -30,11 +33,13 @@ func (r *Password) Create(ctx context.Context, userID int32, passwordHash string
 	password := &entity.Password{
 		UserID:       userID,
 		PasswordHash: passwordHash,
+		CreatedAt:    r.timeNow(),
+		UpdatedAt:    r.timeNow(),
 	}
 
 	q := gosql.NewInsert().Into("passwords")
-	q.Columns().Add("user_id", "password_hash")
-	q.Columns().Arg(userID, passwordHash)
+	q.Columns().Add("user_id", "password_hash", "created_at", "updated_at")
+	q.Columns().Arg(userID, passwordHash, password.CreatedAt, password.UpdatedAt)
 	q.Returning().Add("id", "created_at", "updated_at")
 	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
 
@@ -75,11 +80,12 @@ func (r *Password) Update(ctx context.Context, id int32, passwordHash string) (*
 	password := &entity.Password{
 		ID:           id,
 		PasswordHash: passwordHash,
+		UpdatedAt:    r.timeNow(),
 	}
 
 	q := gosql.NewUpdate().Table("passwords")
 	q.Set().Append("password_hash = ?", passwordHash)
-	q.Set().Append("updated_at = now()")
+	q.Set().Append("updated_at = ?", password.UpdatedAt)
 	q.Where().AddExpression("id = ?", id)
 	q.Where().AddExpression("deleted_at IS NULL")
 	q.Returning().Add("user_id", "failed_attempts", "created_at", "updated_at")
@@ -96,12 +102,13 @@ func (r *Password) IncreaseFailedAttempts(ctx context.Context, id int32) (*entit
 	tx := getTxOrConn(ctx, r.db)
 
 	password := &entity.Password{
-		ID: id,
+		ID:        id,
+		UpdatedAt: r.timeNow(),
 	}
 
 	q := gosql.NewUpdate().Table("passwords")
 	q.Set().Add("failed_attempts = failed_attempts + 1")
-	q.Set().Append("updated_at = now()")
+	q.Set().Append("updated_at = ?", password.UpdatedAt)
 	q.Where().AddExpression("id = ?", id)
 	q.Where().AddExpression("deleted_at IS NULL")
 	q.Returning().Add("user_id", "password_hash", "failed_attempts", "created_at", "updated_at")
@@ -119,12 +126,13 @@ func (r *Password) ResetFailedAttempts(ctx context.Context, id int32) (*entity.P
 	tx := getTxOrConn(ctx, r.db)
 
 	password := &entity.Password{
-		ID: id,
+		ID:        id,
+		UpdatedAt: r.timeNow(),
 	}
 
 	q := gosql.NewUpdate().Table("passwords")
 	q.Set().Add("failed_attempts = 0")
-	q.Set().Append("updated_at = now()")
+	q.Set().Append("updated_at = ?", password.UpdatedAt)
 	q.Where().AddExpression("id = ?", id)
 	q.Where().AddExpression("deleted_at IS NULL")
 	q.Returning().Add("user_id", "password_hash", "failed_attempts", "created_at", "updated_at")

@@ -24,7 +24,11 @@ var (
 func cleanDB(t *testing.T, dbConn *db.DB) {
 	t.Helper()
 
-	_, err := dbConn.DB.Exec("DELETE FROM users")
+	_, err := dbConn.DB.Exec("DELETE FROM passwords")
+	if err != nil {
+		t.Fatalf("passwords DELETE err = %v; want nil", err)
+	}
+	_, err = dbConn.DB.Exec("DELETE FROM users")
 	if err != nil {
 		t.Fatalf("users DELETE err = %v; want nil", err)
 	}

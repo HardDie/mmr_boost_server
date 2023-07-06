@@ -68,15 +68,14 @@ func TestRepositoryUser(t *testing.T) {
 }
 
 func testRepositoryUser_GetByID(dbConn *db.DB) func(*testing.T) {
+	now := utils.TimeTrim(time.Now())
+
 	return func(t *testing.T) {
 		tests := map[string]struct {
 			setup func(t *testing.T, db *db.DB) (int32, *entity.User)
 		}{
 			"manually created user": {
 				setup: func(t *testing.T, db *db.DB) (int32, *entity.User) {
-					now := time.Now()
-					now = time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second(), 0, time.UTC)
-
 					user := &entity.User{
 						Email:       "test@mail.com",
 						Username:    "test",
