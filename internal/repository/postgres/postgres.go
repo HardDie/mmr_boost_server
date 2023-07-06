@@ -11,7 +11,7 @@ import (
 
 type IPostgresAccessToken interface {
 	CreateOrUpdate(ctx context.Context, userID int32, tokenHash string, expiredAt time.Time) (*entity.AccessToken, error)
-	GetByUserID(ctx context.Context, tokenHash string) (*entity.AccessToken, error)
+	GetByTokenHash(ctx context.Context, tokenHash string) (*entity.AccessToken, error)
 	DeleteByID(ctx context.Context, id int32) error
 }
 

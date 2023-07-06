@@ -188,7 +188,7 @@ func (s *Auth) GenerateCookie(ctx context.Context, userID int32) (*entity.Access
 func (s *Auth) ValidateCookie(ctx context.Context, sessionKey string) (*entity.User, *entity.AccessToken, error) {
 	// Check if access token exist
 	tokenHash := utils.HashSha256(sessionKey)
-	accessToken, err := s.repository.AccessToken.GetByUserID(ctx, tokenHash)
+	accessToken, err := s.repository.AccessToken.GetByTokenHash(ctx, tokenHash)
 	if err != nil {
 		logger.Error.Printf("error read access token from db: %v", err.Error())
 		return nil, nil, status.Error(codes.Internal, "internal")

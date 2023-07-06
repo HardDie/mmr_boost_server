@@ -9,3 +9,7 @@ func (r *User) SetTimeNow(now func() time.Time) {
 func (r *Password) SetTimeNow(now func() time.Time) {
 	r.timeNow = now
 }
+
+func (r *AccessToken) SetTimeNow(now func() time.Time) {
+	r.timeNow = now
+}
