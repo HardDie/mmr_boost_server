@@ -20,7 +20,7 @@ type ApplicationUpdateRequest struct {
 	CurrentMMR    int32
 	TargetMMR     int32
 	TgContact     *string
-	Price         *float64
+	Price         *int32
 }
 
 type ApplicationUpdatePrivateRequest struct {

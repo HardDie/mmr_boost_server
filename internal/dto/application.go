@@ -51,10 +51,10 @@ type ApplicationManagementUpdateStatusRequest struct {
 }
 
 type ApplicationManagementUpdateItemRequest struct {
-	ApplicationID int32   `json:"applicationId" validate:"required,gt=0"`
-	CurrentMMR    int32   `json:"currentMmr" validate:"omitempty,gte=0,ltfield=TargetMMR"`
-	TargetMMR     int32   `json:"targetMmr" validate:"omitempty,lte=7000,gtfield=CurrentMMR"`
-	Price         float64 `json:"price"`
+	ApplicationID int32 `json:"applicationId" validate:"required,gt=0"`
+	CurrentMMR    int32 `json:"currentMmr" validate:"omitempty,gte=0,ltfield=TargetMMR"`
+	TargetMMR     int32 `json:"targetMmr" validate:"omitempty,lte=7000,gtfield=CurrentMMR"`
+	Price         int32 `json:"price" validate:"required,gt=0"`
 
 	// autofill
 	UserID int32

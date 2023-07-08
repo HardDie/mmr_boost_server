@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/dimonrus/gosql"
 	"google.golang.org/grpc/codes"
@@ -18,12 +19,14 @@ import (
 )
 
 type Application struct {
-	db *db.DB
+	db      *db.DB
+	timeNow func() time.Time
 }
 
 func NewApplication(db *db.DB) *Application {
 	return &Application{
-		db: db,
+		db:      db,
+		timeNow: time.Now,
 	}
 }
 
@@ -38,11 +41,13 @@ func (r *Application) Create(ctx context.Context, req *dto.ApplicationCreateRequ
 		TargetMMR:  req.TargetMMR,
 		TgContact:  req.TgContact,
 		Price:      req.Price,
+		CreatedAt:  r.timeNow(),
+		UpdatedAt:  r.timeNow(),
 	}
 
 	q := gosql.NewInsert().Into("applications")
-	q.Columns().Add("user_id", "status_id", "type_id", "current_mmr", "target_mmr", "tg_contact", "price")
-	q.Columns().Arg(app.UserID, app.StatusID, app.TypeID, app.CurrentMMR, app.TargetMMR, app.TgContact, app.Price)
+	q.Columns().Add("user_id", "status_id", "type_id", "current_mmr", "target_mmr", "tg_contact", "price", "created_at", "updated_at")
+	q.Columns().Arg(app.UserID, app.StatusID, app.TypeID, app.CurrentMMR, app.TargetMMR, app.TgContact, app.Price, app.CreatedAt, app.UpdatedAt)
 	q.Returning().Add("id", "created_at", "updated_at")
 	row := tx.QueryRowContext(ctx, q.String(), q.GetArguments()...)
 
@@ -93,7 +98,6 @@ func (r *Application) List(ctx context.Context, req *dto.ApplicationListRequest)
 
 	return res, nil
 }
-
 func (r *Application) Item(ctx context.Context, req *dto.ApplicationItemRequest) (*entity.ApplicationPublic, error) {
 	tx := getTxOrConn(ctx, r.db)
 
@@ -149,13 +153,14 @@ func (r *Application) UpdateStatus(ctx context.Context, req *dto.ApplicationUpda
 	tx := getTxOrConn(ctx, r.db)
 
 	app := &entity.ApplicationPublic{
-		ID:       req.ApplicationID,
-		StatusID: req.StatusID,
+		ID:        req.ApplicationID,
+		StatusID:  req.StatusID,
+		UpdatedAt: r.timeNow(),
 	}
 
 	q := gosql.NewUpdate().Table("applications")
 	q.Set().Append("status_id = ?", app.StatusID)
-	q.Set().Add("updated_at = now()")
+	q.Set().Append("updated_at = ?", app.UpdatedAt)
 	q.Where().AddExpression("id = ?", app.ID)
 	q.Where().AddExpression("deleted_at IS NULL")
 	q.Returning().Add("user_id", "type_id", "current_mmr", "target_mmr", "tg_contact", "price",
@@ -180,6 +185,7 @@ func (r *Application) UpdateItem(ctx context.Context, req *dto.ApplicationUpdate
 		ID:         req.ApplicationID,
 		CurrentMMR: req.CurrentMMR,
 		TargetMMR:  req.TargetMMR,
+		UpdatedAt:  r.timeNow(),
 	}
 
 	q := gosql.NewUpdate().Table("applications")
@@ -191,7 +197,7 @@ func (r *Application) UpdateItem(ctx context.Context, req *dto.ApplicationUpdate
 	if req.Price != nil {
 		q.Set().Append("price = ?", *req.Price)
 	}
-	q.Set().Add("updated_at = now()")
+	q.Set().Append("updated_at = ?", app.UpdatedAt)
 	q.Where().AddExpression("id = ?", app.ID)
 	q.Where().AddExpression("deleted_at IS NULL")
 	q.Returning().Add("user_id", "status_id", "type_id", "tg_contact", "price",
@@ -216,12 +222,13 @@ func (r *Application) UpdatePrivate(ctx context.Context, req *dto.ApplicationUpd
 		ID:            req.ApplicationID,
 		SteamLogin:    utils.Allocate(req.SteamLogin),
 		SteamPassword: utils.Allocate(req.SteamPassword),
+		UpdatedAt:     r.timeNow(),
 	}
 
 	q := gosql.NewUpdate().Table("applications")
 	q.Set().Append("steam_login = ?", app.SteamLogin)
 	q.Set().Append("steam_password = ?", app.SteamPassword)
-	q.Set().Add("updated_at = now()")
+	q.Set().Append("updated_at = ?", app.UpdatedAt)
 	q.Where().AddExpression("id = ?", app.ID)
 	q.Where().AddExpression("deleted_at IS NULL")
 	q.Returning().Add("created_at", "updated_at")

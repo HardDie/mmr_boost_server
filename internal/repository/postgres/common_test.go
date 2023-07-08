@@ -32,6 +32,10 @@ func cleanDB(t *testing.T, dbConn *db.DB) {
 	if err != nil {
 		t.Fatalf("users DELETE err = %v; want nil", err)
 	}
+	_, err = dbConn.DB.Exec("DELETE FROM applications")
+	if err != nil {
+		t.Fatalf("users DELETE err = %v; want nil", err)
+	}
 	_, err = dbConn.DB.Exec("DELETE FROM users")
 	if err != nil {
 		t.Fatalf("users DELETE err = %v; want nil", err)

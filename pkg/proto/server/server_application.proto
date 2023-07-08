@@ -196,7 +196,7 @@ message UpdateManagementItemRequest
     int32 id = 1;
     int32 current_mmr = 2;
     int32 target_mmr = 3;
-    double price = 4;
+    int32 price = 4;
 }
 message UpdateManagementItemResponse
 {
