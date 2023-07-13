@@ -27,12 +27,7 @@ func NewEmailValidation(db *db.DB) *EmailValidation {
 	}
 }
 
-func (r *EmailValidation) CreateOrUpdate(
-	ctx context.Context,
-	userID int32,
-	code string,
-	expiredAt time.Time,
-) (*entity.EmailValidation, error) {
+func (r *EmailValidation) CreateOrUpdate(ctx context.Context, userID int32, code string, expiredAt time.Time) (*entity.EmailValidation, error) {
 	tx := getTxOrConn(ctx, r.db)
 
 	ent := &entity.EmailValidation{

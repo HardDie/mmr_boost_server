@@ -31,17 +31,17 @@ func (s *user) RegisterHTTP(ctx context.Context, mux *runtime.ServeMux) error {
 }
 
 func (s *user) Password(ctx context.Context, req *pb.PasswordRequest) (*emptypb.Empty, error) {
-	userID, err := utils.ContextGetUserID(ctx)
-	if err != nil {
+	userID, ok := utils.ContextGetUserID(ctx)
+	if !ok {
 		logger.Error.Printf("userID not found in context")
-		return nil, err
+		return nil, status.Error(codes.Internal, "internal")
 	}
 
 	r := &dto.UserUpdatePasswordRequest{
 		NewPassword: req.NewPassword,
 		OldPassword: req.OldPassword,
 	}
-	err = getValidator().Struct(r)
+	err := getValidator().Struct(r)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -54,16 +54,16 @@ func (s *user) Password(ctx context.Context, req *pb.PasswordRequest) (*emptypb.
 	return &emptypb.Empty{}, nil
 }
 func (s *user) SteamID(ctx context.Context, req *pb.SteamIDRequest) (*pb.SteamIDResponse, error) {
-	userID, err := utils.ContextGetUserID(ctx)
-	if err != nil {
+	userID, ok := utils.ContextGetUserID(ctx)
+	if !ok {
 		logger.Error.Printf("userID not found in context")
-		return nil, err
+		return nil, status.Error(codes.Internal, "internal")
 	}
 
 	r := &dto.UserUpdateSteamIDRequest{
 		SteamID: req.SteamId,
 	}
-	err = getValidator().Struct(r)
+	err := getValidator().Struct(r)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}

@@ -103,10 +103,10 @@ func (s *auth) SendValidationEmail(ctx context.Context, req *pb.SendValidationEm
 }
 
 func (s *auth) User(ctx context.Context, _ *emptypb.Empty) (*pb.UserResponse, error) {
-	userID, err := utils.ContextGetUserID(ctx)
-	if err != nil {
+	userID, ok := utils.ContextGetUserID(ctx)
+	if !ok {
 		logger.Error.Printf("userID not found in context")
-		return nil, err
+		return nil, status.Error(codes.Internal, "internal")
 	}
 
 	u, err := s.service.Auth.GetUserInfo(ctx, userID)
@@ -119,7 +119,11 @@ func (s *auth) User(ctx context.Context, _ *emptypb.Empty) (*pb.UserResponse, er
 	}, nil
 }
 func (s *auth) Logout(ctx context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
-	session := utils.ContextGetSession(ctx)
+	session, ok := utils.ContextGetSession(ctx)
+	if !ok {
+		logger.Error.Printf("session not found in context")
+		return nil, status.Error(codes.Internal, "internal")
+	}
 
 	err := s.service.Auth.Logout(ctx, session.ID)
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/HardDie/mmr_boost_server/internal/logger"
 	"github.com/HardDie/mmr_boost_server/internal/service"
 	"github.com/HardDie/mmr_boost_server/internal/utils"
 	pb "github.com/HardDie/mmr_boost_server/pkg/proto/server"
@@ -57,9 +58,14 @@ func (m *AuthMiddleware) RequestMiddleware(next http.Handler) http.Handler {
 // AdminMiddleware Validate that current user is admin.
 func AdminMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		roleID := utils.ContextGetRoleID(r.Context())
-		if roleID != int32(pb.UserRoleID_admin) {
+		roleID, ok := utils.ContextGetRoleID(r.Context())
+		if !ok {
+			logger.Error.Printf("userID not found in context")
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
+		if roleID != int32(pb.UserRoleID_admin) {
+			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 			return
 		}
 		next.ServeHTTP(w, r)
@@ -69,10 +75,15 @@ func AdminMiddleware(next http.Handler) http.Handler {
 // ManagementMiddleware Validate that current user is admin or manager.
 func ManagementMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		roleID := utils.ContextGetRoleID(r.Context())
+		roleID, ok := utils.ContextGetRoleID(r.Context())
+		if !ok {
+			logger.Error.Printf("userID not found in context")
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
 		if roleID != int32(pb.UserRoleID_admin) &&
 			roleID != int32(pb.UserRoleID_manager) {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 			return
 		}
 		next.ServeHTTP(w, r)

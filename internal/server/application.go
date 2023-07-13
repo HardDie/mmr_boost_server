@@ -31,10 +31,10 @@ func (s *application) RegisterHTTP(ctx context.Context, mux *runtime.ServeMux) e
 }
 
 func (s *application) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateResponse, error) {
-	userID, err := utils.ContextGetUserID(ctx)
-	if err != nil {
+	userID, ok := utils.ContextGetUserID(ctx)
+	if !ok {
 		logger.Error.Printf("userID not found in context")
-		return nil, err
+		return nil, status.Error(codes.Internal, "internal")
 	}
 
 	r := &dto.ApplicationCreateRequest{
@@ -44,7 +44,7 @@ func (s *application) Create(ctx context.Context, req *pb.CreateRequest) (*pb.Cr
 		TargetMMR:  req.TargetMmr,
 		TgContact:  req.TgContact,
 	}
-	err = getValidator().Struct(r)
+	err := getValidator().Struct(r)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -69,17 +69,17 @@ func (s *application) Create(ctx context.Context, req *pb.CreateRequest) (*pb.Cr
 	}, nil
 }
 func (s *application) GetList(ctx context.Context, req *pb.GetListRequest) (*pb.GetListResponse, error) {
-	userID, err := utils.ContextGetUserID(ctx)
-	if err != nil {
+	userID, ok := utils.ContextGetUserID(ctx)
+	if !ok {
 		logger.Error.Printf("userID not found in context")
-		return nil, err
+		return nil, status.Error(codes.Internal, "internal")
 	}
 
 	r := &dto.ApplicationUserListRequest{
 		UserID:   userID,
 		StatusID: utils.ToInt32(req.StatusId),
 	}
-	err = getValidator().Struct(r)
+	err := getValidator().Struct(r)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -98,17 +98,17 @@ func (s *application) GetList(ctx context.Context, req *pb.GetListRequest) (*pb.
 	}, nil
 }
 func (s *application) GetItem(ctx context.Context, req *pb.GetItemRequest) (*pb.GetItemResponse, error) {
-	userID, err := utils.ContextGetUserID(ctx)
-	if err != nil {
+	userID, ok := utils.ContextGetUserID(ctx)
+	if !ok {
 		logger.Error.Printf("userID not found in context")
-		return nil, err
+		return nil, status.Error(codes.Internal, "internal")
 	}
 
 	r := &dto.ApplicationUserItemRequest{
 		UserID:        userID,
 		ApplicationID: req.Id,
 	}
-	err = getValidator().Struct(r)
+	err := getValidator().Struct(r)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -123,17 +123,17 @@ func (s *application) GetItem(ctx context.Context, req *pb.GetItemRequest) (*pb.
 	}, nil
 }
 func (s *application) DeleteItem(ctx context.Context, req *pb.DeleteItemRequest) (*emptypb.Empty, error) {
-	userID, err := utils.ContextGetUserID(ctx)
-	if err != nil {
+	userID, ok := utils.ContextGetUserID(ctx)
+	if !ok {
 		logger.Error.Printf("userID not found in context")
-		return nil, err
+		return nil, status.Error(codes.Internal, "internal")
 	}
 
 	r := &dto.ApplicationItemDeleteRequest{
 		ApplicationID: req.Id,
 		UserID:        userID,
 	}
-	err = getValidator().Struct(r)
+	err := getValidator().Struct(r)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -188,10 +188,10 @@ func (s *application) GetManagementItem(ctx context.Context, req *pb.GetManageme
 	}, nil
 }
 func (s *application) GetManagementPrivateItem(ctx context.Context, req *pb.GetManagementItemRequest) (*pb.GetManagementPrivateItemResponse, error) {
-	userID, err := utils.ContextGetUserID(ctx)
-	if err != nil {
+	userID, ok := utils.ContextGetUserID(ctx)
+	if !ok {
 		logger.Error.Printf("userID not found in context")
-		return nil, err
+		return nil, status.Error(codes.Internal, "internal")
 	}
 
 	r := &dto.ApplicationManagementPrivateItemRequest{
@@ -199,7 +199,7 @@ func (s *application) GetManagementPrivateItem(ctx context.Context, req *pb.GetM
 
 		UserID: userID,
 	}
-	err = getValidator().Struct(r)
+	err := getValidator().Struct(r)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -214,10 +214,10 @@ func (s *application) GetManagementPrivateItem(ctx context.Context, req *pb.GetM
 	}, nil
 }
 func (s *application) UpdateManagementPrivateItem(ctx context.Context, req *pb.UpdateManagementPrivateItemRequest) (*pb.UpdateManagementPrivateItemResponse, error) {
-	userID, err := utils.ContextGetUserID(ctx)
-	if err != nil {
+	userID, ok := utils.ContextGetUserID(ctx)
+	if !ok {
 		logger.Error.Printf("userID not found in context")
-		return nil, err
+		return nil, status.Error(codes.Internal, "internal")
 	}
 
 	r := &dto.ApplicationManagementUpdatePrivateRequest{
@@ -227,7 +227,7 @@ func (s *application) UpdateManagementPrivateItem(ctx context.Context, req *pb.U
 
 		UserID: userID,
 	}
-	err = getValidator().Struct(r)
+	err := getValidator().Struct(r)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -242,10 +242,10 @@ func (s *application) UpdateManagementPrivateItem(ctx context.Context, req *pb.U
 	}, nil
 }
 func (s *application) UpdateManagementItemStatus(ctx context.Context, req *pb.UpdateManagementItemStatusRequest) (*pb.UpdateManagementItemStatusResponse, error) {
-	userID, err := utils.ContextGetUserID(ctx)
-	if err != nil {
+	userID, ok := utils.ContextGetUserID(ctx)
+	if !ok {
 		logger.Error.Printf("userID not found in context")
-		return nil, err
+		return nil, status.Error(codes.Internal, "internal")
 	}
 
 	r := &dto.ApplicationManagementUpdateStatusRequest{
@@ -254,7 +254,7 @@ func (s *application) UpdateManagementItemStatus(ctx context.Context, req *pb.Up
 
 		UserID: userID,
 	}
-	err = getValidator().Struct(r)
+	err := getValidator().Struct(r)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -269,10 +269,10 @@ func (s *application) UpdateManagementItemStatus(ctx context.Context, req *pb.Up
 	}, nil
 }
 func (s *application) UpdateManagementItem(ctx context.Context, req *pb.UpdateManagementItemRequest) (*pb.UpdateManagementItemResponse, error) {
-	userID, err := utils.ContextGetUserID(ctx)
-	if err != nil {
+	userID, ok := utils.ContextGetUserID(ctx)
+	if !ok {
 		logger.Error.Printf("userID not found in context")
-		return nil, err
+		return nil, status.Error(codes.Internal, "internal")
 	}
 
 	r := &dto.ApplicationManagementUpdateItemRequest{
@@ -283,7 +283,7 @@ func (s *application) UpdateManagementItem(ctx context.Context, req *pb.UpdateMa
 
 		UserID: userID,
 	}
-	err = getValidator().Struct(r)
+	err := getValidator().Struct(r)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
